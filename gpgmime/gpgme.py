@@ -18,8 +18,10 @@ from __future__ import unicode_literals, absolute_import
 import gpgme
 import six
 
+from .base import GpgBackendBase
 
-class GpgMeBackend(object):
+
+class GpgMeBackend(GpgBackendBase):
     def __init__(self, context=None, **kwargs):
         self._context = context
         super(GpgMeBackend, self).__init__(**kwargs)
@@ -33,6 +35,7 @@ class GpgMeBackend(object):
         else:
             context = self._context
 
+        context.armor = True
         # TODO: handle options (especially home and path)
 
         return context
