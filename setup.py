@@ -25,16 +25,41 @@ class BackendMailCommand(Command):
     description = 'Create test-messages using basic MIME messages.'
     user_options = [
         ('dest=', 'd', 'Destination director for the messages.'),
+        ('fp=', None, 'Fingerprint to use for signing/encrypting.'),
     ]
     def initialize_options(self):
         self.dest = os.path.abspath('build')
+
+        # default is my own GPG key ;-)
+        self.fp = '0xE8172F2940EA9F709842290870BD9664FA3947CD'
 
     def finalize_options(self):
         if not os.path.exists(self.dest):
             os.makedirs(self.dest)
 
+    def test_backend(self, backend):
+        dest_dir = os.path.join(self.dest, backend.__module__.split('.', 1)[1])
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+
+        msg = backend.sign_message('foobar', [self.fp])
+        with open(os.path.join(dest_dir, 'signed-only.eml'), 'wb') as stream:
+            stream.write(msg.as_bytes())
+
+        msg = backend.encrypt_message('foobar', recipients=[self.fp])
+        with open(os.path.join(dest_dir, 'encrypted-only.eml'), 'wb') as stream:
+            stream.write(msg.as_bytes())
+
+        msg = backend.encrypt_message('foobar', recipients=[self.fp], signers=[self.fp])
+        with open(os.path.join(dest_dir, 'signed-encrypted.eml'), 'wb') as stream:
+            stream.write(msg.as_bytes())
+
+    def test_gpgme(self):
+        from gpgmime import gpgme
+        self.test_backend(gpgme.GpgMeBackend())
+
     def run(self):
-        print(self.dest)
+        self.test_gpgme()
 
 
 setup(
