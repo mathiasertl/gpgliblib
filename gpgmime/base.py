@@ -47,7 +47,7 @@ class GpgBackendBase(object):
 
     def get_encrypted_message(self, message):
         control = self.get_control_message()
-        msg = MIMEMultipart(_subtype='pgp-encrypted', _subparts=[control, message])
+        msg = MIMEMultipart(_subtype='encrypted', _subparts=[control, message])
         msg.set_param('protocol', 'application/pgp-encrypted')
         return msg
 
@@ -60,11 +60,11 @@ class GpgBackendBase(object):
         else:
             encrypted = self.sign_encrypt(message.as_bytes(), recipients, signers, **kwargs)
 
-        msg = MIMEApplication(_data=encrypted, _subtype='octed-stream', name='encrypted.asc',
+        msg = MIMEApplication(_data=encrypted, _subtype='octet-stream', name='encrypted.asc',
                               _encoder=encode_noop)
         msg.add_header('Content-Description', 'OpenPGP encrypted message')
         msg.add_header('Content-Disposition', 'inline; filename="encrypted.asc"')
-        return msg
+        return self.get_encrypted_message(msg)
 
     ###########
     # Signing #
