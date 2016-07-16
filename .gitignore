@@ -1,6 +1,7 @@
 *.sw[op]
 *.py[oc]
 /bin/
+/build/
 /include/
 /lib/
 /share/
