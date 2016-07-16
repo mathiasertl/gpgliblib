@@ -70,7 +70,7 @@ class GpgMeBackend(GpgBackendBase):
         always_trust = kwargs.pop('always_trust', self._always_trust)
         context = self.get_context(**kwargs)
 
-        return self._encrypt(self, data, recipients, context, always_trust)
+        return self._encrypt(data, recipients, context, always_trust)
 
     def sign_encrypt(self, data, recipients, signers, **kwargs):
         always_trust = kwargs.pop('always_trust', self._always_trust)
@@ -78,4 +78,4 @@ class GpgMeBackend(GpgBackendBase):
         signers = [(context.get_key(k) if isinstance(k, six.string_types) else k) for k in signers]
         context.signers = signers
 
-        return self._encrypt(self, data, recipients, context, always_trust)
+        return self._encrypt(data, recipients, context, always_trust)
