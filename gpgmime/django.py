@@ -41,24 +41,28 @@ class GPGEmailMessage(EmailMultiAlternatives):
     def get_backend(self):
         return self.gpg_backend
 
-    def encrypt_message(self, message):
+    def get_base_message(self, message):
         payload = message.get_payload()
 
         if isinstance(message, SafeMIMEMultipart):
             # If this is a multipart message, we encrypt all its parts.
             # We create a new SafeMIMEMultipart instance, the original message contains all
             # headers (From, To, ...) which we shouldn't sign/encrypt.
-            to_encrypt = SafeMIMEMultipart(_subtype='alternative', _subparts=payload)
+            base = SafeMIMEMultipart(_subtype='alternative', _subparts=payload)
         else:
             # If it is a non-multipart message (-> plain-text email), we just encrypt the payload
-            to_encrypt = SafeMIMEText(payload)
+            base = SafeMIMEText(payload)
 
             # TODO: Is it possible to influence the main content type of the message? If yes, we
             #       need to copy it here.
 
-        print(to_encrypt, type(to_encrypt))
+        del base['MIME-Version']
+        return base
 
+    def encrypt_message(self, message):
+        to_encrypt = self.get_base_message(message)
         backend = self.get_backend()
+
         control_msg = backend.get_control_message()
         encrypted_msg = backend.get_octet_stream(to_encrypt, recipients=self.gpg_recipients,
                                                  signers=self.gpg_signers)
@@ -81,8 +85,34 @@ class GPGEmailMessage(EmailMultiAlternatives):
         gpg_msg.set_param('protocol', self.protocol)
         return gpg_msg
 
-    def sign_message(self, message):
-        pass
+    def sign_message(self, message, **kwargs):
+        to_sign = self.get_base_message(message)
+        backend = self.get_backend()
+
+        # get the gpg signature
+        signature = backend.sign(to_sign.as_bytes(linesep='\r\n'), self.gpg_signers, add_cr=False,
+                                 **kwargs)
+        signature_msg = backend.get_mime_signature(signature)
+
+        if isinstance(message, SafeMIMEMultipart):
+            message.set_payload([to_sign, signature_msg])
+            message.set_param('protocol', self.protocol)
+            message.set_param('micalg', 'pgp-sha256')
+            return message
+
+        gpg_msg = SafeMIMEMultipart(_subtype=self.alternative_subtype, encoding=message.encoding)
+        gpg_msg.attach(to_sign)
+        gpg_msg.attach(signature_msg)
+
+        # copy headers
+        for key, value in message.items():
+            if key.lower() in ['Content-Type', 'Content-Transfer-Encoding']:
+                continue
+            gpg_msg[key] = value
+
+        gpg_msg.set_param('protocol', self.protocol)
+        gpg_msg.set_param('micalg', 'pgp-sha256')
+        return gpg_msg
 
     def message(self):
         orig_msg = super(GPGEmailMessage, self).message()
