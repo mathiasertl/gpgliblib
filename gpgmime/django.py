@@ -89,6 +89,12 @@ class GPGEmailMessage(EmailMultiAlternatives):
         to_sign = self.get_base_message(message)
         backend = self.get_backend()
 
+        if isinstance(message, SafeMIMEMultipart):
+            # We have to adjust the policy because Django SOMEHOW adjusts the line-length of
+            # multipart messages. This means a line-break in the Content-Type header of to_sign
+            # gets removed, and this breaks the signature.
+            to_sign.policy = to_sign.policy.clone(max_line_length=0)
+
         # get the gpg signature
         signature = backend.sign(to_sign.as_bytes(linesep='\r\n'), self.gpg_signers, add_cr=False,
                                  **kwargs)
