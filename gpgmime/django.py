@@ -25,6 +25,8 @@ class GPGEmailMessage(EmailMultiAlternatives):
         self.gpg_signers = kwargs.pop('gpg_signers', None)
         self.gpg_recipients = kwargs.pop('gpg_recipients', None)
         self.gpg_backend = kwargs.pop('gpg_backend', None)
+        self.gpg_home = kwargs.pop('gpg_home', None)
+        self.gpg_path = kwargs.pop('gpg_path', None)
         self.gpg_always_trust = kwargs.pop('gpg_always_trust', None)
 
         if self.encrypted:
