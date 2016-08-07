@@ -22,11 +22,30 @@ from .base import GpgBackendBase
 
 
 class GpgMeBackend(GpgBackendBase):
+    """A backend using `pygpgme <https://pypi.python.org/pypi/pygpgme/>`_.
+
+    This backend requires that you install ``pygpgme``::
+
+        pip install pygpgme
+
+    .. seealso::
+
+       `Unofficial (and incomplete) documentation <pygpgme.readthedocs.io/en/latest/api.html>`_
+       for pygpgme.
+
+    Parameters
+    ----------
+
+    context : gpgme.Context, optional
+        A default context to use. If not passed, a new context with no parameters will be used.
+    """
+
     def __init__(self, context=None, **kwargs):
         self._context = context
         super(GpgMeBackend, self).__init__(**kwargs)
 
     def get_context(self, **kwargs):
+        """get context"""
         if kwargs.get('context'):
             return kwargs['context']
 
