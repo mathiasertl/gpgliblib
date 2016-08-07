@@ -52,7 +52,11 @@ class GpgMeBackend(GpgBackendBase):
 
         output_bytes = six.BytesIO()
         flags = self._encrypt_flags(always_trust=always_trust)
-        context.encrypt_sign(recipients, flags, six.BytesIO(data), output_bytes)
+        if context.signers:
+            context.encrypt_sign(recipients, flags, six.BytesIO(data), output_bytes)
+        else:
+            context.encrypt(recipients, flags, six.BytesIO(data), output_bytes)
+
         output_bytes.seek(0)
         return output_bytes.getvalue()
 
