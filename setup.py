@@ -28,7 +28,7 @@ class BackendMailCommand(Command):
         ('fp=', None, 'Fingerprint to use for signing/encrypting.'),
     ]
     def initialize_options(self):
-        self.dest = os.path.abspath('build')
+        self.dest = os.path.join(os.path.abspath('build'), 'test_backends')
 
         # default is my own GPG key ;-)
         self.fp = '0xE8172F2940EA9F709842290870BD9664FA3947CD'
