@@ -67,7 +67,7 @@ class GpgBackendBase(object):
         if isinstance(message, six.string_types):
             message = MIMEText(message)
 
-        msg = self.get_octed_stream(message, recipients, signers, **kwargs)
+        msg = self.get_octet_stream(message, recipients, signers, **kwargs)
         return self.get_encrypted_message(msg)
 
     ###########
