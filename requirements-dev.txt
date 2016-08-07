@@ -1,2 +1,3 @@
+Sphinx==1.4.5
 ipython==5.0.0
 ipython-genutils==0.1.0
