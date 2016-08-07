@@ -28,10 +28,8 @@ class GpgMeBackend(GpgBackendBase):
 
         pip install pygpgme
 
-    .. seealso::
-
-       `Unofficial (and incomplete) documentation <pygpgme.readthedocs.io/en/latest/api.html>`_
-       for pygpgme.
+    Note that there is also `unofficial (and incomplete) documentation
+    <pygpgme.readthedocs.io/en/latest/api.html>`_ for pygpgme.
 
     Parameters
     ----------

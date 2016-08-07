@@ -28,6 +28,9 @@ from six.moves.email_mime_text import MIMEText
 class GpgBackendBase(object):
     """Base class for all backends.
 
+    The parameters to the constructor supported by the base class are also supported by any
+    implementing subclasses. Any custom parameters are documented in the backends.
+
     Parameters
     ----------
 
