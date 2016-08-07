@@ -2,8 +2,9 @@
 *.py[oc]
 /bin/
 /build/
+/doc/_build/
+/gpgmime/gpg_mime.egg-info/
 /include/
 /lib/
 /share/
 /testproject/testproject/localsettings.py
-/doc/_build/
