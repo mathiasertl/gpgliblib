@@ -24,6 +24,8 @@ from .base import GpgBackendBase
 class GpgMeBackend(GpgBackendBase):
     """A backend using `pygpgme <https://pypi.python.org/pypi/pygpgme/>`_.
 
+    All ``kwargs`` for the constructor are passed to :py:class:`~gpgmime.base.GpgBackendBase`.
+
     This backend requires that you install ``pygpgme``::
 
         pip install pygpgme
