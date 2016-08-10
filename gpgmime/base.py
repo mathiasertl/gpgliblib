@@ -58,19 +58,33 @@ class GpgBackendBase(object):
     ##############
 
     def get_control_message(self):
-        """Get a control information message as descripted in RFC 3156, chapter 4."""
+        """Get a control message for encrypted messages, as descripted in RFC 3156, chapter 4."""
 
         msg = MIMEApplication(_data='Version: 1\n', _subtype='pgp-encrypted', _encoder=encode_noop)
         msg.add_header('Content-Description', 'PGP/MIME version identification')
         return msg
 
     def get_encrypted_message(self, message):
+        """Get the encrypted message from the passed payload message.
+
+        Parameters
+        ----------
+
+        message : MIMEBase
+            The message to encrypt (e.g. as created by :py:func:`get_octed_stream`.
+        """
+
         control = self.get_control_message()
         msg = MIMEMultipart(_subtype='encrypted', _subparts=[control, message])
         msg.set_param('protocol', 'application/pgp-encrypted')
         return msg
 
     def get_octet_stream(self, message, recipients, signers=None, **kwargs):
+        """Get encrypted message from the passt message (helper function).
+
+        This function returns the encrypted payload message. The parameters are the same as in
+        :py:func:`encrypt_message`.
+        """
         if signers is None:
             encrypted = self.encrypt(message.as_bytes(), recipients, **kwargs)
         else:
@@ -83,6 +97,23 @@ class GpgBackendBase(object):
         return msg
 
     def encrypt_message(self, message, recipients, signers=None, **kwargs):
+        """Get an encrypted MIME message from the passed message or str.
+
+        This function returns a fully encrypted MIME message including a control message and the
+        encrypted payload message.
+
+        Parameters
+        ----------
+
+        message : MIMEBase or str
+            Message to encrypt.
+        recipients : list of key ids
+            List of key ids to encrypt to.
+        signers : list of key ids, optional
+            List of key ids to sign the mssage with.
+        kwargs
+            Any additional parameters to the GPG backend.
+        """
         if isinstance(message, six.string_types):
             message = MIMEText(message)
 
@@ -94,6 +125,14 @@ class GpgBackendBase(object):
     ###########
 
     def get_mime_signature(self, signature):
+        """Get a signature MIME message from the passed signature.
+
+        Parameters
+        ----------
+
+        signature : bytes
+            A gpg signature.
+        """
         msg = MIMEBase(_maintype='application', _subtype='pgp-signature', name='signature.asc')
         msg.set_payload(signature)
         msg.add_header('Content-Description', 'OpenPGP digital signature')
@@ -103,12 +142,38 @@ class GpgBackendBase(object):
         return msg
 
     def get_signed_message(self, message, signature):
+        """Get a signed MIME message from the passed message and signature messages.
+
+        Parameters
+        ----------
+
+        message : MIMEBase
+            MIME message that is signed by the signature.
+        signature : MIMEBase
+            MIME message containing the signature.
+        kwargs
+            Any additional parameters to the GPG backend.
+        """
+
         msg = MIMEMultipart(_subtype='signed', _subparts=[message, signature])
         msg.set_param('protocol', 'application/pgp-signature')
         msg.set_param('micalg', 'pgp-sha256')  # TODO: Just the current default
         return msg
 
     def sign_message(self, message, signers, add_cr=True, **kwargs):
+        """
+        message : MIMEBase or str
+            Message to encrypt.
+        recipients : list of key ids
+            List of key ids to encrypt to.
+        signers : list of key ids, optional
+            A list of key identifiers to sign the message with.
+        add_cr : bool, optional
+            Wether or not to replace newlines (``\n``) with carriage-return/newlines (``\r\n``).
+            E-Mail messages generally use ``\r\n``, so the default is True.
+        kwargs
+            Any additional parameters to the GPG backend.
+        """
         if isinstance(message, six.string_types):
             message = MIMEText(message)
             del message['MIME-Version']
@@ -123,10 +188,48 @@ class GpgBackendBase(object):
         return self.get_signed_message(message, signature_msg)
 
     def sign(self, data, signers, **kwargs):
+        """Sign passed data with the given keys.
+
+        Parameters
+        ----------
+
+        data : bytes
+            The data to sign.
+        signers : list of str
+            A list of key identifiers to sign the message with.
+        kwargs
+            Any additional parameters to the GPG backend.
+        """
         raise NotImplementedError
 
     def encrypt(self, data, recipients, **kwargs):
+        """Encrypt passed data with the given keys.
+
+        Parameters
+        ----------
+
+        data : bytes
+            The data to sign.
+        recipients : list of str
+            A list of key identifiers to encrypt the message to.
+        kwargs
+            Any additional parameters to the GPG backend.
+        """
         raise NotImplementedError
 
     def sign_encrypt(self, data, recipients, signers, **kwargs):
+        """Sign and encrypt passed data with the given keys.
+
+        Parameters
+        ----------
+
+        data : bytes
+            The data to sign.
+        recipients : list of str
+            A list of key identifiers to encrypt the message to.
+        signers : list of str
+            A list of key identifiers to sign the message with.
+        kwargs
+            Any additional parameters to the GPG backend.
+        """
         raise NotImplementedError
