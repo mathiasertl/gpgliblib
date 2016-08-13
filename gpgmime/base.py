@@ -274,8 +274,8 @@ class GpgBackendBase(object):
     def import_key(self, data, **kwargs):
         """Import a public key.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
 
         data : bytes
             The public key data.
@@ -293,8 +293,8 @@ class GpgBackendBase(object):
     def import_private_key(self, data, **kwargs):
         """Import a private key.
 
-        Paramters
-        ---------
+        Parameters
+        ----------
 
         data : bytes
             The private key data.
