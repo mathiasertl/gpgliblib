@@ -281,6 +281,12 @@ class GpgBackendBase(object):
             The public key data.
         **kwargs
             Any additional parameters to the GPG backend.
+
+        Returns
+        -------
+
+        str
+            The fingerprint of the (first) imported public key.
         """
         raise NotImplementedError
 
@@ -294,6 +300,12 @@ class GpgBackendBase(object):
             The private key data.
         **kwargs
             Any additional parameters to the GPG backend.
+
+        Returns
+        -------
+
+        str
+            The fingerprint of the private key.
         """
         raise NotImplementedError
 
