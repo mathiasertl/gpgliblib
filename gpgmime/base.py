@@ -266,7 +266,50 @@ class GpgBackendBase(object):
             A list of key identifiers to encrypt the message to.
         signers : list of str
             A list of key identifiers to sign the message with.
-        **kwargs 
+        **kwargs
             Any additional parameters to the GPG backend.
+        """
+        raise NotImplementedError
+
+    def import_key(self, data, **kwargs):
+        """Import a public key.
+
+        Paramters
+        ---------
+
+        data : bytes
+            The public key data.
+        **kwargs
+            Any additional parameters to the GPG backend.
+        """
+        raise NotImplementedError
+
+    def import_private_key(self, data, **kwargs):
+        """Import a private key.
+
+        Paramters
+        ---------
+
+        data : bytes
+            The private key data.
+        **kwargs
+            Any additional parameters to the GPG backend.
+        """
+        raise NotImplementedError
+
+    def expires(self, key):
+        """If and when a key expires.
+
+        Parameters
+        ----------
+
+        key : str
+            A string identifying a key (usually a ``"0x"`` prefixed fingerprint).
+
+        Returns
+        -------
+
+        datetime or None
+            A datetime for when the key expires, or ``None`` if it does not expire.
         """
         raise NotImplementedError
