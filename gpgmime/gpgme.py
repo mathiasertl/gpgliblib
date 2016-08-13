@@ -33,7 +33,7 @@ class GpgMeBackend(GpgBackendBase):
         pip install pygpgme
 
     Note that there is also `unofficial (and incomplete) documentation
-    <pygpgme.readthedocs.io/en/latest/api.html>`_ for pygpgme.
+    <https://pygpgme.readthedocs.io/en/latest/api.html>`_ for pygpgme.
 
     Parameters
     ----------
@@ -111,12 +111,14 @@ class GpgMeBackend(GpgBackendBase):
     def import_key(self, data, **kwargs):
         context = self.get_context(**kwargs)
         result = context.import_(six.BytesIO(data))
-        return result
+        if result.imported >= 1:
+            return result.imports[0][0]
 
     def import_private_key(self, data, **kwargs):
         context = self.get_context(**kwargs)
         result = context.import_(six.BytesIO(data))
-        return result
+        if result.imported >= 1:
+            return result.imports[0][0]
 
     def expires(self, fingerprint, **kwargs):
         context = self.get_context(**kwargs)
