@@ -233,7 +233,7 @@ class GpgBackendBase(object):
         data : bytes
             The data to sign.
         signers : list of str
-            A list of key identifiers to sign the message with.
+            A list of full GPG fingerprints (without a ``"0x"`` prefix) to sign the message with.
         **kwargs
             Any additional parameters to the GPG backend.
         """
@@ -248,7 +248,7 @@ class GpgBackendBase(object):
         data : bytes
             The data to sign.
         recipients : list of str
-            A list of key identifiers to encrypt the message to.
+            A list of full GPG fingerprints (without a ``"0x"`` prefix) to encrypt the message to.
         **kwargs
             Any additional parameters to the GPG backend.
         """
@@ -263,9 +263,9 @@ class GpgBackendBase(object):
         data : bytes
             The data to sign.
         recipients : list of str
-            A list of key identifiers to encrypt the message to.
+            A list of full GPG fingerprints (without a ``"0x"`` prefix) to encrypt the message to.
         signers : list of str
-            A list of key identifiers to sign the message with.
+            A list of full GPG fingerprints (without a ``"0x"`` prefix) to sign the message with.
         **kwargs
             Any additional parameters to the GPG backend.
         """
@@ -297,14 +297,14 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def expires(self, key):
+    def expires(self, fingerprint):
         """If and when a key expires.
 
         Parameters
         ----------
 
-        key : str
-            A string identifying a key (usually a ``"0x"`` prefixed fingerprint).
+        fingerprint : str
+            A full GPG fingerprint (without a ``"0x"`` prefix).
 
         Returns
         -------
