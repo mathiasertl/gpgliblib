@@ -8,6 +8,9 @@ and implement these functions:
 * :py:class:`~gpgmime.base.GpgBackendBase.sign`
 * :py:class:`~gpgmime.base.GpgBackendBase.encrypt`
 * :py:class:`~gpgmime.base.GpgBackendBase.sign_encrypt`
+* :py:class:`~gpgmime.base.GpgBackendBase.import_key`
+* :py:class:`~gpgmime.base.GpgBackendBase.import_private_key`
+* :py:class:`~gpgmime.base.GpgBackendBase.expires`
 
 The constructor should take at least the same parameters as GpgBackendBase. Remember that any
 function may pass ``**kwargs`` to override any option passed to the constructor. For example,
