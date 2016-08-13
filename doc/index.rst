@@ -12,6 +12,7 @@ Contents:
    :maxdepth: 2
 
    backends
+   development
    testing
 
 Indices and tables
