@@ -54,7 +54,12 @@ class GpgMeBackend(GpgBackendBase):
             context = self._context
 
         context.armor = True
-        # TODO: handle options (especially home and path)
+
+        # Set home and path for this context, if requested
+        path = kwargs.get('path', self._path)
+        home = kwargs.get('home', self._home)
+        if path or home:
+            context.set_engine_info(gpgme.PROTOCOL_OpenPGP, path, home)
 
         return context
 
