@@ -15,6 +15,8 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from datetime import datetime
+
 import gpgme
 import six
 
@@ -70,8 +72,7 @@ class GpgMeBackend(GpgBackendBase):
         return flags
 
     def _encrypt(self, data, recipients, context, always_trust):
-        recipients = [context.get_key(k) if isinstance(k, six.string_types) else k
-                      for k in recipients]
+        recipients = [context.get_key(k.upper()) for k in recipients]
 
         output_bytes = six.BytesIO()
         flags = self._encrypt_flags(always_trust=always_trust)
@@ -85,7 +86,7 @@ class GpgMeBackend(GpgBackendBase):
 
     def sign(self, data, signers, **kwargs):
         context = self.get_context(**kwargs)
-        signers = [(context.get_key(k) if isinstance(k, six.string_types) else k) for k in signers]
+        signers = [context.get_key(k.upper()) for k in signers]
         context.signers = signers
 
         output_bytes = six.BytesIO()
@@ -102,7 +103,23 @@ class GpgMeBackend(GpgBackendBase):
     def sign_encrypt(self, data, recipients, signers, **kwargs):
         always_trust = kwargs.pop('always_trust', self._always_trust)
         context = self.get_context(**kwargs)
-        signers = [(context.get_key(k) if isinstance(k, six.string_types) else k) for k in signers]
+        signers = [context.get_key(k.upper()) for k in signers]
         context.signers = signers
 
         return self._encrypt(data, recipients, context, always_trust)
+
+    def import_key(self, data, **kwargs):
+        context = self.get_context(**kwargs)
+        result = context.import_(six.BytesIO(data))
+        return result
+
+    def import_private_key(self, data, **kwargs):
+        context = self.get_context(**kwargs)
+        result = context.import_(six.BytesIO(data))
+        return result
+
+    def expires(self, fingerprint, **kwargs):
+        context = self.get_context(**kwargs)
+        key = context.get_key(fingerprint.upper())
+        subkeys = {sk.fpr: datetime.fromtimestamp(sk.expires) for sk in key.subkeys}
+        return subkeys[fingerprint]
