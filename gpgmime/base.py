@@ -111,7 +111,7 @@ class GpgBackendBase(object):
             List of key ids to encrypt to.
         signers : list of key ids, optional
             List of key ids to sign the mssage with.
-        kwargs
+        **kwargs
             Any additional parameters to the GPG backend.
         """
         if isinstance(message, six.string_types):
@@ -151,7 +151,7 @@ class GpgBackendBase(object):
             MIME message that is signed by the signature.
         signature : MIMEBase
             MIME message containing the signature.
-        kwargs
+        **kwargs
             Any additional parameters to the GPG backend.
         """
 
@@ -166,12 +166,12 @@ class GpgBackendBase(object):
             Message to encrypt.
         recipients : list of key ids
             List of key ids to encrypt to.
-        signers : list of key ids, optional
+        signers : list of key ids
             A list of key identifiers to sign the message with.
         add_cr : bool, optional
-            Wether or not to replace newlines (``\n``) with carriage-return/newlines (``\r\n``).
-            E-Mail messages generally use ``\r\n``, so the default is True.
-        kwargs
+            Wether or not to replace newlines (``\\n``) with carriage-return/newlines (``\\r\\n``).
+            E-Mail messages generally use ``\\r\\n``, so the default is True.
+        **kwargs
             Any additional parameters to the GPG backend.
         """
         if isinstance(message, six.string_types):
@@ -197,7 +197,7 @@ class GpgBackendBase(object):
             The data to sign.
         signers : list of str
             A list of key identifiers to sign the message with.
-        kwargs
+        **kwargs
             Any additional parameters to the GPG backend.
         """
         raise NotImplementedError
@@ -212,7 +212,7 @@ class GpgBackendBase(object):
             The data to sign.
         recipients : list of str
             A list of key identifiers to encrypt the message to.
-        kwargs
+        **kwargs
             Any additional parameters to the GPG backend.
         """
         raise NotImplementedError
@@ -229,7 +229,7 @@ class GpgBackendBase(object):
             A list of key identifiers to encrypt the message to.
         signers : list of str
             A list of key identifiers to sign the message with.
-        kwargs
+        **kwargs 
             Any additional parameters to the GPG backend.
         """
         raise NotImplementedError
