@@ -23,6 +23,8 @@ import six
 from six.moves.email_mime_base import MIMEBase
 from six.moves.email_mime_multipart import MIMEMultipart
 from six.moves.email_mime_text import MIMEText
+from six.moves.urllib.parse import urlencode
+from six.moves.urllib.request import urlopen
 
 
 class GpgBackendBase(object):
@@ -50,8 +52,43 @@ class GpgBackendBase(object):
         self._path = path
         self._always_trust = always_trust
 
-    def fetch_key(self, keyserver='http://pool.sks-keyservers.net:11371'):
-        pass
+    def fetch_key(self, search, keyserver='http://pool.sks-keyservers.net:11371', **kwargs):
+        """Fetch a key from the given keyserver.
+
+        Parameters
+        ----------
+        search : str
+            The search string. If this is a fingerprint, it must start with ``"0x"``.
+        keyserver : str, optional
+            URL of the keyserver, the default is ``"http://pool.sks-keyservers.net:11371"``.
+        **kwargs
+            All kwargs are passed to :py:func:`urllib.request.urlopen`. The ``timeout`` parameter
+            defaults to three seconds this function (``urlopen`` is a blocking function and thus
+            makes long timeouts unsuitable for e.g. a webserver setup).
+
+        Returns
+        -------
+
+        key : bytes
+            The requested key as bytes.
+
+        Raises
+        ------
+
+        urllib.error.URLError
+            If the keyserver cannot be reached.
+        urllib.error.HTTPError
+            If the keyserver does not respond with http 200, e.g. if the key is not found.
+        """
+        kwargs.setdefault('timeout', 3)
+        params = {
+            'search': search,
+            'options': 'mr',
+            'op': 'get',
+        }
+        url = '%s/pks/lookup?%s' % (keyserver, urlencode(params))
+        response = urlopen(url, **kwargs)
+        return response.read().strip()
 
     ##############
     # Encrypting #
