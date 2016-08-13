@@ -45,7 +45,6 @@ class GpgMeBackend(GpgBackendBase):
         super(GpgMeBackend, self).__init__(**kwargs)
 
     def get_context(self, **kwargs):
-        """get context"""
         if kwargs.get('context'):
             return kwargs['context']
 
