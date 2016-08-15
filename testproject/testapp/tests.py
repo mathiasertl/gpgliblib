@@ -115,6 +115,16 @@ class TestCaseMixin(object):
             self.backend.set_trust(user4_fp, trust)
             self.assertEqual(self.backend.get_trust(user4_fp), trust)
 
+    def test_set_unknown_trust(self):
+        self.assertEqual(self.backend.import_key(user4_pub), user4_fp)
+        self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_UNKNOWN)
+        self.backend.set_trust(user4_fp, VALIDITY_FULL)
+
+        with self.assertRaises(ValueError):
+            self.backend.set_trust(user4_fp, VALIDITY_UNKNOWN)
+
+        self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_FULL)
+
     def setUp(self):
         self.home = tempfile.mkdtemp()
 
