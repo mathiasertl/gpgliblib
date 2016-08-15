@@ -26,6 +26,13 @@ from six.moves.email_mime_text import MIMEText
 from six.moves.urllib.parse import urlencode
 from six.moves.urllib.request import urlopen
 
+# Constants
+VALIDITY_UNKNOWN = 0
+VALIDITY_NEVER = 1
+VALIDITY_MARGINAL = 2
+VALIDITY_FULL = 3
+VALIDITY_ULTIMATE = 4
+
 
 class GpgBackendBase(object):
     """Base class for all backends.

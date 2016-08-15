@@ -18,9 +18,15 @@ from __future__ import unicode_literals, absolute_import
 from datetime import datetime
 
 import gpgme
+import gpgme.editutil
 import six
 
 from .base import GpgBackendBase
+from .base import VALIDITY_UNKNOWN
+from .base import VALIDITY_NEVER
+from .base import VALIDITY_MARGINAL
+from .base import VALIDITY_FULL
+from .base import VALIDITY_ULTIMATE
 
 
 class GpgMeBackend(GpgBackendBase):
@@ -142,6 +148,40 @@ class GpgMeBackend(GpgBackendBase):
         result = context.import_(six.BytesIO(data))
         if len(result.imports) >= 1:
             return result.imports[0][0]
+
+    def set_trust(self, fingerprint, trust, **kwargs):
+        context = self.get_context(**kwargs)
+        key = context.get_key(fingerprint.upper())
+
+        if trust == VALIDITY_NEVER:
+            trust = gpgme.VALIDITY_NEVER
+        elif trust == VALIDITY_MARGINAL:
+            trust = gpgme.VALIDITY_MARGINAL
+        elif trust == VALIDITY_FULL:
+            trust = gpgme.VALIDITY_FULL
+        elif trust == VALIDITY_ULTIMATE:
+            trust = gpgme.VALIDITY_ULTIMATE
+        else:
+            raise ValueError("Unknown trust passed.")
+
+        gpgme.editutil.edit_trust(context, key, trust)
+
+    def get_trust(self, fingerprint, **kwargs):
+        context = self.get_context(**kwargs)
+        key = context.get_key(fingerprint.upper())
+
+        if key.owner_trust == gpgme.VALIDITY_UNKNOWN:
+            return VALIDITY_UNKNOWN
+        elif key.owner_trust == gpgme.VALIDITY_NEVER:
+            return VALIDITY_NEVER
+        elif key.owner_trust == gpgme.VALIDITY_MARGINAL:
+            return VALIDITY_MARGINAL
+        elif key.owner_trust == gpgme.VALIDITY_FULL:
+            return VALIDITY_FULL
+        elif key.owner_trust == gpgme.VALIDITY_ULTIMATE:
+            return VALIDITY_ULTIMATE
+        else:
+            return VALIDITY_UNKNOWN
 
     def expires(self, fingerprint, **kwargs):
         context = self.get_context(**kwargs)

@@ -21,6 +21,11 @@ import tempfile
 
 from django.test import TestCase
 
+from gpgmime.base import VALIDITY_FULL
+from gpgmime.base import VALIDITY_MARGINAL
+from gpgmime.base import VALIDITY_NEVER
+from gpgmime.base import VALIDITY_ULTIMATE
+from gpgmime.base import VALIDITY_UNKNOWN
 from gpgmime.gpgme import GpgMeBackend
 
 basedir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -100,6 +105,15 @@ class TestCaseMixin(object):
 
         self.assertEqual(self.backend.import_private_key(user3_priv), user3_fp)
         self.assertEqual(self.backend.decrypt_verify(encrypted), (data, [user1_fp]))
+
+    def test_trust(self):
+        self.assertEqual(self.backend.import_key(user4_pub), user4_fp)
+        self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_UNKNOWN)
+
+        # NOTE: We cannot set VALIDITY_UNKNOWN again
+        for trust in [VALIDITY_FULL, VALIDITY_MARGINAL, VALIDITY_NEVER]:
+            self.backend.set_trust(user4_fp, trust)
+            self.assertEqual(self.backend.get_trust(user4_fp), trust)
 
     def setUp(self):
         self.home = tempfile.mkdtemp()
