@@ -87,13 +87,12 @@ class TestCaseMixin(object):
         self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
         self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
 
-        encrypted = self.backend.encrypt(data, [user1_fp])
-        self.assertEqual(self.decrypt(encrypted), encrypted)
+        encrypted = self.backend.encrypt(data, [user1_fp], always_trust=True)
+        self.assertEqual(self.backend.decrypt(encrypted), data)
 
     def test_sign_encrypt(self):
         data = b'testdata'
         self.assertEqual(self.backend.import_key(user3_pub), user3_fp)
-#        self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
         self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
 
         encrypted = self.backend.sign_encrypt(data, recipients=[user3_fp], signers=[user1_fp],
