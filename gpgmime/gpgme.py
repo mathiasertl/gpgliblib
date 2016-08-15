@@ -108,20 +108,44 @@ class GpgMeBackend(GpgBackendBase):
 
         return self._encrypt(data, recipients, context, always_trust)
 
+    def verify(self, data, signature, **kwargs):
+        context = self.get_context(**kwargs)
+        signatures = context.verify(six.BytesIO(signature), six.BytesIO(data), None)
+
+        errors = list(filter(lambda s: s.status is not None, signatures))
+        if not errors:
+            return [s.fpr for  s in signatures]
+
+    def decrypt(self, data, **kwargs):
+        context = self.get_context(**kwargs)
+        output = six.BytesIO()
+        context.decrypt(six.BytesIO(data), output)
+        return output.getvalue()
+
+    def decrypt_verify(self, data, **kwargs):
+        context = self.get_context(**kwargs)
+        output = six.BytesIO()
+        signatures = context.decrypt_verify(six.BytesIO(data), output)
+
+        errors = list(filter(lambda s: s.status is not None, signatures))
+        if not errors:
+            return output.getvalue(), [s.fpr for  s in signatures]
+
     def import_key(self, data, **kwargs):
         context = self.get_context(**kwargs)
         result = context.import_(six.BytesIO(data))
-        if result.imported >= 1:
+        if len(result.imports) >= 1:
             return result.imports[0][0]
 
     def import_private_key(self, data, **kwargs):
         context = self.get_context(**kwargs)
         result = context.import_(six.BytesIO(data))
-        if result.imported >= 1:
+        if len(result.imports) >= 1:
             return result.imports[0][0]
 
     def expires(self, fingerprint, **kwargs):
         context = self.get_context(**kwargs)
         key = context.get_key(fingerprint.upper())
-        subkeys = {sk.fpr: datetime.fromtimestamp(sk.expires) for sk in key.subkeys}
+        expires = lambda i: datetime.fromtimestamp(i) if i else None
+        subkeys = {sk.fpr: expires(sk.expires) for sk in key.subkeys}
         return subkeys[fingerprint]
