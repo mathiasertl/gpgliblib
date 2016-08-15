@@ -33,6 +33,16 @@ VALIDITY_MARGINAL = 2
 VALIDITY_FULL = 3
 VALIDITY_ULTIMATE = 4
 
+class GpgMimeError(Exception):
+    pass
+
+class GpgKeyNotFoundError(GpgMimeError):
+    pass
+
+
+class GpgUntrustedKeyError(GpgMimeError):
+    pass
+
 
 class GpgBackendBase(object):
     """Base class for all backends.

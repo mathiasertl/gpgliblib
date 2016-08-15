@@ -26,6 +26,8 @@ from gpgmime.base import VALIDITY_MARGINAL
 from gpgmime.base import VALIDITY_NEVER
 from gpgmime.base import VALIDITY_ULTIMATE
 from gpgmime.base import VALIDITY_UNKNOWN
+from gpgmime.base import GpgKeyNotFoundError
+from gpgmime.base import GpgUntrustedKeyError
 from gpgmime.gpgme import GpgMeBackend
 
 basedir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -124,6 +126,19 @@ class TestCaseMixin(object):
             self.backend.set_trust(user4_fp, VALIDITY_UNKNOWN)
 
         self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_FULL)
+
+    def test_encrypt_no_key(self):
+        data = b'testdata'
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.encrypt(data, [user1_fp], always_trust=False)
+
+    def test_encrypt_no_trust(self):
+        data = b'testdata'
+        self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
+        self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
+
+        with self.assertRaises(GpgUntrustedKeyError):
+            self.backend.encrypt(data, [user1_fp], always_trust=False)
 
     def setUp(self):
         self.home = tempfile.mkdtemp()

@@ -22,6 +22,8 @@ import gpgme.editutil
 import six
 
 from .base import GpgBackendBase
+from .base import GpgUntrustedKeyError
+from .base import GpgKeyNotFoundError
 from .base import VALIDITY_UNKNOWN
 from .base import VALIDITY_NEVER
 from .base import VALIDITY_MARGINAL
@@ -78,14 +80,26 @@ class GpgMeBackend(GpgBackendBase):
         return flags
 
     def _encrypt(self, data, recipients, context, always_trust):
-        recipients = [context.get_key(k.upper()) for k in recipients]
+        try:
+            recipients = [context.get_key(k.upper()) for k in recipients]
+        except gpgme.GpgmeError as e:
+            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
+                raise GpgKeyNotFoundError("Key not found.")
+
+            raise
 
         output_bytes = six.BytesIO()
         flags = self._encrypt_flags(always_trust=always_trust)
-        if context.signers:
-            context.encrypt_sign(recipients, flags, six.BytesIO(data), output_bytes)
-        else:
-            context.encrypt(recipients, flags, six.BytesIO(data), output_bytes)
+        try:
+            if context.signers:
+                context.encrypt_sign(recipients, flags, six.BytesIO(data), output_bytes)
+            else:
+                context.encrypt(recipients, flags, six.BytesIO(data), output_bytes)
+        except gpgme.GpgmeError as e:
+            if e.source == gpgme.ERR_SOURCE_UNKNOWN and e.code == gpgme.ERR_GENERAL:
+                raise GpgUntrustedKeyError("Key not trusted.")
+
+            raise
 
         output_bytes.seek(0)
         return output_bytes.getvalue()
@@ -103,7 +117,6 @@ class GpgMeBackend(GpgBackendBase):
     def encrypt(self, data, recipients, **kwargs):
         always_trust = kwargs.pop('always_trust', self._always_trust)
         context = self.get_context(**kwargs)
-
         return self._encrypt(data, recipients, context, always_trust)
 
     def sign_encrypt(self, data, recipients, signers, **kwargs):
