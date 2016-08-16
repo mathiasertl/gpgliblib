@@ -25,8 +25,8 @@ class Command(BaseCommand):
     help = "Send test-emails."
 
     def add_arguments(self, parser):
-        parser.add_argument('--sign', default='0xE8172F2940EA9F709842290870BD9664FA3947CD')
-        parser.add_argument('--encrypt', default='0xE8172F2940EA9F709842290870BD9664FA3947CD')
+        parser.add_argument('--sign', default='E8172F2940EA9F709842290870BD9664FA3947CD')
+        parser.add_argument('--encrypt', default='E8172F2940EA9F709842290870BD9664FA3947CD')
         parser.add_argument('--from', default='mati@fsinf.at')
         parser.add_argument('--to', default='mati@fsinf.at')
 
