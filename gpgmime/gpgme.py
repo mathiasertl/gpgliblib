@@ -73,6 +73,14 @@ class GpgMeBackend(GpgBackendBase):
 
         return context
 
+    def _get_key(self, context, fingerprint):
+        try:
+            return context.get_key(fingerprint.upper())
+        except gpgme.GpgmeError as e:
+            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
+                raise GpgKeyNotFoundError("Key not found.")
+            raise
+
     def _encrypt_flags(self, always_trust=True, **kwargs):
         flags = 0
         if always_trust is True:
@@ -80,13 +88,7 @@ class GpgMeBackend(GpgBackendBase):
         return flags
 
     def _encrypt(self, data, recipients, context, always_trust):
-        try:
-            recipients = [context.get_key(k.upper()) for k in recipients]
-        except gpgme.GpgmeError as e:
-            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
-                raise GpgKeyNotFoundError("Key not found.")
-
-            raise
+        recipients = [self._get_key(context, k) for k in recipients]
 
         output_bytes = six.BytesIO()
         flags = self._encrypt_flags(always_trust=always_trust)
@@ -106,7 +108,7 @@ class GpgMeBackend(GpgBackendBase):
 
     def sign(self, data, signers, **kwargs):
         context = self.get_context(**kwargs)
-        signers = [context.get_key(k.upper()) for k in signers]
+        signers = [self._get_key(context, k) for k in signers]
         context.signers = signers
 
         output_bytes = six.BytesIO()
@@ -122,7 +124,7 @@ class GpgMeBackend(GpgBackendBase):
     def sign_encrypt(self, data, recipients, signers, **kwargs):
         always_trust = kwargs.pop('always_trust', self._always_trust)
         context = self.get_context(**kwargs)
-        signers = [context.get_key(k.upper()) for k in signers]
+        signers = [self._get_key(context, k) for k in signers]
         context.signers = signers
 
         return self._encrypt(data, recipients, context, always_trust)
@@ -164,7 +166,7 @@ class GpgMeBackend(GpgBackendBase):
 
     def set_trust(self, fingerprint, trust, **kwargs):
         context = self.get_context(**kwargs)
-        key = context.get_key(fingerprint.upper())
+        key = self._get_key(context, fingerprint)
 
         if trust == VALIDITY_NEVER:
             trust = gpgme.VALIDITY_NEVER
@@ -181,7 +183,7 @@ class GpgMeBackend(GpgBackendBase):
 
     def get_trust(self, fingerprint, **kwargs):
         context = self.get_context(**kwargs)
-        key = context.get_key(fingerprint.upper())
+        key = self._get_key(context, fingerprint)
 
         if key.owner_trust == gpgme.VALIDITY_UNKNOWN:
             return VALIDITY_UNKNOWN
@@ -198,7 +200,7 @@ class GpgMeBackend(GpgBackendBase):
 
     def expires(self, fingerprint, **kwargs):
         context = self.get_context(**kwargs)
-        key = context.get_key(fingerprint.upper())
+        key = self._get_key(context, fingerprint)
         expires = lambda i: datetime.fromtimestamp(i) if i else None
         subkeys = {sk.fpr: expires(sk.expires) for sk in key.subkeys}
         return subkeys[fingerprint]
