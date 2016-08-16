@@ -122,6 +122,8 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+TESTDATA_DIR = os.path.join(os.path.dirname(BASE_DIR), 'testdata')
+
 try:
     from .localsettings import *
 except ImportError as e:
