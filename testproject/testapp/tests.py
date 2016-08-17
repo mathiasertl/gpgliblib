@@ -67,12 +67,18 @@ class TestCaseMixin(object):
         self.assertEqual(self.backend.import_key(user2_pub), user2_fp)
         self.assertEqual(self.backend.import_key(user2_pub), user2_fp)
 
+    def test_import_malformed_key(self):
+        self.assertIsNone(self.backend.import_key(b'foobar'))
+
     def test_import_private_key(self):
         self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
         self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
 
         self.assertEqual(self.backend.import_private_key(user2_priv), user2_fp)
         self.assertEqual(self.backend.import_private_key(user2_priv), user2_fp)
+
+    def test_import_malformed_private_key(self):
+        self.assertIsNone(self.backend.import_private_key(b'foobar'))
 
     def test_expires(self):
         self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
@@ -89,6 +95,10 @@ class TestCaseMixin(object):
         signature = self.backend.sign(data, [user3_fp])
         self.assertEqual(self.backend.verify(data, signature), [user3_fp])
 
+    def test_sign_unknown_key(self):
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.sign(b'testdata', [user3_fp])
+
     def test_encrypt(self):
         data = b'testdata'
         self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
@@ -96,6 +106,13 @@ class TestCaseMixin(object):
 
         encrypted = self.backend.encrypt(data, [user1_fp], always_trust=True)
         self.assertEqual(self.backend.decrypt(encrypted), data)
+
+    def test_encrypt_unkown_key(self):
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.encrypt(b'foobar', [user1_fp], always_trust=True)
+
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.encrypt(b'foobar', [user1_fp])
 
     def test_sign_encrypt(self):
         data = b'testdata'
@@ -108,12 +125,20 @@ class TestCaseMixin(object):
         self.assertEqual(self.backend.import_private_key(user3_priv), user3_fp)
         self.assertEqual(self.backend.decrypt_verify(encrypted), (data, [user1_fp]))
 
+    def test_sign_encrypt_unknown_key(self):
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signers=[user1_fp])
+
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signers=[user1_fp],
+                                      always_trust=True)
+
     def test_trust(self):
         self.assertEqual(self.backend.import_key(user4_pub), user4_fp)
         self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_UNKNOWN)
 
         # NOTE: We cannot set VALIDITY_UNKNOWN again
-        for trust in [VALIDITY_FULL, VALIDITY_MARGINAL, VALIDITY_NEVER]:
+        for trust in [VALIDITY_FULL, VALIDITY_MARGINAL, VALIDITY_NEVER, VALIDITY_ULTIMATE]:
             self.backend.set_trust(user4_fp, trust)
             self.assertEqual(self.backend.get_trust(user4_fp), trust)
 
@@ -124,6 +149,16 @@ class TestCaseMixin(object):
 
         with self.assertRaises(ValueError):
             self.backend.set_trust(user4_fp, VALIDITY_UNKNOWN)
+
+        self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_FULL)
+
+    def test_set_random_trust(self):
+        self.assertEqual(self.backend.import_key(user4_pub), user4_fp)
+        self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_UNKNOWN)
+        self.backend.set_trust(user4_fp, VALIDITY_FULL)
+
+        with self.assertRaises(ValueError):
+            self.backend.set_trust(user4_fp, 'foobar')
 
         self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_FULL)
 
