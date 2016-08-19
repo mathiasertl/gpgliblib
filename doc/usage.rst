@@ -75,6 +75,27 @@ Django integration
 Since everyone (including me) seems to use `Django <https://www.djangoproject.com/>`_ nowadays,
 this library also integrates with Django.
 
+You can configure caches in settings very similar to how caches are configured::
+
+   GPG_BACKENDS = {
+       'default': {
+           'BACKEND': 'gpgmime.gpgme.GpgMeBackend',
+           # Optional settings:
+           #'HOME': '/home/...',  # Keyring directory
+           #'PATH': '/home/...',  # Path to 'gpg' binary
+           #'ALWAYS_TRUST': True,   # Ignore trust in all operations
+           #'OPTIONS': {...},  # Any custom options for the specific backend implementation
+       },
+   }
+
+Just like with django caches, you can access configured GPG backends::
+
+   >>> from gpgmime.django import gpg_backends
+   >>> gpg_backends['default']
+   <gpgmime.gpgme.GpgMeBackend at 0x...>
+   >>> gpg_backend
+   <gpgmime.django.DefaultGPGProxy at 0x...>
+
 Use :py:class:`~gpgmime.django.GPGEmailMessage` instead of
 `EmailMessage <https://docs.djangoproject.com/en/dev/topics/email/#emailmessage-objects>`_
 objects::
