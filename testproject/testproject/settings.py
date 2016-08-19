@@ -131,6 +131,13 @@ GPG_BACKENDS = {
         'BACKEND': 'gpgmime.gpgme.GpgMeBackend',
         'HOME': KEYRING_DIR,
     },
+    'gnupg': {
+        'BACKEND': 'gpgmime.gnupg.GnuPGBackend',
+        'HOME': KEYRING_DIR,
+        'OPTIONS': {
+            'verbose': True,
+        },
+    },
 }
 
 try:

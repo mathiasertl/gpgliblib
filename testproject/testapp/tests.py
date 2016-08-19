@@ -31,6 +31,7 @@ from gpgmime.base import VALIDITY_UNKNOWN
 from gpgmime.base import GpgKeyNotFoundError
 from gpgmime.base import GpgUntrustedKeyError
 from gpgmime.gpgme import GpgMeBackend
+from gpgmime.gnupg import GnuPGBackend
 
 basedir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 testdatadir = os.path.join(basedir, 'testdata')
@@ -208,3 +209,9 @@ class GpgMeTestCase(TestCaseMixin, TestCase):
     def setUp(self):
         super(GpgMeTestCase, self).setUp()
         self.backend = GpgMeBackend(home=self.home)
+
+
+class GnuPGTestCase(TestCaseMixin, TestCase):
+    def setUp(self):
+        super(GnuPGTestCase, self).setUp()
+        self.backend = GnuPGBackend(home=self.home)
