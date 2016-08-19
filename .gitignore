@@ -7,4 +7,5 @@
 /include/
 /lib/
 /share/
+/testdata/keyring/
 /testproject/testproject/localsettings.py
