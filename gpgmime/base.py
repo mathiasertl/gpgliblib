@@ -139,16 +139,16 @@ class GpgBackendBase(object):
         msg.set_param('protocol', 'application/pgp-encrypted')
         return msg
 
-    def get_octet_stream(self, message, recipients, signers=None, **kwargs):
+    def get_octet_stream(self, message, recipients, signer=None, **kwargs):
         """Get encrypted message from the passt message (helper function).
 
         This function returns the encrypted payload message. The parameters are the same as in
         :py:func:`encrypt_message`.
         """
-        if signers is None:
+        if signer is None:
             encrypted = self.encrypt(message.as_bytes(), recipients, **kwargs)
         else:
-            encrypted = self.sign_encrypt(message.as_bytes(), recipients, signers, **kwargs)
+            encrypted = self.sign_encrypt(message.as_bytes(), recipients, signer, **kwargs)
 
         msg = MIMEApplication(_data=encrypted, _subtype='octet-stream', name='encrypted.asc',
                               _encoder=encode_noop)
@@ -156,7 +156,7 @@ class GpgBackendBase(object):
         msg.add_header('Content-Disposition', 'inline; filename="encrypted.asc"')
         return msg
 
-    def encrypt_message(self, message, recipients, signers=None, **kwargs):
+    def encrypt_message(self, message, recipients, signer=None, **kwargs):
         """Get an encrypted MIME message from the passed message or str.
 
         This function returns a fully encrypted MIME message including a control message and the
@@ -169,15 +169,15 @@ class GpgBackendBase(object):
             Message to encrypt.
         recipients : list of key ids
             List of key ids to encrypt to.
-        signers : list of key ids, optional
-            List of key ids to sign the mssage with.
+        signer : str
+            Key id to sign the message with.
         **kwargs
             Any additional parameters to the GPG backend.
         """
         if isinstance(message, six.string_types):
             message = MIMEText(message)
 
-        msg = self.get_octet_stream(message, recipients, signers, **kwargs)
+        msg = self.get_octet_stream(message, recipients, signer, **kwargs)
         return self.get_encrypted_message(msg)
 
     ###########
@@ -220,14 +220,14 @@ class GpgBackendBase(object):
         msg.set_param('micalg', 'pgp-sha256')  # TODO: Just the current default
         return msg
 
-    def sign_message(self, message, signers, add_cr=True, **kwargs):
+    def sign_message(self, message, signer, add_cr=True, **kwargs):
         """
         message : MIMEBase or str
             Message to encrypt.
         recipients : list of key ids
             List of key ids to encrypt to.
-        signers : list of key ids
-            A list of key identifiers to sign the message with.
+        signer : str
+            Key id to sign the message with.
         add_cr : bool, optional
             Wether or not to replace newlines (``\\n``) with carriage-return/newlines (``\\r\\n``).
             E-Mail messages generally use ``\\r\\n``, so the default is True.
@@ -243,11 +243,11 @@ class GpgBackendBase(object):
             data = data.replace(b'\n', b'\r\n')
 
         # get the gpg signature
-        signature = self.sign(data, signers, **kwargs)
+        signature = self.sign(data, signer, **kwargs)
         signature_msg = self.get_mime_signature(signature)
         return self.get_signed_message(message, signature_msg)
 
-    def sign(self, data, signers, **kwargs):
+    def sign(self, data, signer, **kwargs):
         """Sign passed data with the given keys.
 
         Parameters
@@ -255,8 +255,8 @@ class GpgBackendBase(object):
 
         data : bytes
             The data to sign.
-        signers : list of str
-            A list of full GPG fingerprints (without a ``"0x"`` prefix) to sign the message with.
+        signer : str
+            Key id to sign the message with.
         **kwargs
             Any additional parameters to the GPG backend.
         """
@@ -277,7 +277,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def sign_encrypt(self, data, recipients, signers, **kwargs):
+    def sign_encrypt(self, data, recipients, signer, **kwargs):
         """Sign and encrypt passed data with the given keys.
 
         Parameters
@@ -287,8 +287,8 @@ class GpgBackendBase(object):
             The data to sign.
         recipients : list of str
             A list of full GPG fingerprints (without a ``"0x"`` prefix) to encrypt the message to.
-        signers : list of str
-            A list of full GPG fingerprints (without a ``"0x"`` prefix) to sign the message with.
+        signer : str
+            Key id to sign the message with.
         **kwargs
             Any additional parameters to the GPG backend.
         """

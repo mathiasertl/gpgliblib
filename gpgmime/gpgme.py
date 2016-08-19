@@ -106,10 +106,10 @@ class GpgMeBackend(GpgBackendBase):
         output_bytes.seek(0)
         return output_bytes.getvalue()
 
-    def sign(self, data, signers, **kwargs):
+    def sign(self, data, signer, **kwargs):
         context = self.get_context(**kwargs)
-        signers = [self._get_key(context, k) for k in signers]
-        context.signers = signers
+        signer = self._get_key(context, signer)
+        context.signers = [signer]
 
         output_bytes = six.BytesIO()
         context.sign(six.BytesIO(data), output_bytes, gpgme.SIG_MODE_DETACH)
@@ -121,11 +121,11 @@ class GpgMeBackend(GpgBackendBase):
         context = self.get_context(**kwargs)
         return self._encrypt(data, recipients, context, always_trust)
 
-    def sign_encrypt(self, data, recipients, signers, **kwargs):
+    def sign_encrypt(self, data, recipients, signer, **kwargs):
         always_trust = kwargs.pop('always_trust', self._always_trust)
         context = self.get_context(**kwargs)
-        signers = [self._get_key(context, k) for k in signers]
-        context.signers = signers
+        signer = self._get_key(context, signer)
+        context.signers = [signer]
 
         return self._encrypt(data, recipients, context, always_trust)
 
@@ -135,7 +135,7 @@ class GpgMeBackend(GpgBackendBase):
 
         errors = list(filter(lambda s: s.status is not None, signatures))
         if not errors:
-            return [s.fpr for  s in signatures]
+            return signatures[0].fpr
 
     def decrypt(self, data, **kwargs):
         context = self.get_context(**kwargs)
@@ -150,7 +150,7 @@ class GpgMeBackend(GpgBackendBase):
 
         errors = list(filter(lambda s: s.status is not None, signatures))
         if not errors:
-            return output.getvalue(), [s.fpr for  s in signatures]
+            return output.getvalue(), signatures[0].fpr
 
     def import_key(self, data, **kwargs):
         context = self.get_context(**kwargs)

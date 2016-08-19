@@ -83,10 +83,10 @@ class GnuPGBackend(GpgBackendBase):
 
         return gnupg.GPG(**gnupg_kwargs)
 
-    def sign(self, data, signers, **kwargs):
+    def sign(self, data, signer, **kwargs):
         gpg = self.get_gpg(**kwargs)
 
-        result = gpg.sign(data, keyid=signers[0], detach=True)
+        result = gpg.sign(data, keyid=signer, detach=True)
         if not result.data:  # signing does not provide status or ok :-(
             raise GpgKeyNotFoundError()
         return result.data
@@ -104,10 +104,10 @@ class GnuPGBackend(GpgBackendBase):
                 raise GpgMimeError("Unknown error: %s" % result.status)
         return result.data
 
-    def sign_encrypt(self, data, recipients, signers, **kwargs):
+    def sign_encrypt(self, data, recipients, signer, **kwargs):
         always_trust = kwargs.pop('always_trust', self._always_trust)
         gpg = self.get_gpg(**kwargs)
-        result = gpg.encrypt(data, recipients, sign=signers[0], always_trust=always_trust)
+        result = gpg.encrypt(data, recipients, sign=signer, always_trust=always_trust)
         if result.ok is False:
             if result.status in ['invalid recipient', '']:
                 raise GpgKeyNotFoundError
@@ -128,7 +128,7 @@ class GnuPGBackend(GpgBackendBase):
             os.remove(path)
 
         if verified:
-            return [verified.fingerprint]
+            return verified.fingerprint
 
     def decrypt(self, data, **kwargs):
         always_trust = kwargs.pop('always_trust', self._always_trust)
@@ -140,7 +140,7 @@ class GnuPGBackend(GpgBackendBase):
         always_trust = kwargs.pop('always_trust', self._always_trust)
         gpg = self.get_gpg(**kwargs)
         result = gpg.decrypt(data, always_trust=always_trust)
-        return result.data, [result.fingerprint]
+        return result.data, result.fingerprint
 
     def import_key(self, data, **kwargs):
         gpg = self.get_gpg(**kwargs)

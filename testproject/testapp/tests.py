@@ -115,12 +115,12 @@ class TestCaseMixin(object):
         self.assertEqual(self.backend.import_key(user3_pub), user3_fp)
         self.assertEqual(self.backend.import_private_key(user3_priv), user3_fp)
 
-        signature = self.backend.sign(data, [user3_fp])
-        self.assertEqual(self.backend.verify(data, signature), [user3_fp])
+        signature = self.backend.sign(data, user3_fp)
+        self.assertEqual(self.backend.verify(data, signature), user3_fp)
 
     def test_sign_unknown_key(self):
         with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.sign(b'testdata', [user3_fp])
+            self.backend.sign(b'testdata', user3_fp)
 
     def test_encrypt(self):
         data = b'testdata'
@@ -142,18 +142,18 @@ class TestCaseMixin(object):
         self.assertEqual(self.backend.import_key(user3_pub), user3_fp)
         self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
 
-        encrypted = self.backend.sign_encrypt(data, recipients=[user3_fp], signers=[user1_fp],
+        encrypted = self.backend.sign_encrypt(data, recipients=[user3_fp], signer=user1_fp,
                                               always_trust=True)
 
         self.assertEqual(self.backend.import_private_key(user3_priv), user3_fp)
-        self.assertEqual(self.backend.decrypt_verify(encrypted), (data, [user1_fp]))
+        self.assertEqual(self.backend.decrypt_verify(encrypted), (data, user1_fp))
 
     def test_sign_encrypt_unknown_key(self):
         with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signers=[user1_fp])
+            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signer=user1_fp)
 
         with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signers=[user1_fp],
+            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signer=user1_fp,
                                       always_trust=True)
 
     def test_trust(self):
