@@ -36,6 +36,6 @@ Django integration
 .. autodata:: gpgmime.django.gpg_backend
    :annotation:
 
-.. autoclass:: gpgmime.django.GPGEmailMessage
+.. autoclass:: gpgmime.django.GpgEmailMessage
    :members:
 

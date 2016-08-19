@@ -102,16 +102,16 @@ Just like with django caches, you can access configured GPG backends::
    >>> gpg_backend
    <gpgmime.django.DefaultGPGProxy at 0x...>
 
-Use :py:class:`~gpgmime.django.GPGEmailMessage` instead of
+Use :py:class:`~gpgmime.django.GpgEmailMessage` instead of
 `EmailMessage <https://docs.djangoproject.com/en/dev/topics/email/#emailmessage-objects>`_
 objects::
 
    >>> from gpgmime import gpgme
-   >>> from gpgmime.django import GPGEmailMessage
+   >>> from gpgmime.django import GpgEmailMessage
 
    >>> backend = gpgme.GpgMeBackend()
    >>> fingerprint = 'E8172F2940EA9F709842290870BD9664FA3947CD'
 
-   >>> msg = GPGEmailMessage(subject='subject', ...,
+   >>> msg = GpgEmailMessage(subject='subject', ...,
                              gpg_recipients=[fingerprint], gpg_signers=[fingerprint])
    >>> msg.send()

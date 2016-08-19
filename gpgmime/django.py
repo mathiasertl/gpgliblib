@@ -111,7 +111,7 @@ class DefaultGPGProxy(object):
 gpg_backend = DefaultGPGProxy()
 
 
-class GPGEmailMessage(EmailMultiAlternatives):
+class GpgEmailMessage(EmailMultiAlternatives):
     """Email message that allows you to sign/encrypt messages upon calling ``send()``.
 
     All parameters are optional. if neither ``gpg_signers`` nor ``gpg_recipients`` is passed, the
@@ -151,7 +151,7 @@ class GPGEmailMessage(EmailMultiAlternatives):
             self.mixed_subtype = 'signed'
             self.alternative_subtype = 'signed'
 
-        super(GPGEmailMessage, self).__init__(*args, **kwargs)
+        super(GpgEmailMessage, self).__init__(*args, **kwargs)
 
     def get_backend(self):
         return self.gpg_backend
@@ -236,7 +236,7 @@ class GPGEmailMessage(EmailMultiAlternatives):
         return gpg_msg
 
     def message(self):
-        orig_msg = super(GPGEmailMessage, self).message()
+        orig_msg = super(GpgEmailMessage, self).message()
 
         if self.encrypted:
             return self.encrypt_message(orig_msg)

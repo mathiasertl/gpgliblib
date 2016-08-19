@@ -43,7 +43,7 @@ class Command(BaseCommand):
         ##########################
 
         # only sign
-        msg = django.GPGEmailMessage(
+        msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='non-multipart, signed',
             body='non-multipart, signed',
             gpg_backend=backend, gpg_signers=sign)
@@ -51,7 +51,7 @@ class Command(BaseCommand):
         msg.send()
 
         # only encrypt
-        msg = django.GPGEmailMessage(
+        msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='non-multipart, encrypted',
             body='non-multipart, encrypted',
             gpg_backend=backend, gpg_recipients=encrypt)
@@ -59,7 +59,7 @@ class Command(BaseCommand):
         msg.send()
 
         # sign and encrypt
-        msg = django.GPGEmailMessage(
+        msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='non-multipart, signed/encrypted',
             body='non-multipart, signed/encrypted',
             gpg_backend=backend, gpg_recipients=encrypt, gpg_signers=sign)
@@ -70,7 +70,7 @@ class Command(BaseCommand):
         # Multipart messages #
         ######################
         # only sign
-        msg = django.GPGEmailMessage(
+        msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='multipart, signed',
             body='multipart, signed',
             gpg_backend=backend, gpg_signers=sign)
@@ -79,7 +79,7 @@ class Command(BaseCommand):
         msg.send()
 
         # only encrypt
-        msg = django.GPGEmailMessage(
+        msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='multipart, encrypted',
             body='multipart, encrypted',
             gpg_backend=backend, gpg_recipients=encrypt)
@@ -88,7 +88,7 @@ class Command(BaseCommand):
         msg.send()
 
         # sign and encrypt
-        msg = django.GPGEmailMessage(
+        msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='multipart, signed/encrypted',
             body='multipart, signed/encrypted',
             gpg_backend=backend, gpg_recipients=encrypt, gpg_signers=sign)
