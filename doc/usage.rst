@@ -113,5 +113,5 @@ objects::
    >>> fingerprint = 'E8172F2940EA9F709842290870BD9664FA3947CD'
 
    >>> msg = GpgEmailMessage(subject='subject', ...,
-                             gpg_recipients=[fingerprint], gpg_signers=[fingerprint])
+   ...     gpg_recipients=[fingerprint], gpg_signers=[fingerprint])
    >>> msg.send()
