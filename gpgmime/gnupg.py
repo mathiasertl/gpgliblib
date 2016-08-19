@@ -118,7 +118,7 @@ class GnuPGBackend(GpgBackendBase):
         fd, path = tempfile.mkstemp()
 
         try:
-            # write data to temporary file
+            # write data to temporary file (cannot use an in-memory stream :-()
             stream = os.fdopen(fd, mode='wb')
             stream.write(signature)
             stream.flush()
