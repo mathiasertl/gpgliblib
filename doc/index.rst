@@ -13,6 +13,7 @@ Contents:
 
    usage
    backends
+   api
    development
    testing
 

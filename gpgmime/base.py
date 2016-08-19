@@ -34,13 +34,19 @@ VALIDITY_FULL = 3
 VALIDITY_ULTIMATE = 4
 
 class GpgMimeError(Exception):
+    """Base class for all exceptions."""
+
     pass
 
 class GpgKeyNotFoundError(GpgMimeError):
+    """Thrown when a key was not found."""
+
     pass
 
 
 class GpgUntrustedKeyError(GpgMimeError):
+    """Thrown when a given key was not trusted."""
+
     pass
 
 

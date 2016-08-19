@@ -5,12 +5,12 @@ Development
 To develop your own backend, simply subclass :py:class:`~gpgmime.base.GpgBackendBase`
 and implement these functions:
 
-* :py:class:`~gpgmime.base.GpgBackendBase.sign`
-* :py:class:`~gpgmime.base.GpgBackendBase.encrypt`
-* :py:class:`~gpgmime.base.GpgBackendBase.sign_encrypt`
-* :py:class:`~gpgmime.base.GpgBackendBase.import_key`
-* :py:class:`~gpgmime.base.GpgBackendBase.import_private_key`
-* :py:class:`~gpgmime.base.GpgBackendBase.expires`
+* :py:func:`~gpgmime.base.GpgBackendBase.sign`
+* :py:func:`~gpgmime.base.GpgBackendBase.encrypt`
+* :py:func:`~gpgmime.base.GpgBackendBase.sign_encrypt`
+* :py:func:`~gpgmime.base.GpgBackendBase.import_key`
+* :py:func:`~gpgmime.base.GpgBackendBase.import_private_key`
+* :py:func:`~gpgmime.base.GpgBackendBase.expires`
 
 The constructor should take at least the same parameters as GpgBackendBase. Remember that any
 function may pass ``**kwargs`` to override any option passed to the constructor. For example,
@@ -25,8 +25,3 @@ directories::
 
    # This should use the other keyring
    >>> backend.sign(b'bar', ['0x1234...'], home='/usr/local/other-keyring')
-
-You might want to read existing implementations on how to implement this best.
-
-.. autoclass:: gpgmime.base.GpgBackendBase
-   :members:

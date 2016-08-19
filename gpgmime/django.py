@@ -77,6 +77,9 @@ class GPGHandler(object):
     def all(self):
         return getattr(self._backends, 'backends', {}).values()
 
+#: You can access the backends configured in the GPG_BACKENDS setting through this dict-like
+#: object. This works just like `django.core.cache.caches
+#: <https://docs.djangoproject.com/en/dev/topics/cache/#accessing-the-cache>`_.
 gpg_backends = GPGHandler()
 
 
@@ -104,6 +107,7 @@ class DefaultGPGProxy(object):
         return gpg_backends[DEFAULT_BACKEND_ALIAS] != other
 
 
+#: A shortcut to access the default cache.
 gpg_backend = DefaultGPGProxy()
 
 
