@@ -2,9 +2,15 @@
 Testing
 #######
 
-Since there isn't any way to automatically test PGP/MIME messages, there is no
-automated test-suite. You can create sample data and manually test them with an
-email client.
+There is an automated test-suite to test the functions that should be
+implemented by a GPG backend (signing, encrypting, ...). In the ``testproject``
+directory, do::
+
+   python manage.py test
+
+Since there isn't any library to test PGP/MIME messages, there is no automated
+test-suite for the generation of messages. You can create sample data and
+manually test them with an email client.
 
 ************
 Raw backends
