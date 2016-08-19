@@ -154,6 +154,8 @@ class GpgEmailMessage(EmailMultiAlternatives):
         super(GpgEmailMessage, self).__init__(*args, **kwargs)
 
     def get_backend(self):
+        if self.gpg_backend is None:
+            return gpg_backend
         return self.gpg_backend
 
     def get_base_message(self, message):
