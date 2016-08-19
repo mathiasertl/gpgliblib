@@ -250,8 +250,12 @@ class GpgEmailMessage(EmailMultiAlternatives):
 
     @property
     def signed(self):
-        return bool(self.gpg_signers or (self.gpg_context and self.gpg_context.signers))
+        """True if this message will be signed."""
+
+        return bool(self.gpg_signers)
 
     @property
     def encrypted(self):
+        """True if this message will be encrypted."""
+
         return bool(self.gpg_recipients)
