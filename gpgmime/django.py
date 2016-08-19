@@ -112,6 +112,28 @@ gpg_backend = DefaultGPGProxy()
 
 
 class GPGEmailMessage(EmailMultiAlternatives):
+    """Email message that allows you to sign/encrypt messages upon calling ``send()``.
+
+    All parameters are optional. if neither ``gpg_signers`` nor ``gpg_recipients`` is passed, the
+    message will be sent unchanged.
+
+    Parameters
+    ----------
+
+    gpg_signers : list of str
+        List of fingerprints to sign the message with.
+    gpg_recipients : list of str, optional
+        List of fingerprints to encrypt the message to.
+    gpg_backend : :py:class:`gpgmime.base.GpgBackendBase`, optional
+        Use a different GPG backend. The default is :py:data:`gpgmime.django.gpg_backend`.
+    gpg_home : str, optional
+        Override the path to the keyring used.
+    gpg_path : str, optional
+        Override the path to the ``gpg`` binary used.
+    gpg_always_trust : bool
+        Pass to ``True`` to trust all keys.
+    """
+
     def __init__(self, *args, **kwargs):
         self.gpg_signers = kwargs.pop('gpg_signers', None)
         self.gpg_recipients = kwargs.pop('gpg_recipients', None)

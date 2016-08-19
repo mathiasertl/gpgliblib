@@ -39,6 +39,12 @@ If you are handling basic MIME messages (from pythons `email.mime
    # add various headers...
    >>> msg.add_header('From', 'user@example.com')
 
+All functions also allow you to override parameters (usually passed to the constructor) on a
+per-function call basis. E.g. If you want to use a different keyring for an already configured
+backend, you could do::
+
+   >>> backend.sign_message(..., home='/home/other-dir'/)
+
 ************************
 Key management functions
 ************************
