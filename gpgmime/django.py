@@ -15,9 +15,96 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from threading import local
+
+from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail import SafeMIMEMultipart
 from django.core.mail import SafeMIMEText
+from django.utils.module_loading import import_string
+
+DEFAULT_BACKEND_ALIAS = 'default'
+
+
+def _create_backend(backend, **kwargs):
+    try:
+        # Try to get the GPG_BACKENDS entry for the given backend name first
+        try:
+            conf = settings.GPG_BACKENDS[backend]
+        except (KeyError, AttributeError) as e:
+            raise ImproperlyConfigured("Could not find backend '%s': %s" % (backend, e))
+        else:
+            params = conf.copy()
+            params.update(kwargs)
+            backend = params.pop('BACKEND')
+
+            kwargs = params.pop('OPTIONS', {})
+            kwargs['home'] = params.pop('HOME', None)
+            kwargs['path'] = params.pop('PATH', None)
+            kwargs['always_trust'] = params.pop('ALWAYS_TRUST', False)
+
+        backend_cls = import_string(backend)
+    except ImportError as e:
+        raise ImproperlyConfigured("Could not find backend '%s': %s" % (backend, e))
+    return backend_cls(**kwargs)
+
+
+class GPGHandler(object):
+    """A GPG Handler to manage access to GPGBackend instances.
+
+    Ensures only one instance of each alias exists per thread.
+    """
+    def __init__(self):
+        self._backends = local()
+
+    def __getitem__(self, alias):
+        try:
+            return self._backends.backends[alias]
+        except AttributeError:
+            self._backends.backends = {}
+        except KeyError:
+            pass
+
+        if alias not in settings.GPG_BACKENDS:
+            raise ImproperlyConfigured(
+                "Could not find config for '%s' in settings.GPG_BACKENDS" % alias)
+
+        backend = _create_backend(alias)
+        self._backends.backends[alias] = backend
+        return backend
+
+    def all(self):
+        return getattr(self._backends, 'backends', {}).values()
+
+gpg_backends = GPGHandler()
+
+
+class DefaultGPGProxy(object):
+    """Proxy access to the default Cache object's attributes.
+
+    This allows the `gpg_backend` object to be thread-safe using the ``gpg_backends`` API.
+    """
+    def __getattr__(self, name):
+        return getattr(gpg_backends[DEFAULT_BACKEND_ALIAS], name)
+
+    def __setattr__(self, name, value):
+        return setattr(gpg_backends[DEFAULT_BACKEND_ALIAS], name, value)
+
+    def __delattr__(self, name):
+        return delattr(gpg_backends[DEFAULT_BACKEND_ALIAS], name)
+
+    def __contains__(self, key):
+        return key in gpg_backends[DEFAULT_BACKEND_ALIAS]
+
+    def __eq__(self, other):
+        return gpg_backends[DEFAULT_BACKEND_ALIAS] == other
+
+    def __ne__(self, other):
+        return gpg_backends[DEFAULT_BACKEND_ALIAS] != other
+
+
+gpg_backend = DefaultGPGProxy()
 
 
 class GPGEmailMessage(EmailMultiAlternatives):
@@ -140,5 +227,3 @@ class GPGEmailMessage(EmailMultiAlternatives):
     @property
     def encrypted(self):
         return bool(self.gpg_recipients)
-
-

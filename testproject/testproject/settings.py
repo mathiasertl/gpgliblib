@@ -122,7 +122,16 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-TESTDATA_DIR = os.path.join(os.path.dirname(BASE_DIR), 'testdata')
+ROOT_DIR = os.path.dirname(BASE_DIR)
+TESTDATA_DIR = os.path.join(ROOT_DIR, 'testdata')
+KEYRING_DIR = os.path.join(TESTDATA_DIR, 'keyring')
+
+GPG_BACKENDS = {
+    'default': {
+        'BACKEND': 'gpgmime.gpgme.GpgMeBackend',
+        'HOME': KEYRING_DIR,
+    },
+}
 
 try:
     from .localsettings import *
