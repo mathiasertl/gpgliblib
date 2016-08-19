@@ -76,44 +76,44 @@ with open(os.path.join(testdatadir, '%s.pub' % expired_fp), 'rb') as stream:
 
 class TestCaseMixin(object):
     def test_import_key(self):
-        self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
-        self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
+        self.assertEqual(self.backend.import_key(user1_pub), [user1_fp])
+        self.assertEqual(self.backend.import_key(user1_pub), [user1_fp])
 
-        self.assertEqual(self.backend.import_key(user2_pub), user2_fp)
-        self.assertEqual(self.backend.import_key(user2_pub), user2_fp)
+        self.assertEqual(self.backend.import_key(user2_pub), [user2_fp])
+        self.assertEqual(self.backend.import_key(user2_pub), [user2_fp])
 
     def test_import_malformed_key(self):
-        self.assertIsNone(self.backend.import_key(b'foobar'))
+        self.assertEqual(self.backend.import_key(b'foobar'), [])
 
     def test_import_private_key(self):
-        self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
-        self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
+        self.assertEqual(self.backend.import_private_key(user1_priv), [user1_fp, user1_fp])
+        self.assertEqual(self.backend.import_private_key(user1_priv), [user1_fp])
 
-        self.assertEqual(self.backend.import_private_key(user2_priv), user2_fp)
-        self.assertEqual(self.backend.import_private_key(user2_priv), user2_fp)
+        self.assertEqual(self.backend.import_private_key(user2_priv), [user2_fp, user2_fp])
+        self.assertEqual(self.backend.import_private_key(user2_priv), [user2_fp])
 
     def test_import_malformed_private_key(self):
-        self.assertIsNone(self.backend.import_private_key(b'foobar'))
+        self.assertEqual(self.backend.import_private_key(b'foobar'), [])
 
     def test_no_expires(self):
-        self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
+        self.assertEqual(self.backend.import_key(user1_pub), [user1_fp])
         self.assertIsNone(self.backend.expires(user1_fp))
 
     def test_expires(self):
-        self.assertEqual(self.backend.import_key(expires_pub), expires_fp)
+        self.assertEqual(self.backend.import_key(expires_pub), [expires_fp])
         self.assertEqual(self.backend.expires(expires_fp),
                          datetime(2046, 8, 12, 7, 53, 29))
 
     def test_expired(self):
-        self.assertEqual(self.backend.import_key(expired_pub), expired_fp)
+        self.assertEqual(self.backend.import_key(expired_pub), [expired_fp])
         self.assertEqual(self.backend.expires(expired_fp),
                          datetime(2016, 8, 20, 7, 56, 25))
 
     def test_sign(self):
         data = b'testdata'
 
-        self.assertEqual(self.backend.import_key(user3_pub), user3_fp)
-        self.assertEqual(self.backend.import_private_key(user3_priv), user3_fp)
+        self.assertEqual(self.backend.import_key(user3_pub), [user3_fp])
+        self.assertEqual(self.backend.import_private_key(user3_priv), [user3_fp, user3_fp])
 
         signature = self.backend.sign(data, user3_fp)
         self.assertEqual(self.backend.verify(data, signature), user3_fp)
@@ -124,8 +124,8 @@ class TestCaseMixin(object):
 
     def test_encrypt(self):
         data = b'testdata'
-        self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
-        self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
+        self.assertEqual(self.backend.import_key(user1_pub), [user1_fp])
+        self.assertEqual(self.backend.import_private_key(user1_priv), [user1_fp, user1_fp])
 
         encrypted = self.backend.encrypt(data, [user1_fp], always_trust=True)
         self.assertEqual(self.backend.decrypt(encrypted), data)
@@ -139,13 +139,13 @@ class TestCaseMixin(object):
 
     def test_sign_encrypt(self):
         data = b'testdata'
-        self.assertEqual(self.backend.import_key(user3_pub), user3_fp)
-        self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
+        self.assertEqual(self.backend.import_key(user3_pub), [user3_fp])
+        self.assertEqual(self.backend.import_private_key(user1_priv), [user1_fp, user1_fp])
 
         encrypted = self.backend.sign_encrypt(data, recipients=[user3_fp], signer=user1_fp,
                                               always_trust=True)
 
-        self.assertEqual(self.backend.import_private_key(user3_priv), user3_fp)
+        self.assertEqual(self.backend.import_private_key(user3_priv), [user3_fp, user3_fp])
         self.assertEqual(self.backend.decrypt_verify(encrypted), (data, user1_fp))
 
     def test_sign_encrypt_unknown_key(self):
@@ -157,7 +157,7 @@ class TestCaseMixin(object):
                                       always_trust=True)
 
     def test_trust(self):
-        self.assertEqual(self.backend.import_key(user4_pub), user4_fp)
+        self.assertEqual(self.backend.import_key(user4_pub), [user4_fp])
         self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_UNKNOWN)
 
         # NOTE: We cannot set VALIDITY_UNKNOWN again
@@ -166,7 +166,7 @@ class TestCaseMixin(object):
             self.assertEqual(self.backend.get_trust(user4_fp), trust)
 
     def test_set_unknown_trust(self):
-        self.assertEqual(self.backend.import_key(user4_pub), user4_fp)
+        self.assertEqual(self.backend.import_key(user4_pub), [user4_fp])
         self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_UNKNOWN)
         self.backend.set_trust(user4_fp, VALIDITY_FULL)
 
@@ -176,7 +176,7 @@ class TestCaseMixin(object):
         self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_FULL)
 
     def test_set_random_trust(self):
-        self.assertEqual(self.backend.import_key(user4_pub), user4_fp)
+        self.assertEqual(self.backend.import_key(user4_pub), [user4_fp])
         self.assertEqual(self.backend.get_trust(user4_fp), VALIDITY_UNKNOWN)
         self.backend.set_trust(user4_fp, VALIDITY_FULL)
 
@@ -192,8 +192,8 @@ class TestCaseMixin(object):
 
     def test_encrypt_no_trust(self):
         data = b'testdata'
-        self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
-        self.assertEqual(self.backend.import_private_key(user1_priv), user1_fp)
+        self.assertEqual(self.backend.import_key(user1_pub), [user1_fp])
+        self.assertEqual(self.backend.import_private_key(user1_priv), [user1_fp, user1_fp])
 
         with self.assertRaises(GpgUntrustedKeyError):
             self.backend.encrypt(data, [user1_fp], always_trust=False)

@@ -145,14 +145,12 @@ class GnuPGBackend(GpgBackendBase):
     def import_key(self, data, **kwargs):
         gpg = self.get_gpg(**kwargs)
         result = gpg.import_keys(data)
-        if len(result.fingerprints) >= 1:
-            return result.fingerprints[0]
+        return result.fingerprints
 
     def import_private_key(self, data, **kwargs):
         gpg = self.get_gpg(**kwargs)
         result = gpg.import_keys(data)
-        if len(result.fingerprints) >= 1:
-            return result.fingerprints[0]
+        return result.fingerprints
 
     def set_trust(self, fingerprint, trust, **kwargs):
         gpg = self.get_gpg(**kwargs)

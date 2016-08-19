@@ -155,14 +155,12 @@ class GpgMeBackend(GpgBackendBase):
     def import_key(self, data, **kwargs):
         context = self.get_context(**kwargs)
         result = context.import_(six.BytesIO(data))
-        if len(result.imports) >= 1:
-            return result.imports[0][0]
+        return [r[0] for r in result.imports]
 
     def import_private_key(self, data, **kwargs):
         context = self.get_context(**kwargs)
         result = context.import_(six.BytesIO(data))
-        if len(result.imports) >= 1:
-            return result.imports[0][0]
+        return [r[0] for r in result.imports]
 
     def set_trust(self, fingerprint, trust, **kwargs):
         context = self.get_context(**kwargs)
