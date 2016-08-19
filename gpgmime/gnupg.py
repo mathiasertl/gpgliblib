@@ -46,8 +46,11 @@ class GnuPGBackend(GpgBackendBase):
     Paraemters
     ----------
     verbose : bool, optional
-    use_agent : bool, False
+        Print additional information to the command line.
+    use_agent : bool, optional
+        If ``True``, gpg will be invoked with ``--use-agent``.
     options : list of str
+        A list of strings representing additional keyword arguments.
     """
 
     def __init__(self, verbose=False, use_agent=False, options=None, **kwargs):
@@ -64,6 +67,7 @@ class GnuPGBackend(GpgBackendBase):
         # Set home and path for this context, if requested
         path = kwargs.get('path', self._path)
         home = kwargs.get('home', self._home)
+        options = kwargs.get('options', self._options)
 
         gnupg_kwargs = {}
         if home:
@@ -74,8 +78,8 @@ class GnuPGBackend(GpgBackendBase):
             gnupg_kwargs['verbose'] = True
         if self._use_agent or kwargs.get('use_agent'):
             gnupg_kwargs['use_agent'] = True
-        if self._options or kwargs.get('options'):
-            gnupg_kwargs['options'] = self._options
+        if options:
+            gnupg_kwargs['options'] = options
 
         return gnupg.GPG(**gnupg_kwargs)
 
@@ -172,10 +176,7 @@ class GnuPGBackend(GpgBackendBase):
 
     def get_trust(self, fingerprint, **kwargs):
         gpg = self.get_gpg(**kwargs)
-        key = gpg.list_keys(keys=fingerprint)[0]
-
-        #TODO
-        trust = key['ownertrust']
+        trust = gpg.list_keys(keys=fingerprint)[0]['ownertrust']
 
         if trust == '-':
             return VALIDITY_UNKNOWN
@@ -188,7 +189,6 @@ class GnuPGBackend(GpgBackendBase):
         elif trust == 'u':
             return VALIDITY_ULTIMATE
         else:
-            print('trust: %s, %s' % (key['trust'], key['ownertrust']))
             return VALIDITY_UNKNOWN
 
     def expires(self, fingerprint, **kwargs):
