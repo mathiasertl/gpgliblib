@@ -19,6 +19,8 @@ import os
 import shutil
 import tempfile
 
+from datetime import datetime
+
 from django.test import TestCase
 
 from gpgmime.base import VALIDITY_FULL
@@ -58,6 +60,18 @@ with open(os.path.join(testdatadir, '%s.priv' % user4_fp), 'rb') as stream:
 with open(os.path.join(testdatadir, '%s.pub' % user4_fp), 'rb') as stream:
     user4_pub = stream.read()
 
+expires_fp = '4C443E9B262ECB73835730DAA9711516C8D705FC'
+with open(os.path.join(testdatadir, '%s.priv' % expires_fp), 'rb') as stream:
+    expires_priv = stream.read()
+with open(os.path.join(testdatadir, '%s.pub' % expires_fp), 'rb') as stream:
+    expires_pub = stream.read()
+
+expired_fp = '122E23C2717B7BCE1AB3E11B6FBC070283C802AB'
+with open(os.path.join(testdatadir, '%s.priv' % expired_fp), 'rb') as stream:
+    expired_priv = stream.read()
+with open(os.path.join(testdatadir, '%s.pub' % expired_fp), 'rb') as stream:
+    expired_pub = stream.read()
+
 
 class TestCaseMixin(object):
     def test_import_key(self):
@@ -80,11 +94,19 @@ class TestCaseMixin(object):
     def test_import_malformed_private_key(self):
         self.assertIsNone(self.backend.import_private_key(b'foobar'))
 
-    def test_expires(self):
+    def test_no_expires(self):
         self.assertEqual(self.backend.import_key(user1_pub), user1_fp)
         self.assertIsNone(self.backend.expires(user1_fp))
 
-        # TODO: Test a key that actually does expire
+    def test_expires(self):
+        self.assertEqual(self.backend.import_key(expires_pub), expires_fp)
+        self.assertEqual(self.backend.expires(expires_fp),
+                         datetime(2046, 8, 12, 7, 53, 29))
+
+    def test_expired(self):
+        self.assertEqual(self.backend.import_key(expired_pub), expired_fp)
+        self.assertEqual(self.backend.expires(expired_fp),
+                         datetime(2016, 8, 20, 7, 56, 25))
 
     def test_sign(self):
         data = b'testdata'
