@@ -212,6 +212,20 @@ class TestCaseMixin(object):
         finally:
             shutil.rmtree(home)
 
+    def test_default_trust(self):
+        data = b'testdata'
+        self.assertEqual(self.backend.import_key(user1_pub), [user1_fp])
+        self.assertEqual(self.backend.import_private_key(user1_priv), [user1_fp, user1_fp])
+
+        with self.assertRaises(GpgUntrustedKeyError):
+            self.backend.encrypt(data, [user1_fp])
+
+        with self.backend.settings(default_trust=True) as backend:
+            backend.encrypt(data, [user1_fp])
+
+            with self.assertRaises(GpgUntrustedKeyError):
+                self.backend.encrypt(data, [user1_fp], always_trust=False)
+
     def __exit__(self, *args, **kwargs):
         print(args, kwargs)
 
