@@ -15,6 +15,7 @@
 
 from __future__ import unicode_literals, absolute_import
 
+from contextlib import contextmanager
 from email.encoders import encode_noop
 from email.mime.application import MIMEApplication
 
@@ -112,6 +113,22 @@ class GpgBackendBase(object):
         url = '%s/pks/lookup?%s' % (keyserver, urlencode(params))
         response = urlopen(url, **kwargs)
         return response.read().strip()
+
+    def get_settings(self):
+        return {
+            'home': self._home,
+            'path': self._path,
+            'always_trust': self._always_trust,
+        }
+
+    @contextmanager
+    def settings(self, **kwargs):
+        my_settings = self.get_settings()
+        my_settings.update(kwargs)
+        yield self.__class__(**my_settings)
+
+    def __exit__(self, *args, **kwargs):
+        print(args, kwargs)
 
     ##############
     # Encrypting #

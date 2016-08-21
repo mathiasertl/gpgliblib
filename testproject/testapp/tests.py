@@ -198,6 +198,23 @@ class TestCaseMixin(object):
         with self.assertRaises(GpgUntrustedKeyError):
             self.backend.encrypt(data, [user1_fp], always_trust=False)
 
+    def test_settings(self):
+        data = b'testdata'
+        self.assertEqual(self.backend.import_key(user1_pub), [user1_fp])
+        self.assertEqual(self.backend.import_private_key(user1_priv), [user1_fp, user1_fp])
+
+        home = tempfile.mkdtemp()
+
+        try:
+            with self.assertRaises(GpgKeyNotFoundError):
+                with self.backend.settings(home=home) as backend:
+                    backend.encrypt(data, [user1_fp], always_trust=False)
+        finally:
+            shutil.rmtree(home)
+
+    def __exit__(self, *args, **kwargs):
+        print(args, kwargs)
+
     def setUp(self):
         self.home = tempfile.mkdtemp()
 
