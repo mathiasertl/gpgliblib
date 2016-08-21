@@ -67,14 +67,14 @@ class GpgBackendBase(object):
         Path to the ``gpg`` binary. The default is whatever the library uses (usually the first
         instance found in your PATH) and may be ignored on backends that do not use the binary
         directly.
-    always_trust : bool, optional
-        Wether to always trust keys when encrypting. The default is ``False``.
+    default_trust : bool, optional
+        If ``True``, the backend will trust all keys by default.
     """
 
-    def __init__(self, home=None, path=None, always_trust=False):
+    def __init__(self, home=None, path=None, default_trust=False):
         self._home = home
         self._path = path
-        self._always_trust = always_trust
+        self._default_trust = default_trust
 
     def fetch_key(self, search, keyserver='http://pool.sks-keyservers.net:11371', **kwargs):
         """Fetch a key from the given keyserver.
@@ -118,7 +118,7 @@ class GpgBackendBase(object):
         return {
             'home': self._home,
             'path': self._path,
-            'always_trust': self._always_trust,
+            'default_trust': self._default_trust,
         }
 
     @contextmanager
@@ -126,9 +126,6 @@ class GpgBackendBase(object):
         my_settings = self.get_settings()
         my_settings.update(kwargs)
         yield self.__class__(**my_settings)
-
-    def __exit__(self, *args, **kwargs):
-        print(args, kwargs)
 
     ##############
     # Encrypting #
@@ -228,8 +225,6 @@ class GpgBackendBase(object):
             MIME message that is signed by the signature.
         signature : MIMEBase
             MIME message containing the signature.
-        **kwargs
-            Any additional parameters to the GPG backend.
         """
 
         msg = MIMEMultipart(_subtype='signed', _subparts=[message, signature])
@@ -237,7 +232,7 @@ class GpgBackendBase(object):
         msg.set_param('micalg', 'pgp-sha256')  # TODO: Just the current default
         return msg
 
-    def sign_message(self, message, signer, add_cr=True, **kwargs):
+    def sign_message(self, message, signer, add_cr=True):
         """
         message : MIMEBase or str
             Message to encrypt.
@@ -248,8 +243,6 @@ class GpgBackendBase(object):
         add_cr : bool, optional
             Wether or not to replace newlines (``\\n``) with carriage-return/newlines (``\\r\\n``).
             E-Mail messages generally use ``\\r\\n``, so the default is True.
-        **kwargs
-            Any additional parameters to the GPG backend.
         """
         if isinstance(message, six.string_types):
             message = MIMEText(message)
@@ -260,11 +253,11 @@ class GpgBackendBase(object):
             data = data.replace(b'\n', b'\r\n')
 
         # get the gpg signature
-        signature = self.sign(data, signer, **kwargs)
+        signature = self.sign(data, signer)
         signature_msg = self.get_mime_signature(signature)
         return self.get_signed_message(message, signature_msg)
 
-    def sign(self, data, signer, **kwargs):
+    def sign(self, data, signer):
         """Sign passed data with the given keys.
 
         Parameters
@@ -274,8 +267,6 @@ class GpgBackendBase(object):
             The data to sign.
         signer : str
             Key id to sign the message with.
-        **kwargs
-            Any additional parameters to the GPG backend.
         """
         raise NotImplementedError
 
@@ -289,8 +280,9 @@ class GpgBackendBase(object):
             The data to sign.
         recipients : list of str
             A list of full GPG fingerprints (without a ``"0x"`` prefix) to encrypt the message to.
-        **kwargs
-            Any additional parameters to the GPG backend.
+        always_trust : bool, optional
+            If ``True``, always trust all keys, if ``False`` is passed, do not. The default value
+            is what is passed to the constructor as ``default_trust``.
         """
         raise NotImplementedError
 
@@ -306,12 +298,13 @@ class GpgBackendBase(object):
             A list of full GPG fingerprints (without a ``"0x"`` prefix) to encrypt the message to.
         signer : str
             Key id to sign the message with.
-        **kwargs
-            Any additional parameters to the GPG backend.
+        always_trust : bool, optional
+            If ``True``, always trust all keys, if ``False`` is passed, do not. The default value
+            is what is passed to the constructor as ``default_trust``.
         """
         raise NotImplementedError
 
-    def import_key(self, data, **kwargs):
+    def import_key(self, data):
         """Import a public key.
 
         Parameters
@@ -319,8 +312,6 @@ class GpgBackendBase(object):
 
         data : bytes
             The public key data.
-        **kwargs
-            Any additional parameters to the GPG backend.
 
         Returns
         -------
@@ -330,7 +321,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def import_private_key(self, data, **kwargs):
+    def import_private_key(self, data):
         """Import a private key.
 
         Parameters

@@ -16,6 +16,7 @@
 from __future__ import unicode_literals, absolute_import
 
 from datetime import datetime
+from threading import local
 
 import gpgme
 import gpgme.editutil
@@ -51,31 +52,24 @@ class GpgMeBackend(GpgBackendBase):
     """
 
     def __init__(self, context=None, **kwargs):
-        self._context = context
         super(GpgMeBackend, self).__init__(**kwargs)
+        self._local = local()
 
-    def get_context(self, **kwargs):
-        if kwargs.get('context'):
-            return kwargs['context']
-
-        if self._context is None:
+    @property
+    def context(self):
+        if hasattr(self._local, 'context') is False:
             context = gpgme.Context()
-        else:
-            context = self._context
+            context.armor = True
 
-        context.armor = True
+            if self._path or self._home:
+                context.set_engine_info(gpgme.PROTOCOL_OpenPGP, self._path, self._home)
+            self._local.context = context
 
-        # Set home and path for this context, if requested
-        path = kwargs.get('path', self._path)
-        home = kwargs.get('home', self._home)
-        if path or home:
-            context.set_engine_info(gpgme.PROTOCOL_OpenPGP, path, home)
+        return self._local.context
 
-        return context
-
-    def _get_key(self, context, fingerprint):
+    def _get_key(self, fingerprint):
         try:
-            return context.get_key(fingerprint.upper())
+            return self.context.get_key(fingerprint.upper())
         except gpgme.GpgmeError as e:
             if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
                 raise GpgKeyNotFoundError("Key not found.")
@@ -87,16 +81,16 @@ class GpgMeBackend(GpgBackendBase):
             flags |= gpgme.ENCRYPT_ALWAYS_TRUST
         return flags
 
-    def _encrypt(self, data, recipients, context, always_trust):
-        recipients = [self._get_key(context, k) for k in recipients]
+    def _encrypt(self, data, recipients, always_trust):
+        recipients = [self._get_key(k) for k in recipients]
 
         output_bytes = six.BytesIO()
         flags = self._encrypt_flags(always_trust=always_trust)
         try:
-            if context.signers:
-                context.encrypt_sign(recipients, flags, six.BytesIO(data), output_bytes)
+            if self.context.signers:
+                self.context.encrypt_sign(recipients, flags, six.BytesIO(data), output_bytes)
             else:
-                context.encrypt(recipients, flags, six.BytesIO(data), output_bytes)
+                self.context.encrypt(recipients, flags, six.BytesIO(data), output_bytes)
         except gpgme.GpgmeError as e:
             if e.source == gpgme.ERR_SOURCE_UNKNOWN and e.code == gpgme.ERR_GENERAL:
                 raise GpgUntrustedKeyError("Key not trusted.")
@@ -106,65 +100,62 @@ class GpgMeBackend(GpgBackendBase):
         output_bytes.seek(0)
         return output_bytes.getvalue()
 
-    def sign(self, data, signer, **kwargs):
-        context = self.get_context(**kwargs)
-        signer = self._get_key(context, signer)
-        context.signers = [signer]
-
+    def sign(self, data, signer):
+        signer = self._get_key(signer)
         output_bytes = six.BytesIO()
-        context.sign(six.BytesIO(data), output_bytes, gpgme.SIG_MODE_DETACH)
+
+        self.context.signers = [signer]
+        try:
+            self.context.sign(six.BytesIO(data), output_bytes, gpgme.SIG_MODE_DETACH)
+        finally:
+            self.context.signers = []
         output_bytes.seek(0)
         return output_bytes.getvalue()
 
     def encrypt(self, data, recipients, **kwargs):
-        always_trust = kwargs.pop('always_trust', self._always_trust)
-        context = self.get_context(**kwargs)
-        return self._encrypt(data, recipients, context, always_trust)
+        always_trust = kwargs.get('always_trust', self._default_trust)
+        return self._encrypt(data, recipients, always_trust)
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
-        always_trust = kwargs.pop('always_trust', self._always_trust)
-        context = self.get_context(**kwargs)
-        signer = self._get_key(context, signer)
-        context.signers = [signer]
+        always_trust = kwargs.get('always_trust', self._default_trust)
+        signer = self._get_key(signer)
+        self.context.signers = [signer]
 
-        return self._encrypt(data, recipients, context, always_trust)
+        try:
+            return self._encrypt(data, recipients, always_trust)
+        finally:
+            self.context.signers = []
 
-    def verify(self, data, signature, **kwargs):
-        context = self.get_context(**kwargs)
-        signatures = context.verify(six.BytesIO(signature), six.BytesIO(data), None)
+    def verify(self, data, signature):
+        signatures = self.context.verify(six.BytesIO(signature), six.BytesIO(data), None)
 
         errors = list(filter(lambda s: s.status is not None, signatures))
         if not errors:
             return signatures[0].fpr
 
     def decrypt(self, data, **kwargs):
-        context = self.get_context(**kwargs)
         output = six.BytesIO()
-        context.decrypt(six.BytesIO(data), output)
+        self.context.decrypt(six.BytesIO(data), output)
         return output.getvalue()
 
     def decrypt_verify(self, data, **kwargs):
-        context = self.get_context(**kwargs)
         output = six.BytesIO()
-        signatures = context.decrypt_verify(six.BytesIO(data), output)
+        signatures = self.context.decrypt_verify(six.BytesIO(data), output)
 
         errors = list(filter(lambda s: s.status is not None, signatures))
         if not errors:
             return output.getvalue(), signatures[0].fpr
 
     def import_key(self, data, **kwargs):
-        context = self.get_context(**kwargs)
-        result = context.import_(six.BytesIO(data))
+        result = self.context.import_(six.BytesIO(data))
         return [r[0] for r in result.imports]
 
     def import_private_key(self, data, **kwargs):
-        context = self.get_context(**kwargs)
-        result = context.import_(six.BytesIO(data))
+        result = self.context.import_(six.BytesIO(data))
         return [r[0] for r in result.imports]
 
     def set_trust(self, fingerprint, trust, **kwargs):
-        context = self.get_context(**kwargs)
-        key = self._get_key(context, fingerprint)
+        key = self._get_key(fingerprint)
 
         if trust == VALIDITY_NEVER:
             trust = gpgme.VALIDITY_NEVER
@@ -177,11 +168,10 @@ class GpgMeBackend(GpgBackendBase):
         else:
             raise ValueError("Unknown trust passed.")
 
-        gpgme.editutil.edit_trust(context, key, trust)
+        gpgme.editutil.edit_trust(self.context, key, trust)
 
     def get_trust(self, fingerprint, **kwargs):
-        context = self.get_context(**kwargs)
-        key = self._get_key(context, fingerprint)
+        key = self._get_key(fingerprint)
 
         if key.owner_trust == gpgme.VALIDITY_UNKNOWN:
             return VALIDITY_UNKNOWN
@@ -197,8 +187,7 @@ class GpgMeBackend(GpgBackendBase):
             return VALIDITY_UNKNOWN
 
     def expires(self, fingerprint, **kwargs):
-        context = self.get_context(**kwargs)
-        key = self._get_key(context, fingerprint)
+        key = self._get_key(fingerprint)
         expires = lambda i: datetime.fromtimestamp(i) if i else None
         subkeys = {sk.fpr: expires(sk.expires) for sk in key.subkeys}
         return subkeys[fingerprint]

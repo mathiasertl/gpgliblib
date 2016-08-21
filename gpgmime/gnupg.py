@@ -19,6 +19,7 @@ import os
 import tempfile
 
 from datetime import datetime
+from threading import local
 
 import gnupg
 import six
@@ -57,44 +58,38 @@ class GnuPGBackend(GpgBackendBase):
         self._verbose = verbose
         self._use_agent = use_agent
         self._options = options
+        self._local = local()
         super(GnuPGBackend, self).__init__(**kwargs)
 
+    @property
+    def gpg(self):
+        if hasattr(self._local, 'gpg') is False:
+            kwargs = {}
+            if self._home:
+                kwargs['gnupghome'] = self._home
+            if self._path:
+                kwargs['gpgbinary'] = self._path
+            if self._verbose:
+                kwargs['verbose'] = True
+            if self._use_agent:
+                kwargs['use_agent'] = True
+            if self._options:
+                kwargs['options'] = self._options
 
-    def get_gpg(self, **kwargs):
-        if kwargs.get('gpg'):
-            return kwargs['gpg']
+            self._local.gpg = gnupg.GPG(**kwargs)
 
-        # Set home and path for this context, if requested
-        path = kwargs.get('path', self._path)
-        home = kwargs.get('home', self._home)
-        options = kwargs.get('options', self._options)
+        return self._local.gpg
 
-        gnupg_kwargs = {}
-        if home:
-            gnupg_kwargs['gnupghome'] = home
-        if path:
-            gnupg_kwargs['gpgbinary'] = path
-        if self._verbose or kwargs.get('verbose'):
-            gnupg_kwargs['verbose'] = True
-        if self._use_agent or kwargs.get('use_agent'):
-            gnupg_kwargs['use_agent'] = True
-        if options:
-            gnupg_kwargs['options'] = options
-
-        return gnupg.GPG(**gnupg_kwargs)
-
-    def sign(self, data, signer, **kwargs):
-        gpg = self.get_gpg(**kwargs)
-
-        result = gpg.sign(data, keyid=signer, detach=True)
+    def sign(self, data, signer):
+        result = self.gpg.sign(data, keyid=signer, detach=True)
         if not result.data:  # signing does not provide status or ok :-(
             raise GpgKeyNotFoundError()
         return result.data
 
     def encrypt(self, data, recipients, **kwargs):
-        always_trust = kwargs.pop('always_trust', self._always_trust)
-        gpg = self.get_gpg(**kwargs)
-        result = gpg.encrypt(data, recipients, always_trust=always_trust)
+        always_trust = kwargs.get('always_trust', self._default_trust)
+
+        result = self.gpg.encrypt(data, recipients, always_trust=always_trust)
         if result.ok is False:
             if result.status == 'invalid recipient':
                 raise GpgKeyNotFoundError
@@ -105,16 +100,15 @@ class GnuPGBackend(GpgBackendBase):
         return result.data
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
-        always_trust = kwargs.pop('always_trust', self._always_trust)
-        gpg = self.get_gpg(**kwargs)
-        result = gpg.encrypt(data, recipients, sign=signer, always_trust=always_trust)
+        always_trust = kwargs.get('always_trust', self._default_trust)
+
+        result = self.gpg.encrypt(data, recipients, sign=signer, always_trust=always_trust)
         if result.ok is False:
             if result.status in ['invalid recipient', '']:
                 raise GpgKeyNotFoundError
         return result.data
 
     def verify(self, data, signature, **kwargs):
-        gpg = self.get_gpg(**kwargs)
         fd, path = tempfile.mkstemp()
 
         try:
@@ -123,7 +117,7 @@ class GnuPGBackend(GpgBackendBase):
             stream.write(signature)
             stream.flush()
 
-            verified = gpg.verify_data(path, data)
+            verified = self.gpg.verify_data(path, data)
         finally:
             os.remove(path)
 
@@ -131,30 +125,25 @@ class GnuPGBackend(GpgBackendBase):
             return verified.fingerprint
 
     def decrypt(self, data, **kwargs):
-        always_trust = kwargs.pop('always_trust', self._always_trust)
-        gpg = self.get_gpg(**kwargs)
-        result = gpg.decrypt(data, always_trust=always_trust)
+        always_trust = kwargs.pop('always_trust', self._default_trust)
+        result = self.gpg.decrypt(data, always_trust=always_trust)
         return result.data
 
     def decrypt_verify(self, data, **kwargs):
-        always_trust = kwargs.pop('always_trust', self._always_trust)
-        gpg = self.get_gpg(**kwargs)
-        result = gpg.decrypt(data, always_trust=always_trust)
+        always_trust = kwargs.pop('always_trust', self._default_trust)
+        result = self.gpg.decrypt(data, always_trust=always_trust)
         return result.data, result.fingerprint
 
     def import_key(self, data, **kwargs):
-        gpg = self.get_gpg(**kwargs)
-        result = gpg.import_keys(data)
+        result = self.gpg.import_keys(data)
         return result.fingerprints
 
     def import_private_key(self, data, **kwargs):
-        gpg = self.get_gpg(**kwargs)
-        result = gpg.import_keys(data)
+        result = self.gpg.import_keys(data)
         return result.fingerprints
 
     def set_trust(self, fingerprint, trust, **kwargs):
-        gpg = self.get_gpg(**kwargs)
-        result = gpg.result_map['verify'](gpg)  # any result object
+        result = self.gpg.result_map['verify'](self.gpg)  # any result object
 
         if trust == VALIDITY_NEVER:
             trust = '3'
@@ -170,11 +159,10 @@ class GnuPGBackend(GpgBackendBase):
         line = '%s:%s\n' % (fingerprint, trust)
         line = line.encode('utf-8')
 
-        gpg._handle_io(['--import-ownertrust'], six.BytesIO(line), result, binary=True)
+        self.gpg._handle_io(['--import-ownertrust'], six.BytesIO(line), result, binary=True)
 
     def get_trust(self, fingerprint, **kwargs):
-        gpg = self.get_gpg(**kwargs)
-        trust = gpg.list_keys(keys=fingerprint)[0]['ownertrust']
+        trust = self.gpg.list_keys(keys=fingerprint)[0]['ownertrust']
 
         if trust == '-':
             return VALIDITY_UNKNOWN
@@ -190,8 +178,7 @@ class GnuPGBackend(GpgBackendBase):
             return VALIDITY_UNKNOWN
 
     def expires(self, fingerprint, **kwargs):
-        gpg = self.get_gpg(**kwargs)
-        key = gpg.list_keys(keys=fingerprint)[0]
+        key = self.gpg.list_keys(keys=fingerprint)[0]
 
         timestamp = key['expires']
         return datetime.fromtimestamp(int(timestamp)) if timestamp else None
