@@ -40,9 +40,12 @@ def _create_backend(backend, **kwargs):
             backend = params.pop('BACKEND')
 
             kwargs = params.pop('OPTIONS', {})
-            kwargs['home'] = params.pop('HOME', None)
-            kwargs['path'] = params.pop('PATH', None)
-            kwargs['always_trust'] = params.pop('ALWAYS_TRUST', False)
+            if 'HOME' in params:
+                kwargs['home'] = params['HOME']
+            if 'PATH' in params:
+                kwargs['path'] = params['PATH']
+            if 'DEFAULT_TRUST' in params:
+                kwargs['default_trust'] = params['DEFAULT_TRUST']
 
         backend_cls = import_string(backend)
     except ImportError as e:
