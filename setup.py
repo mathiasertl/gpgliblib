@@ -20,6 +20,7 @@ import shutil
 import tempfile
 
 from distutils.cmd import Command
+from setuptools import find_packages
 from setuptools import setup
 
 testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
@@ -88,10 +89,7 @@ setup(
     author='Mathias Ertl',
     author_email='mati@er.tl',
     url='https://github.com/mathiasertl/gpg-mime',
-    packages=[
-        'gpgmime',
-    ],
-    package_dir={'': 'gpgmime'},
+    packages=find_packages(),
     install_requires=[],
     cmdclass={
         'test_backends': BackendMailCommand,
