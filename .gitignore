@@ -2,8 +2,10 @@
 *.py[oc]
 /bin/
 /build/
+/dist/
 /doc/_build/
 /gpgmime/gpg_mime.egg-info/
+/gpg_mime.egg-info/
 /include/
 /lib/
 /share/
