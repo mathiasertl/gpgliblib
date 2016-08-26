@@ -31,9 +31,9 @@ If you are handling basic MIME messages (from pythons `email.mime
    >>> multi = MIMEMultipart(_subparts=[plain, html])
 
    # get signed/encrypted/signed and encrypted message
-   >>> msg = backend.sign_message(multi, signers=['your-fingerprint'])
+   >>> msg = backend.sign_message(multi, signer='your-fingerprint')
    >>> msg = backend.encrypt_message(multi, recipients=['other-fingerprint'])
-   >>> msg = backend.encrypt_message(multi, signers=['your-fingerprint'],
+   >>> msg = backend.encrypt_message(multi, signer='your-fingerprint',
                                      recipients=['your-fingerprint'])
 
    # add various headers...
@@ -62,7 +62,7 @@ can be imported, trust can be queried and set and the expiry queried::
 
    >>> raw_key_data = backend.fetch_key('0x%s' % fingerprint)
    >>> imported_fp = backend.import_key(raw_key_data)
-   >>> imported_fp == fingerprint
+   >>> imported_fp == fingerprint[0]
    True
 
    >>> backend.get_trust(fingerprint) == VALIDITY_UNKNOWN
@@ -113,5 +113,5 @@ objects::
    >>> fingerprint = 'E8172F2940EA9F709842290870BD9664FA3947CD'
 
    >>> msg = GpgEmailMessage(subject='subject', ...,
-   ...     gpg_recipients=[fingerprint], gpg_signers=[fingerprint])
+   ...     gpg_recipients=[fingerprint], gpg_signer=fingerprint)
    >>> msg.send()
