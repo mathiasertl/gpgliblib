@@ -123,8 +123,8 @@ class GpgEmailMessage(EmailMultiAlternatives):
     Parameters
     ----------
 
-    gpg_signers : list of str
-        List of fingerprints to sign the message with.
+    gpg_signer : str
+        Fingerprints to sign the message with.
     gpg_recipients : list of str, optional
         List of fingerprints to encrypt the message to.
     gpg_backend : :py:class:`gpgmime.base.GpgBackendBase`, optional
@@ -138,7 +138,7 @@ class GpgEmailMessage(EmailMultiAlternatives):
     """
 
     def __init__(self, *args, **kwargs):
-        self.gpg_signers = kwargs.pop('gpg_signers', None)
+        self.gpg_signer = kwargs.pop('gpg_signer', None)
         self.gpg_recipients = kwargs.pop('gpg_recipients', None)
         self.gpg_backend = kwargs.pop('gpg_backend', None)
         self.gpg_home = kwargs.pop('gpg_home', None)
@@ -185,7 +185,7 @@ class GpgEmailMessage(EmailMultiAlternatives):
 
         control_msg = backend.get_control_message()
         encrypted_msg = backend.get_octet_stream(to_encrypt, recipients=self.gpg_recipients,
-                                                 signers=self.gpg_signers)
+                                                 signer=self.gpg_signer)
 
         if isinstance(message, SafeMIMEMultipart):
             message.set_payload([control_msg, encrypted_msg])
@@ -216,7 +216,7 @@ class GpgEmailMessage(EmailMultiAlternatives):
             to_sign.policy = to_sign.policy.clone(max_line_length=0)
 
         # get the gpg signature
-        signature = backend.sign(to_sign.as_bytes(linesep='\r\n'), self.gpg_signers, add_cr=False,
+        signature = backend.sign(to_sign.as_bytes(linesep='\r\n'), self.gpg_signer, add_cr=False,
                                  **kwargs)
         signature_msg = backend.get_mime_signature(signature)
 
