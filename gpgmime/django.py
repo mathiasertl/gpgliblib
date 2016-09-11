@@ -147,12 +147,8 @@ class GpgEmailMessage(EmailMultiAlternatives):
 
         if self.encrypted:
             self.protocol = 'application/pgp-encrypted'
-            self.mixed_subtype = 'encrypted'
-            self.alternative_subtype = 'encrypted'
         elif self.signed:
             self.protocol = 'application/pgp-signature'
-            self.mixed_subtype = 'signed'
-            self.alternative_subtype = 'signed'
 
         super(GpgEmailMessage, self).__init__(*args, **kwargs)
 
@@ -168,7 +164,8 @@ class GpgEmailMessage(EmailMultiAlternatives):
             # If this is a multipart message, we encrypt all its parts.
             # We create a new SafeMIMEMultipart instance, the original message contains all
             # headers (From, To, ...) which we shouldn't sign/encrypt.
-            base = SafeMIMEMultipart(_subtype='alternative', _subparts=payload)
+            subtype = message.get_content_subtype()
+            base = SafeMIMEMultipart(_subtype=subtype, _subparts=payload)
         else:
             # If it is a non-multipart message (-> plain-text email), we just encrypt the payload
             base = SafeMIMEText(payload)
@@ -190,9 +187,10 @@ class GpgEmailMessage(EmailMultiAlternatives):
         if isinstance(message, SafeMIMEMultipart):
             message.set_payload([control_msg, encrypted_msg])
             message.set_param('protocol', self.protocol)
+            message.set_type('multipart/encrypted')
             return message
 
-        gpg_msg = SafeMIMEMultipart(_subtype=self.alternative_subtype, encoding=message.encoding)
+        gpg_msg = SafeMIMEMultipart(_subtype='encrypted', encoding=message.encoding)
         gpg_msg.attach(control_msg)
         gpg_msg.attach(encrypted_msg)
 
@@ -224,9 +222,10 @@ class GpgEmailMessage(EmailMultiAlternatives):
             message.set_payload([to_sign, signature_msg])
             message.set_param('protocol', self.protocol)
             message.set_param('micalg', 'pgp-sha256')
+            message.set_type('multipart/signed')
             return message
 
-        gpg_msg = SafeMIMEMultipart(_subtype=self.alternative_subtype, encoding=message.encoding)
+        gpg_msg = SafeMIMEMultipart(_subtype='signed', encoding=message.encoding)
         gpg_msg.attach(to_sign)
         gpg_msg.attach(signature_msg)
 
