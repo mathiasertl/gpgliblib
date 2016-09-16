@@ -72,7 +72,7 @@ class GpgMeBackend(GpgBackendBase):
             return self.context.get_key(fingerprint.upper())
         except gpgme.GpgmeError as e:
             if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
-                raise GpgKeyNotFoundError("Key not found.")
+                raise GpgKeyNotFoundError("%s: key not found." % fingerprint)
             raise
 
     def _encrypt_flags(self, always_trust=True, **kwargs):
