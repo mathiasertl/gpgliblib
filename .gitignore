@@ -4,10 +4,11 @@
 /build/
 /dist/
 /doc/_build/
-/gpgmime/gpg_mime.egg-info/
 /gpg_mime.egg-info/
+/gpgmime/gpg_mime.egg-info/
 /include/
 /lib/
+/pip-selfcheck.json
 /share/
 /testdata/keyring/
 /testproject/testproject/localsettings.py
