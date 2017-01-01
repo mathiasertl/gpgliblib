@@ -13,8 +13,20 @@
 # You should have received a copy of the GNU General Public License along with gpg-mime. If
 # not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 from fabric.api import local
 from fabric.api import task
+
+
+@task
+def test():
+    """Run testsuite."""
+
+    old = os.getcwd()
+    os.chdir('testproject')
+    local('python manage.py test')
+    os.chdir(old)
 
 
 @task
@@ -22,6 +34,9 @@ def check():
     """Run testsuite and style-checks."""
 
     local('flake8 gpgmime')
+    local('isort --check-only -rc gpgmime/')
+
+    test()
 
 
 @task
