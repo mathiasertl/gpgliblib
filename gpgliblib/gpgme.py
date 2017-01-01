@@ -27,10 +27,11 @@ from .base import VALIDITY_FULL
 from .base import VALIDITY_MARGINAL
 from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
-from .base import VALIDITY_UNKNOWN
 from .base import GpgBackendBase
+from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgUntrustedKeyError
+from .base import VALIDITY_UNKNOWN
 
 
 class GpgMeBackend(GpgBackendBase):
@@ -68,13 +69,8 @@ class GpgMeBackend(GpgBackendBase):
 
         return self._local.context
 
-    def _get_key(self, fingerprint):
-        try:
-            return self.context.get_key(fingerprint.upper())
-        except gpgme.GpgmeError as e:
-            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
-                raise GpgKeyNotFoundError("%s: key not found." % fingerprint)
-            raise
+    def get_key(self, fingerprint):
+        return GpgMeKey(self, fingerprint)
 
     def _encrypt_flags(self, always_trust=True, **kwargs):
         flags = 0
@@ -83,7 +79,7 @@ class GpgMeBackend(GpgBackendBase):
         return flags
 
     def _encrypt(self, data, recipients, always_trust):
-        recipients = [self._get_key(k) for k in recipients]
+        recipients = [r._key for r in recipients]
 
         output_bytes = six.BytesIO()
         flags = self._encrypt_flags(always_trust=always_trust)
@@ -102,10 +98,9 @@ class GpgMeBackend(GpgBackendBase):
         return output_bytes.getvalue()
 
     def sign(self, data, signer):
-        signer = self._get_key(signer)
         output_bytes = six.BytesIO()
 
-        self.context.signers = [signer]
+        self.context.signers = [signer._key]
         try:
             self.context.sign(six.BytesIO(data), output_bytes, gpgme.SIG_MODE_DETACH)
         finally:
@@ -119,8 +114,7 @@ class GpgMeBackend(GpgBackendBase):
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
         always_trust = kwargs.get('always_trust', self._default_trust)
-        signer = self._get_key(signer)
-        self.context.signers = [signer]
+        self.context.signers = [signer._key]
 
         try:
             return self._encrypt(data, recipients, always_trust)
@@ -132,7 +126,7 @@ class GpgMeBackend(GpgBackendBase):
 
         errors = list(filter(lambda s: s.status is not None, signatures))
         if not errors:
-            return signatures[0].fpr
+            return GpgMeKey(self, signatures[0].fpr)
 
     def decrypt(self, data, **kwargs):
         output = six.BytesIO()
@@ -149,46 +143,55 @@ class GpgMeBackend(GpgBackendBase):
 
     def import_key(self, data, **kwargs):
         result = self.context.import_(six.BytesIO(data))
-        return [r[0] for r in result.imports]
+        return [GpgMeKey(self, r[0]) for r in result.imports]
 
     def import_private_key(self, data, **kwargs):
         result = self.context.import_(six.BytesIO(data))
-        return [r[0] for r in result.imports]
+        return [GpgMeKey(self, r[0]) for r in result.imports]
 
-    def set_trust(self, fingerprint, trust, **kwargs):
-        key = self._get_key(fingerprint)
 
-        if trust == VALIDITY_NEVER:
-            trust = gpgme.VALIDITY_NEVER
-        elif trust == VALIDITY_MARGINAL:
-            trust = gpgme.VALIDITY_MARGINAL
-        elif trust == VALIDITY_FULL:
-            trust = gpgme.VALIDITY_FULL
-        elif trust == VALIDITY_ULTIMATE:
-            trust = gpgme.VALIDITY_ULTIMATE
-        else:
-            raise ValueError("Unknown trust passed.")
+class GpgMeKey(GpgKey):
+    def refresh(self):
+        try:
+            self._key = self.backend.context.get_key(self.fingerprint.upper())
+        except gpgme.GpgmeError as e:
+            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
+                raise GpgKeyNotFoundError("%s: key not found." % self.fingerprint)
+            raise
 
-        gpgme.editutil.edit_trust(self.context, key, trust)
-
-    def get_trust(self, fingerprint, **kwargs):
-        key = self._get_key(fingerprint)
-
-        if key.owner_trust == gpgme.VALIDITY_UNKNOWN:
+    @property
+    def trust(self):
+        if self._key.owner_trust == gpgme.VALIDITY_UNKNOWN:
             return VALIDITY_UNKNOWN
-        elif key.owner_trust == gpgme.VALIDITY_NEVER:
+        elif self._key.owner_trust == gpgme.VALIDITY_NEVER:
             return VALIDITY_NEVER
-        elif key.owner_trust == gpgme.VALIDITY_MARGINAL:
+        elif self._key.owner_trust == gpgme.VALIDITY_MARGINAL:
             return VALIDITY_MARGINAL
-        elif key.owner_trust == gpgme.VALIDITY_FULL:
+        elif self._key.owner_trust == gpgme.VALIDITY_FULL:
             return VALIDITY_FULL
-        elif key.owner_trust == gpgme.VALIDITY_ULTIMATE:
+        elif self._key.owner_trust == gpgme.VALIDITY_ULTIMATE:
             return VALIDITY_ULTIMATE
         else:
             return VALIDITY_UNKNOWN
 
-    def expires(self, fingerprint, **kwargs):
-        key = self._get_key(fingerprint)
+    @trust.setter
+    def trust(self, value):
+        if value == VALIDITY_NEVER:
+            value = gpgme.VALIDITY_NEVER
+        elif value == VALIDITY_MARGINAL:
+            value = gpgme.VALIDITY_MARGINAL
+        elif value == VALIDITY_FULL:
+            value = gpgme.VALIDITY_FULL
+        elif value == VALIDITY_ULTIMATE:
+            value = gpgme.VALIDITY_ULTIMATE
+        else:
+            raise ValueError("Unknown value passed.")
+
+        gpgme.editutil.edit_trust(self.backend.context, self._key, value)
+        self.refresh()  # TODO: can we avoid reloading?
+
+    @property
+    def expires(self):
         expires = lambda i: datetime.fromtimestamp(i) if i else None
-        subkeys = {sk.fpr: expires(sk.expires) for sk in key.subkeys}
-        return subkeys[fingerprint]
+        subkeys = {sk.fpr: expires(sk.expires) for sk in self._key.subkeys}
+        return subkeys[self.fingerprint]

@@ -30,6 +30,7 @@ from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
 from .base import GpgBackendBase
+from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgMimeError
 from .base import GpgUntrustedKeyError
@@ -80,14 +81,18 @@ class GnuPGBackend(GpgBackendBase):
 
         return self._local.gpg
 
+    def get_key(self, fingerprint):
+        return GnuPGKey(self, fingerprint)
+
     def sign(self, data, signer):
-        result = self.gpg.sign(data, keyid=signer, detach=True)
+        result = self.gpg.sign(data, keyid=signer.fingerprint, detach=True)
         if not result.data:  # signing does not provide status or ok :-(
             raise GpgKeyNotFoundError()
         return result.data
 
     def encrypt(self, data, recipients, **kwargs):
         always_trust = kwargs.get('always_trust', self._default_trust)
+        recipients = [r.fingerprint for r in recipients]
 
         result = self.gpg.encrypt(data, recipients, always_trust=always_trust)
         if result.ok is False:
@@ -101,6 +106,8 @@ class GnuPGBackend(GpgBackendBase):
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
         always_trust = kwargs.get('always_trust', self._default_trust)
+        recipients = [r.fingerprint for r in recipients]
+        signer = signer.fingerprint
 
         result = self.gpg.encrypt(data, recipients, sign=signer, always_trust=always_trust)
         if result.ok is False:
@@ -122,7 +129,7 @@ class GnuPGBackend(GpgBackendBase):
             os.remove(path)
 
         if verified:
-            return verified.fingerprint
+            return GnuPGKey(self, verified.fingerprint)
 
     def decrypt(self, data, **kwargs):
         always_trust = kwargs.pop('always_trust', self._default_trust)
@@ -136,33 +143,17 @@ class GnuPGBackend(GpgBackendBase):
 
     def import_key(self, data, **kwargs):
         result = self.gpg.import_keys(data)
-        return result.fingerprints
+        return [GnuPGKey(self, fp) for fp in result.fingerprints]
 
     def import_private_key(self, data, **kwargs):
         result = self.gpg.import_keys(data)
-        return result.fingerprints
+        return [GnuPGKey(self, fp) for fp in result.fingerprints]
 
-    def set_trust(self, fingerprint, trust, **kwargs):
-        result = self.gpg.result_map['verify'](self.gpg)  # any result object
 
-        if trust == VALIDITY_NEVER:
-            trust = '3'
-        elif trust == VALIDITY_MARGINAL:
-            trust = '4'
-        elif trust == VALIDITY_FULL:
-            trust = '5'
-        elif trust == VALIDITY_ULTIMATE:
-            trust = '6'
-        else:
-            raise ValueError("Unknown trust passed.")
-
-        line = '%s:%s\n' % (fingerprint, trust)
-        line = line.encode('utf-8')
-
-        self.gpg._handle_io(['--import-ownertrust'], six.BytesIO(line), result, binary=True)
-
-    def get_trust(self, fingerprint, **kwargs):
-        trust = self.gpg.list_keys(keys=fingerprint)[0]['ownertrust']
+class GnuPGKey(GpgKey):
+    @property
+    def trust(self):
+        trust = self.backend.gpg.list_keys(keys=self.fingerprint)[0]['ownertrust']
 
         if trust == '-':
             return VALIDITY_UNKNOWN
@@ -177,8 +168,30 @@ class GnuPGBackend(GpgBackendBase):
         else:
             return VALIDITY_UNKNOWN
 
-    def expires(self, fingerprint, **kwargs):
-        key = self.gpg.list_keys(keys=fingerprint)[0]
+    @trust.setter
+    def trust(self, value):
+        result = self.backend.gpg.result_map['verify'](self.backend.gpg)  # any result object
+
+        if value == VALIDITY_NEVER:
+            value = '3'
+        elif value == VALIDITY_MARGINAL:
+            value = '4'
+        elif value == VALIDITY_FULL:
+            value = '5'
+        elif value == VALIDITY_ULTIMATE:
+            value = '6'
+        else:
+            raise ValueError("Unknown trust passed.")
+
+        line = '%s:%s\n' % (self.fingerprint, value)
+        line = line.encode('utf-8')
+
+        self.backend.gpg._handle_io(['--import-ownertrust'], six.BytesIO(line), result,
+                                    binary=True)
+
+    @property
+    def expires(self):
+        key = self.backend.gpg.list_keys(keys=self.fingerprint)[0]
 
         timestamp = key['expires']
         return datetime.fromtimestamp(int(timestamp)) if timestamp else None

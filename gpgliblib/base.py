@@ -343,19 +343,43 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def expires(self, fingerprint):
+
+class GpgKey(object):
+    def __init__(self, backend, fingerprint):
+        self.backend = backend
+        self.fingerprint = fingerprint
+        self.refresh()
+
+    def refresh(self):
+        pass
+
+    @property
+    def trust(self):
+        raise NotImplementedError
+
+    @trust.setter
+    def trust(self, value):
+        raise NotImplementedError
+
+    @property
+    def expires(self):
         """If and when a key expires.
 
-        Parameters
-        ----------
-
-        fingerprint : str
-            A full GPG fingerprint (without a ``"0x"`` prefix).
-
-        Returns
-        -------
-
-        datetime or None
-            A datetime for when the key expires, or ``None`` if it does not expire.
+        This is a datetime for when the key expires, or ``None`` if it does not expire.
         """
         raise NotImplementedError
+
+    @property
+    def fp(self):
+        """Shortcut for ``fingerprint``."""
+
+        return self.fingerprint
+
+    def __eq__(self, other):
+        return self.backend == other.backend and self.fingerprint == other.fingerprint
+
+    def __ne__(self, other):
+        return self.backend != other.backend or self.fingerprint != other.fingerprint
+
+    def __hash__(self):
+        return hash((self.backend, self.fingerprint))
