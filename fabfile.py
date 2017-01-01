@@ -18,8 +18,16 @@ from fabric.api import task
 
 
 @task
+def check():
+    """Run testsuite and style-checks."""
+
+    local('flake8 gpgmime')
+
+
+@task
 def autodoc():
     """Automatically rebuild documentation on source changes."""
+
     local('make -C doc clean')
     ignore = '-i *.sw[pmnox] -i *~ -i */4913'
     local('sphinx-autobuild -p 8080 --watch gpgmime %s doc/ doc/_build/html/' % ignore)
