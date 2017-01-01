@@ -72,6 +72,11 @@ class GpgMeBackend(GpgBackendBase):
     def get_key(self, fingerprint):
         return GpgMeKey(self, fingerprint)
 
+    def _get_gpgme_key(self, obj):
+        if isinstance(obj, str):
+            return GpgMeKey(self, obj)._key
+        return obj._key
+
     def _encrypt_flags(self, always_trust=True, **kwargs):
         flags = 0
         if always_trust is True:
@@ -79,7 +84,7 @@ class GpgMeBackend(GpgBackendBase):
         return flags
 
     def _encrypt(self, data, recipients, always_trust):
-        recipients = [r._key for r in recipients]
+        recipients = [self._get_gpgme_key(r) for r in recipients]
 
         output_bytes = six.BytesIO()
         flags = self._encrypt_flags(always_trust=always_trust)
@@ -100,7 +105,7 @@ class GpgMeBackend(GpgBackendBase):
     def sign(self, data, signer):
         output_bytes = six.BytesIO()
 
-        self.context.signers = [signer._key]
+        self.context.signers = [self._get_gpgme_key(signer)]
         try:
             self.context.sign(six.BytesIO(data), output_bytes, gpgme.SIG_MODE_DETACH)
         finally:
@@ -114,7 +119,7 @@ class GpgMeBackend(GpgBackendBase):
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
         always_trust = kwargs.get('always_trust', self._default_trust)
-        self.context.signers = [signer._key]
+        self.context.signers = [self._get_gpgme_key(signer)]
 
         try:
             return self._encrypt(data, recipients, always_trust)

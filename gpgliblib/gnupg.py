@@ -84,15 +84,21 @@ class GnuPGBackend(GpgBackendBase):
     def get_key(self, fingerprint):
         return GnuPGKey(self, fingerprint)
 
+    def _get_fp(self, obj):
+        if isinstance(obj, GpgKey):
+            return obj.fingerprint
+        return obj
+
     def sign(self, data, signer):
-        result = self.gpg.sign(data, keyid=signer.fingerprint, detach=True)
+        fp = self._get_fp(signer)
+        result = self.gpg.sign(data, keyid=fp, detach=True)
         if not result.data:  # signing does not provide status or ok :-(
             raise GpgKeyNotFoundError()
         return result.data
 
     def encrypt(self, data, recipients, **kwargs):
         always_trust = kwargs.get('always_trust', self._default_trust)
-        recipients = [r.fingerprint for r in recipients]
+        recipients = [self._get_fp(r) for r in recipients]
 
         result = self.gpg.encrypt(data, recipients, always_trust=always_trust)
         if result.ok is False:
@@ -106,8 +112,8 @@ class GnuPGBackend(GpgBackendBase):
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
         always_trust = kwargs.get('always_trust', self._default_trust)
-        recipients = [r.fingerprint for r in recipients]
-        signer = signer.fingerprint
+        recipients = [self._get_fp(r) for r in recipients]
+        signer = self._get_fp(signer)
 
         result = self.gpg.encrypt(data, recipients, sign=signer, always_trust=always_trust)
         if result.ok is False:
