@@ -128,11 +128,11 @@ KEYRING_DIR = os.path.join(TESTDATA_DIR, 'keyring')
 
 GPG_BACKENDS = {
     'default': {
-        'BACKEND': 'gpgmime.gpgme.GpgMeBackend',
+        'BACKEND': 'gpgliblib.gpgme.GpgMeBackend',
         'HOME': KEYRING_DIR,
     },
     'gnupg': {
-        'BACKEND': 'gpgmime.gnupg.GnuPGBackend',
+        'BACKEND': 'gpgliblib.gnupg.GnuPGBackend',
         'HOME': KEYRING_DIR,
         'OPTIONS': {
             'verbose': True,

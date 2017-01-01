@@ -15,10 +15,10 @@ MIME message handling
 
 If you are handling basic MIME messages (from pythons `email.mime
 <https://docs.python.org/3.4/library/email.mime.html>`_ module), use the
-:py:func:`~gpgmime.base.GpgBackendBase.sign_message` and
-:py:func:`~gpgmime.base.GpgBackendBase.encrypt_message` functions::
+:py:func:`~gpgliblib.base.GpgBackendBase.sign_message` and
+:py:func:`~gpgliblib.base.GpgBackendBase.encrypt_message` functions::
 
-   >>> from gpgmime import gpgme
+   >>> from gpgliblib import gpgme
    >>> from six.moves.email_mime_text import MIMEText
    >>> from six.moves.email_mime_multipart import MIMEMultipart
 
@@ -53,9 +53,9 @@ The interface also offers some *basic* key management. It's not very sophisticat
 that users upload a key or give a fingerprint to be downloaded from the keyservers. Keys
 can be imported, trust can be queried and set and the expiry queried::
 
-   >>> from gpgmime.base import VALIDITY_FULL
-   >>> from gpgmime.base import VALIDITY_UNKNOWN
-   >>> from gpgmime import gpgme
+   >>> from gpgliblib.base import VALIDITY_FULL
+   >>> from gpgliblib.base import VALIDITY_UNKNOWN
+   >>> from gpgliblib import gpgme
 
    >>> backend = gpgme.GpgMeBackend()
    >>> fingerprint = 'E8172F2940EA9F709842290870BD9664FA3947CD'
@@ -85,7 +85,7 @@ You can configure caches in settings very similar to how caches are configured::
 
    GPG_BACKENDS = {
        'default': {
-           'BACKEND': 'gpgmime.gpgme.GpgMeBackend',
+           'BACKEND': 'gpgliblib.gpgme.GpgMeBackend',
            # Optional settings:
            #'HOME': '/home/...',  # Keyring directory
            #'PATH': '/home/...',  # Path to 'gpg' binary
@@ -96,18 +96,18 @@ You can configure caches in settings very similar to how caches are configured::
 
 Just like with django caches, you can access configured GPG backends::
 
-   >>> from gpgmime.django import gpg_backends
+   >>> from gpgliblib.django import gpg_backends
    >>> gpg_backends['default']
-   <gpgmime.gpgme.GpgMeBackend at 0x...>
+   <gpgliblib.gpgme.GpgMeBackend at 0x...>
    >>> gpg_backend
-   <gpgmime.django.DefaultGPGProxy at 0x...>
+   <gpgliblib.django.DefaultGPGProxy at 0x...>
 
-Use :py:class:`~gpgmime.django.GpgEmailMessage` instead of
+Use :py:class:`~gpgliblib.django.GpgEmailMessage` instead of
 `EmailMessage <https://docs.djangoproject.com/en/dev/topics/email/#emailmessage-objects>`_
 objects::
 
-   >>> from gpgmime import gpgme
-   >>> from gpgmime.django import GpgEmailMessage
+   >>> from gpgliblib import gpgme
+   >>> from gpgliblib.django import GpgEmailMessage
 
    >>> backend = gpgme.GpgMeBackend()
    >>> fingerprint = 'E8172F2940EA9F709842290870BD9664FA3947CD'

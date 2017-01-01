@@ -4,8 +4,6 @@
 /build/
 /dist/
 /doc/_build/
-/gpg_mime.egg-info/
-/gpgmime/gpg_mime.egg-info/
 /include/
 /lib/
 /pip-selfcheck.json

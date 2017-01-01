@@ -6,12 +6,12 @@ Backends
 gpgme
 *****
 
-.. autoclass:: gpgmime.gpgme.GpgMeBackend
+.. autoclass:: gpgliblib.gpgme.GpgMeBackend
    :members:
 
 ************
 python-gnupg
 ************
 
-.. autoclass:: gpgmime.gnupg.GnuPGBackend
+.. autoclass:: gpgliblib.gnupg.GnuPGBackend
    :members:

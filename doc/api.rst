@@ -2,11 +2,11 @@
 API documentation
 #################
 
-***************************
-gpgmime.base.GpgBackendBase
-***************************
+*****************************
+gpgliblib.base.GpgBackendBase
+*****************************
 
-.. autoclass:: gpgmime.base.GpgBackendBase
+.. autoclass:: gpgliblib.base.GpgBackendBase
    :members:
 
 **********
@@ -16,13 +16,13 @@ Exceptions
 Backends catch the most common exceptions and wrap them in common error messages
 for convenience.
 
-.. autoexception:: gpgmime.base.GpgMimeError
+.. autoexception:: gpgliblib.base.GpgMimeError
    :members:
 
-.. autoexception:: gpgmime.base.GpgKeyNotFoundError
+.. autoexception:: gpgliblib.base.GpgKeyNotFoundError
    :members:
 
-.. autoexception:: gpgmime.base.GpgUntrustedKeyError
+.. autoexception:: gpgliblib.base.GpgUntrustedKeyError
    :members:
 
 
@@ -30,12 +30,12 @@ for convenience.
 Django integration
 ******************
 
-.. autodata:: gpgmime.django.gpg_backends
+.. autodata:: gpgliblib.django.gpg_backends
    :annotation:
 
-.. autodata:: gpgmime.django.gpg_backend
+.. autodata:: gpgliblib.django.gpg_backend
    :annotation:
 
-.. autoclass:: gpgmime.django.GpgEmailMessage
+.. autoclass:: gpgliblib.django.GpgEmailMessage
    :members:
 

@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 #
-# This file is part of gpg-mime (https://github.com/mathiasertl/gpg-mime).
+# This file is part of gpgliblib (https://github.com/mathiasertl/gpgliblib).
 #
-# gpg-mime is free software: you can redistribute it and/or modify it under the terms of the
+# gpgliblib is free software: you can redistribute it and/or modify it under the terms of the
 # GNU General Public License as published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
 #
-# gpg-mime is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+# gpgliblib is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
 # even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
 #
-# You should have received a copy of the GNU General Public License along with gpg-mime. If
+# You should have received a copy of the GNU General Public License along with gpgliblib. If
 # not, see <http://www.gnu.org/licenses/>.
 
 from __future__ import unicode_literals, absolute_import
@@ -25,12 +25,15 @@ from setuptools import setup
 
 testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
 
+
+# TODO: Move this to fabfile
 class BackendMailCommand(Command):
     description = 'Create test-messages using basic MIME messages.'
     user_options = [
         ('dest=', 'd', 'Destination director for the messages.'),
         ('fp=', None, 'Fingerprint to use for signing/encrypting.'),
     ]
+
     def initialize_options(self):
         self.dest = os.path.join(os.path.abspath('build'), 'test_backends')
 
