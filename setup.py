@@ -85,13 +85,13 @@ class BackendMailCommand(Command):
 
 
 setup(
-    name='gpg-mime',
+    name='gpgliblib',
     version='0.1',
     description='Library for creating PGP/MIME mails with various library backends.',
     long_description='TODO',  # TODO
     author='Mathias Ertl',
     author_email='mati@er.tl',
-    url='https://github.com/mathiasertl/gpg-mime',
+    url='https://github.com/mathiasertl/gpgliblib',
     packages=find_packages(),
     install_requires=[],
     cmdclass={
