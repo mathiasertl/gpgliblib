@@ -13,26 +13,26 @@
 # You should have received a copy of the GNU General Public License along with gpg-mime. If
 # not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 import os
 import tempfile
-
 from datetime import datetime
 from threading import local
 
 import gnupg
 import six
 
+from .base import VALIDITY_FULL
+from .base import VALIDITY_MARGINAL
+from .base import VALIDITY_NEVER
+from .base import VALIDITY_ULTIMATE
+from .base import VALIDITY_UNKNOWN
 from .base import GpgBackendBase
 from .base import GpgKeyNotFoundError
 from .base import GpgMimeError
 from .base import GpgUntrustedKeyError
-from .base import VALIDITY_UNKNOWN
-from .base import VALIDITY_NEVER
-from .base import VALIDITY_MARGINAL
-from .base import VALIDITY_FULL
-from .base import VALIDITY_ULTIMATE
 
 
 class GnuPGBackend(GpgBackendBase):

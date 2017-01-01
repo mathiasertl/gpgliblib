@@ -13,7 +13,8 @@
 # You should have received a copy of the GNU General Public License along with gpg-mime. If
 # not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import unicode_literals, absolute_import
+from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from datetime import datetime
 from threading import local
@@ -22,14 +23,14 @@ import gpgme
 import gpgme.editutil
 import six
 
-from .base import GpgBackendBase
-from .base import GpgUntrustedKeyError
-from .base import GpgKeyNotFoundError
-from .base import VALIDITY_UNKNOWN
-from .base import VALIDITY_NEVER
-from .base import VALIDITY_MARGINAL
 from .base import VALIDITY_FULL
+from .base import VALIDITY_MARGINAL
+from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
+from .base import VALIDITY_UNKNOWN
+from .base import GpgBackendBase
+from .base import GpgKeyNotFoundError
+from .base import GpgUntrustedKeyError
 
 
 class GpgMeBackend(GpgBackendBase):
