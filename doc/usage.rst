@@ -14,6 +14,15 @@ simply instantiate a backend class by calling it without parameters::
    >>> from gpgliblib import gpgme
    >>> backend = gpgme.GpgMeBackend(home=gnupg_home)
 
+.. NOTE::
+
+   In this document, we pass the ``home`` parameter to every backend constructor. This is because
+   the testsuite of **gpgliblib** executes the examples in this document with a temporary keyring
+   to make sure that all examples are actually correct.
+
+   You do not have to pass this parameter, the default is usually the current users default
+   keyring.
+
 **************
 Key management
 **************
