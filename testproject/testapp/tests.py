@@ -15,9 +15,15 @@
 
 from __future__ import unicode_literals, absolute_import
 
+import doctest
 import os
 import shutil
 import tempfile
+
+try:
+    from unittest import mock
+except ImportError:
+    import mock  # python2
 
 from datetime import datetime
 
@@ -72,6 +78,43 @@ with open(os.path.join(testdatadir, '%s.priv' % expired_fp), 'rb') as stream:
     expired_priv = stream.read()
 with open(os.path.join(testdatadir, '%s.pub' % expired_fp), 'rb') as stream:
     expired_pub = stream.read()
+
+known_public_keys = {
+    user1_fp: user1_pub,
+    user2_fp: user2_pub,
+    user3_fp: user3_pub,
+    user4_fp: user4_pub,
+    expires_fp: expires_pub,
+    expired_fp: expired_pub,
+}
+
+
+def load_tests(loader, tests, ignore):
+    def lookup_gpg_key(fp):
+        return known_public_keys[fp[2:]]
+
+    # Called once for each file
+    def setUp(self):
+        self.home = tempfile.mkdtemp()
+        self.globs['gnupg_home'] = self.home
+        self.globs['user1_priv'] = user1_priv
+        self.patcher = mock.patch.object(GpgMeBackend, 'fetch_key',
+                                         side_effect=lookup_gpg_key,
+                                         return_value=user1_pub)
+        self.patcher.start()
+
+    def tearDown(self):
+        shutil.rmtree(self.home)
+        self.patcher.stop()
+
+    docpath = os.path.join('..', '..', 'doc')
+    docfiles = ['usage.rst']
+
+    for docfile in docfiles:
+        docfile = os.path.join(docpath, docfile)
+        tests.addTest(doctest.DocFileSuite(docfile, setUp=setUp, tearDown=tearDown))
+
+    return tests
 
 
 class TestCaseMixin(object):
