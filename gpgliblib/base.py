@@ -307,6 +307,47 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
+    def verify(self, data, signature):
+        """Verify the data with the given (detached) signature.
+
+        Parameters
+        ----------
+
+        data : bytes
+            The data that was signed with the given signature.
+        signature : bytes
+            The detached signature.
+
+        Returns
+        -------
+
+        fingerprint
+            The fingerprint of the signature that was used to sign the data.
+        """
+        raise NotImplementedError
+
+    def decrypt(self, data, **kwargs):
+        """Decrypt the passed data.
+
+        Parameters
+        ----------
+
+        data : bytes
+            The encrypted data.
+        """
+        raise NotImplementedError
+
+    def decrypt_verify(self, data, **kwargs):
+        """Decrypt data and verify the embedded signature.
+
+        Parameters
+        ----------
+
+        data : bytes
+            The signed and encrypted data.
+        """
+        raise NotImplementedError
+
     def import_key(self, data):
         """Import a public key.
 
