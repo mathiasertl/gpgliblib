@@ -334,6 +334,12 @@ class GpgBackendBase(object):
 
         data : bytes
             The encrypted data.
+
+        Returns
+        -------
+
+        bytes
+            The decrypted data.
         """
         raise NotImplementedError
 
@@ -345,6 +351,12 @@ class GpgBackendBase(object):
 
         data : bytes
             The signed and encrypted data.
+
+        Returns
+        -------
+
+        (bytes, fingerprint)
+            The decrypted data and the fingerprint of the key used in the signature.
         """
         raise NotImplementedError
 
