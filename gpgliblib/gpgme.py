@@ -158,13 +158,21 @@ class GpgMeBackend(GpgBackendBase):
 
 
 class GpgMeKey(GpgKey):
+    _loaded_key = None
+
+    @property
+    def _key(self):
+        if self._loaded_key is None:
+            try:
+                self._loaded_key = self.backend.context.get_key(self.fingerprint.upper())
+            except gpgme.GpgmeError as e:
+                if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
+                    raise GpgKeyNotFoundError("%s: key not found." % self.fingerprint)
+                raise
+        return self._loaded_key
+
     def refresh(self):
-        try:
-            self._key = self.backend.context.get_key(self.fingerprint.upper())
-        except gpgme.GpgmeError as e:
-            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
-                raise GpgKeyNotFoundError("%s: key not found." % self.fingerprint)
-            raise
+        self._loaded_key = None
 
     @property
     def trust(self):
