@@ -132,7 +132,7 @@ class GpgMeBackend(GpgBackendBase):
 
         errors = list(filter(lambda s: s.status is not None, signatures))
         if not errors:
-            return GpgMeKey(self, signatures[0].fpr)
+            return signatures[0].fpr
         raise GpgBadSignature("Bad signature", errors=errors)
 
     def decrypt(self, data):

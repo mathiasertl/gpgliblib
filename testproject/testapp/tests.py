@@ -166,10 +166,10 @@ class TestCaseMixin(object):
         self.assertKeys(priv_keys, [user3_fp, user3_fp])
 
         signature = self.backend.sign(data, priv_keys[0])
-        self.assertEqual(self.backend.verify(data, signature), keys[0])
+        self.assertEqual(self.backend.verify(data, signature), user3_fp)
 
         signature = self.backend.sign(data, user3_fp)
-        self.assertEqual(self.backend.verify(data, signature), keys[0])
+        self.assertEqual(self.backend.verify(data, signature), user3_fp)
 
     def test_sign_unknown_key(self):
         with self.assertRaises(GpgKeyNotFoundError):

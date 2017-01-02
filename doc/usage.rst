@@ -79,7 +79,7 @@ Signing and/or encrypting is straight forward::
    >>> sig2 = backend.sign(b'data to sign', signer=fingerprint)
    
    # Verify signature/encrypted text
-   >>> backend.verify(testdata, sig).fingerprint
+   >>> backend.verify(testdata, sig)
    'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
    >>> backend.decrypt(enc) == testdata
    True
@@ -105,7 +105,7 @@ You can temporarily override any parameter passed to the backend by using the
    ...     sig = temp_backend.sign(b'data', signer=fingerprint)
    >>> backend.decrypt(enc)
    b'data'
-   >>> backend.verify(b'data', sig).fingerprint
+   >>> backend.verify(b'data', sig)
    'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
 
 One common usecase is to use a temporary GPG keyring that is automatically discarded after use. GPG

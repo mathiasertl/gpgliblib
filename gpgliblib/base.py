@@ -242,7 +242,7 @@ class GpgBackendBase(object):
         Returns
         -------
 
-        fingerprint
+        fingerprint : str
             The fingerprint of the signature that was used to sign the data.
 
         Raises
@@ -282,7 +282,7 @@ class GpgBackendBase(object):
         Returns
         -------
 
-        (bytes, fingerprint)
+        (bytes, str)
             The decrypted data and the fingerprint of the key used in the signature.
 
         Raises

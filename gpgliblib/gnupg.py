@@ -136,7 +136,7 @@ class GnuPGBackend(GpgBackendBase):
             os.remove(path)
 
         if verified:
-            return GnuPGKey(self, verified.fingerprint)
+            return verified.fingerprint
         raise GpgBadSignature("Bad Signature")
 
     def decrypt(self, data):
