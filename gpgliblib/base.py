@@ -326,7 +326,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def decrypt(self, data, **kwargs):
+    def decrypt(self, data):
         """Decrypt the passed data.
 
         Parameters
@@ -343,7 +343,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def decrypt_verify(self, data, **kwargs):
+    def decrypt_verify(self, data):
         """Decrypt data and verify the embedded signature.
 
         Parameters

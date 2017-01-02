@@ -105,7 +105,7 @@ class GnuPGBackend(GpgBackendBase):
             if result.status == 'invalid recipient':
                 raise GpgKeyNotFoundError
             elif result.status == '':
-                raise GpgUntrustedKeyError
+                raise GpgUntrustedKeyError('Key not trusted.')
             else:
                 raise GpgMimeError("Unknown error: %s" % result.status)
         return result.data
@@ -121,7 +121,7 @@ class GnuPGBackend(GpgBackendBase):
                 raise GpgKeyNotFoundError
         return result.data
 
-    def verify(self, data, signature, **kwargs):
+    def verify(self, data, signature):
         fd, path = tempfile.mkstemp()
 
         try:
@@ -137,14 +137,12 @@ class GnuPGBackend(GpgBackendBase):
         if verified:
             return GnuPGKey(self, verified.fingerprint)
 
-    def decrypt(self, data, **kwargs):
-        always_trust = kwargs.pop('always_trust', self._default_trust)
-        result = self.gpg.decrypt(data, always_trust=always_trust)
+    def decrypt(self, data):
+        result = self.gpg.decrypt(data)
         return result.data
 
-    def decrypt_verify(self, data, **kwargs):
-        always_trust = kwargs.pop('always_trust', self._default_trust)
-        result = self.gpg.decrypt(data, always_trust=always_trust)
+    def decrypt_verify(self, data):
+        result = self.gpg.decrypt(data)
         return result.data, result.fingerprint
 
     def import_key(self, data, **kwargs):

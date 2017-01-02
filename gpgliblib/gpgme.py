@@ -133,12 +133,12 @@ class GpgMeBackend(GpgBackendBase):
         if not errors:
             return GpgMeKey(self, signatures[0].fpr)
 
-    def decrypt(self, data, **kwargs):
+    def decrypt(self, data):
         output = six.BytesIO()
         self.context.decrypt(six.BytesIO(data), output)
         return output.getvalue()
 
-    def decrypt_verify(self, data, **kwargs):
+    def decrypt_verify(self, data):
         output = six.BytesIO()
         signatures = self.context.decrypt_verify(six.BytesIO(data), output)
 

@@ -102,6 +102,11 @@ You can temporarily override any parameter passed to the backend by using the
    >>> with backend.settings(default_trust=True) as temp_backend:
    ...     # Use the temporary backend instance for a different default trust
    ...     enc = temp_backend.encrypt(b'data', recipients=[fingerprint])
+   ...     sig = temp_backend.sign(b'data', signer=fingerprint)
+   >>> backend.decrypt(enc)
+   b'data'
+   >>> backend.verify(b'data', sig).fingerprint
+   'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
 
 One common usecase is to use a temporary GPG keyring that is automatically discarded after use. GPG
 is not very compatible with a multi-processing environment (e.g. when used in context of a
