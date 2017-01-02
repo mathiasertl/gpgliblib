@@ -2,116 +2,89 @@
 Usage
 #####
 
-This library supports creating basic GPG/Mime messages as well as basic key handling functions. It
-was designed for a website that allows users to add GPG keys in order to receive GPG encrypted
-emails from the website.
+The basic idea of **gpgliblib** is that you use an instance of a backend class that implements
+various functions using the specific GPG library and thus provides a well-documented and pythonic
+interface abstracting away the quirks and problems of each library used. Because every backend
+provides the same interface, you can use a different library by simply using a different backend
+class.
 
-The common interface abstracts from different libraries, making them interchangeable. The following
-example thus works with any implementation.
-
-*********************
-MIME message handling
-*********************
-
-If you are handling basic MIME messages (from pythons `email.mime
-<https://docs.python.org/3.4/library/email.mime.html>`_ module), use the
-:py:func:`~gpgliblib.base.GpgBackendBase.sign_message` and
-:py:func:`~gpgliblib.base.GpgBackendBase.encrypt_message` functions::
+A full list of backends and their options is available at :doc:`backends`. In most cases, you can
+simply instantiate a backend class by calling it without parameters::
 
    >>> from gpgliblib import gpgme
-   >>> from six.moves.email_mime_text import MIMEText
-   >>> from six.moves.email_mime_multipart import MIMEMultipart
+   >>> backend = gpgme.GpgMeBackend(home=gnupg_home)
 
-   # create backend
-   >>> backend = gpgme.GpgMeBackend()
+**************
+Key management
+**************
 
-   # create message
-   >>> plain = MIMEText('foobar')
-   >>> html = MIMEText('html', _subtype='html')
-   >>> multi = MIMEMultipart(_subparts=[plain, html])
+The library offers only very basic key management. You can fetch keys from keyservers, import
+public and private keys, manage trust and query a keys expiry::
 
-   # get signed/encrypted/signed and encrypted message
-   >>> msg = backend.sign_message(multi, signer='your-fingerprint')
-   >>> msg = backend.encrypt_message(multi, recipients=['other-fingerprint'])
-   >>> msg = backend.encrypt_message(multi, signer='your-fingerprint',
-                                     recipients=['your-fingerprint'])
-
-   # add various headers...
-   >>> msg.add_header('From', 'user@example.com')
-
-All functions also allow you to override parameters (usually passed to the constructor) on a
-per-function call basis. E.g. If you want to use a different keyring for an already configured
-backend, you could do::
-
-   >>> backend.sign_message(..., home='/home/other-dir'/)
-
-************************
-Key management functions
-************************
-
-The interface also offers some *basic* key management. It's not very sophisticated, it's assumed
-that users upload a key or give a fingerprint to be downloaded from the keyservers. Keys
-can be imported, trust can be queried and set and the expiry queried::
-
+   >>> from gpgliblib import gpgme
    >>> from gpgliblib.base import VALIDITY_FULL
    >>> from gpgliblib.base import VALIDITY_UNKNOWN
-   >>> from gpgliblib import gpgme
-
-   >>> backend = gpgme.GpgMeBackend()
-   >>> fingerprint = 'E8172F2940EA9F709842290870BD9664FA3947CD'
-
+   
+   >>> backend = gpgme.GpgMeBackend(home=gnupg_home)
+   >>> fingerprint = '4C443E9B262ECB73835730DAA9711516C8D705FC'
+   
    >>> raw_key_data = backend.fetch_key('0x%s' % fingerprint)
-   >>> imported_fp = backend.import_key(raw_key_data)
-   >>> imported_fp == fingerprint[0]
+   >>> key = backend.import_key(raw_key_data)[0]
+   >>> key.fingerprint
+   '4C443E9B262ECB73835730DAA9711516C8D705FC'
+   >>> key.trust == VALIDITY_UNKNOWN
    True
+   >>> key.trust = VALIDITY_FULL
+   >>> key.trust == VALIDITY_FULL
+   True
+   >>> key.expires
+   datetime.datetime(2046, 8, 12, 7, 53, 29)
 
-   >>> backend.get_trust(fingerprint) == VALIDITY_UNKNOWN
+   # This is a key that does not expire:
+   >>> fingerprint = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
+   >>> raw_key_data = backend.fetch_key('0x%s' % fingerprint)
+   >>> key = backend.import_key(raw_key_data)[0]
+   >>> key.expires is None
    True
-   >>> backend.set_trust(fingerprint, VALIDITY_FULL)
-   >>> backend.get_trust(fingerprint) == VALIDITY_FULL
-   True
-
-   >>> backend.expires(fingerprint)
-   datetime.datetime(2017, 10, 8, 21, 14, 53)
 
 ******************
-Django integration
+Signing/Encrypting
 ******************
 
-Since everyone (including me) seems to use `Django <https://www.djangoproject.com/>`_ nowadays,
-this library also integrates with Django.
-
-You can configure caches in settings very similar to how caches are configured::
-
-   GPG_BACKENDS = {
-       'default': {
-           'BACKEND': 'gpgliblib.gpgme.GpgMeBackend',
-           # Optional settings:
-           #'HOME': '/home/...',  # Keyring directory
-           #'PATH': '/home/...',  # Path to 'gpg' binary
-           #'ALWAYS_TRUST': True,   # Ignore trust in all operations
-           #'OPTIONS': {...},  # Any custom options for the specific backend implementation
-       },
-   }
-
-Just like with django caches, you can access configured GPG backends::
-
-   >>> from gpgliblib.django import gpg_backends
-   >>> gpg_backends['default']
-   <gpgliblib.gpgme.GpgMeBackend at 0x...>
-   >>> gpg_backend
-   <gpgliblib.django.DefaultGPGProxy at 0x...>
-
-Use :py:class:`~gpgliblib.django.GpgEmailMessage` instead of
-`EmailMessage <https://docs.djangoproject.com/en/dev/topics/email/#emailmessage-objects>`_
-objects::
+Signing and/or encrypting is straight forward::
 
    >>> from gpgliblib import gpgme
-   >>> from gpgliblib.django import GpgEmailMessage
+   >>> backend = gpgme.GpgMeBackend(home=gnupg_home, default_trust=True)
+   >>> fingerprint = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
 
-   >>> backend = gpgme.GpgMeBackend()
-   >>> fingerprint = 'E8172F2940EA9F709842290870BD9664FA3947CD'
+   # import the private key so we can sign
+   >>> key = backend.import_private_key(user1_priv)[0]
+   >>> testdata = b'testdata, any byte string'
+   
+   >>> sig = backend.sign(testdata, signer=key)
+   >>> enc = backend.encrypt(testdata, recipients=[key])
+   >>> both = backend.sign_encrypt(testdata, recipients=[key], signer=key)
 
-   >>> msg = GpgEmailMessage(subject='subject', ...,
-   ...     gpg_recipients=[fingerprint], gpg_signer=fingerprint)
-   >>> msg.send()
+   # You can also pass the fingerprint whenever you pass a key
+   >>> sig2 = backend.sign(b'data to sign', signer=fingerprint)
+   
+   # Verify signature/encrypted text
+   >>> backend.verify(testdata, sig).fingerprint
+   'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
+   >>> backend.decrypt(enc) == testdata
+   True
+   >>> backend.decrypt_verify(both) == (testdata, fingerprint)
+   True
+
+***************
+Custom settings
+***************
+
+You can temporarily override any parameter passed to the backend by using the
+:py:meth:`~gpgliblib.base.GpgBackendBase.settings` context manager::
+
+   >>> backend = gpgme.GpgMeBackend(home=gnupg_home, default_trust=False)  # False is the default
+   >>> with backend.settings(default_trust=True) as temp_backend:
+   ...     sig = temp_backend.sign(b'data', signer=fingerprint)  # sign with default_trust=True
+
+One common usecase is to use a temporary GPG keyring that automatically discard after use.
