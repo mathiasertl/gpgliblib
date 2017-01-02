@@ -93,4 +93,6 @@ You can temporarily override any parameter passed to the backend by using the
    ...     # Use the temporary backend instance for a different default trust
    ...     enc = temp_backend.encrypt(b'data', recipients=[fingerprint])
 
-One common usecase is to use a temporary GPG keyring that automatically discard after use.
+One common usecase is to use a temporary GPG keyring that is automatically discarded after use. GPG
+is not very compatible with a multi-processing environment (e.g. when used in context of a
+webserver), so it's a lot safer to use a temporary keyring for every operation.
