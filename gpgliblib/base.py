@@ -244,6 +244,12 @@ class GpgBackendBase(object):
 
         fingerprint
             The fingerprint of the signature that was used to sign the data.
+
+        Raises
+        ------
+
+        GpgBadSignature
+            If the signature is invalid.
         """
         raise NotImplementedError
 
@@ -278,6 +284,12 @@ class GpgBackendBase(object):
 
         (bytes, fingerprint)
             The decrypted data and the fingerprint of the key used in the signature.
+
+        Raises
+        ------
+
+        GpgBadSignature
+            If the signature is invalid.
         """
         raise NotImplementedError
 

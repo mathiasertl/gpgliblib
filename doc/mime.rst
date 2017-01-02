@@ -29,9 +29,3 @@ If you are *creating* basic MIME messages (from pythons `email.mime
    >>> msg.add_header('From', 'user@example.com')
 
 The backends do not yet provide any functions for processing received GPG/MIME messages.
-
-All functions also allow you to override parameters (usually passed to the constructor) on a
-per-function call basis. E.g. If you want to use a different keyring for an already configured
-backend, you could do::
-
-   >>> backend.sign_message(..., home='/home/other-dir'/)
