@@ -23,6 +23,7 @@ public and private keys, manage trust and query a keys expiry::
 
    >>> from gpgliblib import gpgme
    >>> from gpgliblib.base import VALIDITY_FULL
+   >>> from gpgliblib.base import VALIDITY_NEVER
    >>> from gpgliblib.base import VALIDITY_UNKNOWN
    
    >>> backend = gpgme.GpgMeBackend(home=gnupg_home)
@@ -84,7 +85,12 @@ You can temporarily override any parameter passed to the backend by using the
 :py:meth:`~gpgliblib.base.GpgBackendBase.settings` context manager::
 
    >>> backend = gpgme.GpgMeBackend(home=gnupg_home, default_trust=False)  # False is the default
+   >>> backend.encrypt(b'data', recipients=[fingerprint])
+   Traceback (most recent call last):
+       ...
+   gpgliblib.base.GpgUntrustedKeyError: Key not trusted.
    >>> with backend.settings(default_trust=True) as temp_backend:
-   ...     sig = temp_backend.sign(b'data', signer=fingerprint)  # sign with default_trust=True
+   ...     # Use the temporary backend instance for a different default trust
+   ...     enc = temp_backend.encrypt(b'data', recipients=[fingerprint])
 
 One common usecase is to use a temporary GPG keyring that automatically discard after use.
