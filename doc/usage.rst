@@ -8,8 +8,9 @@ interface abstracting away the quirks and problems of each library used. Because
 provides the same interface, you can use a different library by simply using a different backend
 class.
 
-A full list of backends and their options is available at :doc:`backends`. In most cases, you can
-simply instantiate a backend class by calling it without parameters::
+A full list of backends and their options is available at :doc:`backends`. The interface they
+provide is documented in more detail in :doc:`api`.  In most cases, you can simply instantiate a
+backend class by calling it without parameters::
 
    >>> from gpgliblib import gpgme
    >>> backend = gpgme.GpgMeBackend(home=gnupg_home)
