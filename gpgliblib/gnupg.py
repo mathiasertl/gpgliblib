@@ -30,6 +30,7 @@ from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
 from .base import GpgBackendBase
+from .base import GpgBadSignature
 from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgMimeError
@@ -136,6 +137,7 @@ class GnuPGBackend(GpgBackendBase):
 
         if verified:
             return GnuPGKey(self, verified.fingerprint)
+        raise GpgBadSignature("Bad Signature")
 
     def decrypt(self, data):
         result = self.gpg.decrypt(data)

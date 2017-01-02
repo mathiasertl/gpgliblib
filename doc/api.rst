@@ -9,6 +9,32 @@ gpgliblib.base.GpgBackendBase
 .. autoclass:: gpgliblib.base.GpgBackendBase
    :members:
 
+*********************
+gpgliblib.base.GpgKey
+*********************
+
+An instance of a subclass of :py:class:`~gpgliblib.base.GpgKey` is returned by various keyhandling
+functions of backend implementations.
+
+.. autoclass:: gpgliblib.base.GpgKey
+   :members:
+
+.. _api-constants:
+
+*********
+Constants
+*********
+
+.. autodata:: gpgliblib.base.VALIDITY_UNKNOWN
+
+.. autodata:: gpgliblib.base.VALIDITY_NEVER
+
+.. autodata:: gpgliblib.base.VALIDITY_MARGINAL
+
+.. autodata:: gpgliblib.base.VALIDITY_FULL
+
+.. autodata:: gpgliblib.base.VALIDITY_ULTIMATE
+
 **********
 Exceptions
 **********
@@ -23,6 +49,9 @@ for convenience.
    :members:
 
 .. autoexception:: gpgliblib.base.GpgUntrustedKeyError
+   :members:
+
+.. autoexception:: gpgliblib.base.GpgBadSignature
    :members:
 
 

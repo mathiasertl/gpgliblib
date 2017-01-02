@@ -29,10 +29,19 @@ from six.moves.urllib.parse import urlencode
 from six.moves.urllib.request import urlopen
 
 # Constants
+#: A key has unknown trust.
 VALIDITY_UNKNOWN = 0
+
+#: A key marked as "never trusted".
 VALIDITY_NEVER = 1
+
+#: A key is marked with "marginal trust".
 VALIDITY_MARGINAL = 2
+
+#: A key is marked with "full trust".
 VALIDITY_FULL = 3
+
+#: A key is marked with "ultimate trust".
 VALIDITY_ULTIMATE = 4
 
 
@@ -52,6 +61,17 @@ class GpgUntrustedKeyError(GpgMimeError):
     """Thrown when a given key was not trusted."""
 
     pass
+
+
+class GpgBadSignature(GpgMimeError):
+    """Thrown when a signature is invalid."""
+
+    #: Errors returned by the library in use.
+    errors = None
+
+    def __init__(self, *args, **kwargs):
+        self.errors = kwargs.pop('errors', [])
+        super(GpgBadSignature, self).__init__(*args, **kwargs)
 
 
 class GpgBackendBase(object):
@@ -406,16 +426,37 @@ class GpgBackendBase(object):
 
 
 class GpgKey(object):
+    """Base class for all GPG Keys.
+
+    Instances of this class are usually created by the backend in use and not by a user of this
+    library.
+
+    Parameters
+    ----------
+
+    backend : :py:class:`~gpgliblib.base.GpgBackendBase`
+        Any backend instance.
+    fingerprint : str
+        The fingerprint of the key.
+    """
+
     def __init__(self, backend, fingerprint):
         self.backend = backend
         self.fingerprint = fingerprint
         self.refresh()
 
     def refresh(self):
+        """Reset any in-memory data used by this key."""
         pass
 
     @property
     def trust(self):
+        """The current trust for this key.
+
+        The value is one of the ``VALIDITY_*`` :ref:`constants <api-constants>` and can also be
+        used to set the trust of a key.
+        """
+
         raise NotImplementedError
 
     @trust.setter
