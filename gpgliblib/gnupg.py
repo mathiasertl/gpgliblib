@@ -157,22 +157,33 @@ class GnuPGBackend(GpgBackendBase):
 
 
 class GnuPGKey(GpgKey):
+    _loaded_list_keys = None
+
+    def refresh(self):
+        self._loaded_list_keys = None
+
+    @property
+    def _list_keys(self):
+        if self._loaded_list_keys is None:
+            self._loaded_list_keys = self.backend.gpg.list_keys(keys=self.fingerprint)[0]
+        return self._loaded_list_keys
+
     @property
     def trust(self):
-        trust = self.backend.gpg.list_keys(keys=self.fingerprint)[0]['ownertrust']
+        trust = self._list_keys['ownertrust']
 
         if trust == '-':
-            return VALIDITY_UNKNOWN
+            return VALIDITY_UNKNOWN  # 0
         elif trust == 'n':
-            return VALIDITY_NEVER
+            return VALIDITY_NEVER  # 1
         elif trust == 'm':
-            return VALIDITY_MARGINAL
+            return VALIDITY_MARGINAL  # 2
         elif trust == 'f':
-            return VALIDITY_FULL
+            return VALIDITY_FULL  # 3
         elif trust == 'u':
-            return VALIDITY_ULTIMATE
+            return VALIDITY_ULTIMATE  # 4
         else:
-            return VALIDITY_UNKNOWN
+            return VALIDITY_UNKNOWN  # 0
 
     @trust.setter
     def trust(self, value):
@@ -194,6 +205,8 @@ class GnuPGKey(GpgKey):
 
         self.backend.gpg._handle_io(['--import-ownertrust'], six.BytesIO(line), result,
                                     binary=True)
+
+        self.refresh()
 
     @property
     def expires(self):

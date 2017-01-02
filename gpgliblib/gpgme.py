@@ -210,3 +210,7 @@ class GpgMeKey(GpgKey):
         expires = lambda i: datetime.fromtimestamp(i) if i else None
         subkeys = {sk.fpr: expires(sk.expires) for sk in self._key.subkeys}
         return subkeys[self.fingerprint]
+
+    @property
+    def revoked(self):
+        return self._key.revoked

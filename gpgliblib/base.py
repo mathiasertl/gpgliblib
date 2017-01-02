@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 from contextlib import contextmanager
+from datetime import datetime
 from email.encoders import encode_noop
 from email.mime.application import MIMEApplication
 
@@ -481,6 +482,18 @@ class GpgKey(object):
 
         This is a datetime for when the key expires, or ``None`` if it does not expire.
         """
+        raise NotImplementedError
+
+    @property
+    def expired(self):
+        """Returns True if the key is expired right now."""
+
+        return self.expires < datetime.utcnow()
+
+    @property
+    def revoked(self):
+        """Boolean indicating if the key is revoked."""
+
         raise NotImplementedError
 
     @property
