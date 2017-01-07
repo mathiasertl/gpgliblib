@@ -148,11 +148,11 @@ class GnuPGBackend(GpgBackendBase):
         result = self.gpg.decrypt(data)
         return result.data, result.fingerprint
 
-    def import_key(self, data, **kwargs):
+    def import_key(self, data):
         result = self.gpg.import_keys(data)
         return [GnuPGKey(self, fp) for fp in result.fingerprints]
 
-    def import_private_key(self, data, **kwargs):
+    def import_private_key(self, data):
         result = self.gpg.import_keys(data)
         return list(set([GnuPGKey(self, fp) for fp in result.fingerprints]))
 

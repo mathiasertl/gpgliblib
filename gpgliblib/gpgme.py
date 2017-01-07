@@ -148,11 +148,17 @@ class GpgMeBackend(GpgBackendBase):
         if not errors:
             return output.getvalue(), signatures[0].fpr
 
-    def import_key(self, data, **kwargs):
+    def import_key(self, data):
+        if six.PY3 and isinstance(data, str):
+            data = data.encode('utf-8')
+
         result = self.context.import_(six.BytesIO(data))
         return [GpgMeKey(self, r[0]) for r in result.imports]
 
-    def import_private_key(self, data, **kwargs):
+    def import_private_key(self, data):
+        if six.PY3 and isinstance(data, str):
+            data = data.encode('utf-8')
+
         result = self.context.import_(six.BytesIO(data))
         return list(set([GpgMeKey(self, r[0]) for r in result.imports]))
 

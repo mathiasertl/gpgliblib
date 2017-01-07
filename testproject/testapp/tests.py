@@ -44,51 +44,51 @@ testdatadir = os.path.join(basedir, 'testdata')
 
 # load data into memory
 user1_fp = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
-with open(os.path.join(testdatadir, '%s.priv' % user1_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.priv' % user1_fp), 'r') as stream:
     user1_priv = stream.read()
-with open(os.path.join(testdatadir, '%s.pub' % user1_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.pub' % user1_fp), 'r') as stream:
     user1_pub = stream.read()
 
 user2_fp = '28B9BC9D1F71C23D8CE2ABD04657F2D6FF6A0F95'
-with open(os.path.join(testdatadir, '%s.priv' % user2_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.priv' % user2_fp), 'r') as stream:
     user2_priv = stream.read()
-with open(os.path.join(testdatadir, '%s.pub' % user2_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.pub' % user2_fp), 'r') as stream:
     user2_pub = stream.read()
 
 user3_fp = '086E59B1917B90B0F8BCDC5C4E7109E63E81D74C'
-with open(os.path.join(testdatadir, '%s.priv' % user3_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.priv' % user3_fp), 'r') as stream:
     user3_priv = stream.read()
-with open(os.path.join(testdatadir, '%s.pub' % user3_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.pub' % user3_fp), 'r') as stream:
     user3_pub = stream.read()
 
 user4_fp = '076E1C74BAD6DA878905169289BCCEEA8D95B1E0'
-with open(os.path.join(testdatadir, '%s.priv' % user4_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.priv' % user4_fp), 'r') as stream:
     user4_priv = stream.read()
-with open(os.path.join(testdatadir, '%s.pub' % user4_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.pub' % user4_fp), 'r') as stream:
     user4_pub = stream.read()
 
 expires_fp = '4C443E9B262ECB73835730DAA9711516C8D705FC'
-with open(os.path.join(testdatadir, '%s.priv' % expires_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.priv' % expires_fp), 'r') as stream:
     expires_priv = stream.read()
-with open(os.path.join(testdatadir, '%s.pub' % expires_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.pub' % expires_fp), 'r') as stream:
     expires_pub = stream.read()
 
 expired_fp = '122E23C2717B7BCE1AB3E11B6FBC070283C802AB'
-with open(os.path.join(testdatadir, '%s.priv' % expired_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.priv' % expired_fp), 'r') as stream:
     expired_priv = stream.read()
-with open(os.path.join(testdatadir, '%s.pub' % expired_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.pub' % expired_fp), 'r') as stream:
     expired_pub = stream.read()
 
 revoked_fp = 'BE57A1261FC904FF24FBD92F8D40928D3C5FF049'
-with open(os.path.join(testdatadir, '%s.priv' % revoked_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.priv' % revoked_fp), 'r') as stream:
     revoked_priv = stream.read()
-with open(os.path.join(testdatadir, '%s.pub' % revoked_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.pub' % revoked_fp), 'r') as stream:
     revoked_pub = stream.read()
 
 multiple_fp = 'FF40CF5C4D6DDAA16D52B94288989BE6795A5C96'
-with open(os.path.join(testdatadir, '%s.priv' % multiple_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.priv' % multiple_fp), 'r') as stream:
     multiple_priv = stream.read()
-with open(os.path.join(testdatadir, '%s.pub' % multiple_fp), 'rb') as stream:
+with open(os.path.join(testdatadir, '%s.pub' % multiple_fp), 'r') as stream:
     multiple_pub = stream.read()
 
 known_public_keys = {

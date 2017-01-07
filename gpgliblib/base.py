@@ -185,8 +185,8 @@ class GpgBackendBase(object):
         Parameters
         ----------
 
-        data : bytes
-            The public key data.
+        data : str
+            The public key data in ASCII armored format.
 
         Returns
         -------
@@ -202,8 +202,8 @@ class GpgBackendBase(object):
         Parameters
         ----------
 
-        data : bytes
-            The private key data.
+        data : str
+            The private key data in ASCII armored format.
         **kwargs
             Any additional parameters to the GPG backend.
 
