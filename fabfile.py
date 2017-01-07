@@ -21,7 +21,7 @@ from fabric.api import task
 
 @task
 def test():
-    """Run testsuite."""
+    """Run the testsuite."""
 
     old = os.getcwd()
     os.chdir('testproject')
@@ -31,7 +31,7 @@ def test():
 
 @task
 def check():
-    """Run testsuite and style-checks."""
+    """Run the testsuite and style-checks."""
 
     local('flake8 gpgliblib')
     local('isort --check-only -rc gpgliblib/')
