@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import tempfile
 from contextlib import contextmanager
 from datetime import datetime
 from email.encoders import encode_noop
@@ -109,9 +110,32 @@ class GpgBackendBase(object):
 
     @contextmanager
     def settings(self, **kwargs):
+        """Context manager yielding a temporary backend with different settings.
+
+        The context manager passes all ``kwargs`` to the constructor of its own class and should
+        thus take the same parameters. For example, to temporary set the default trust to
+        ``True``, do::
+
+            with backend.settings(default_trust=True) as temp_backend:
+                # temp_backend will have a different default trust
+        """
         my_settings = self.get_settings()
         my_settings.update(kwargs)
         yield self.__class__(**my_settings)
+
+    @contextmanager
+    def temp_keyring(self, **kwargs):
+        """Context manager with a temporary home directory.
+
+        This context manager is a shortcut for :py:func:`~gpgliblib.base.GpgBackendBase.settings`
+        that uses a temporary keyring directory. All other ``kwargs`` are passed to
+        :py:func:`~gpgliblib.base.GpgBackendBase.settings`. It is equivalent to::
+
+            with tempfile.TemporaryDirectory() as home, backend.settings(home=home) as backend:
+                yield backend
+        """
+        with tempfile.TemporaryDirectory() as home, self.settings(home=home, **kwargs) as backend:
+            yield backend
 
     ##################
     # Key management #
@@ -530,6 +554,9 @@ class GpgKey(object):
 
     def __str__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.fingerprint)
+
+    def __repr__(self):
+        return self.__str__()
 
     def __eq__(self, other):
         return self.backend == other.backend and self.fingerprint == other.fingerprint

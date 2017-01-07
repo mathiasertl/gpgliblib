@@ -133,7 +133,7 @@ def load_tests(loader, tests, ignore):
 
 class TestCaseMixin(object):
     def assertKeys(self, result, expected):
-        self.assertEqual([k.fp for k in result], expected)
+        self.assertCountEqual([k.fp for k in result], expected)
 
     def test_import_key(self):
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
@@ -333,6 +333,16 @@ class TestCaseMixin(object):
                     backend.encrypt(data, [key], always_trust=False)
         finally:
             shutil.rmtree(home)
+
+    def test_temp_keyring(self):
+        keys = self.backend.import_key(user1_pub)
+        self.assertEqual(self.backend.list_keys(), keys)
+
+        with self.backend.temp_keyring() as temp_backend:
+            keys = self.backend.import_key(user1_pub)
+            self.assertEqual(temp_backend.list_keys(), [])
+
+        keys = self.backend.import_key(user1_pub)
 
     def test_default_trust(self):
         data = b'testdata'

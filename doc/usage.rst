@@ -110,4 +110,14 @@ You can temporarily override any parameter passed to the backend by using the
 
 One common usecase is to use a temporary GPG keyring that is automatically discarded after use. GPG
 is not very compatible with a multi-processing environment (e.g. when used in context of a
-webserver), so it's a lot safer to use a temporary keyring for every operation.
+webserver), so it's a lot safer to use a temporary keyring for every operation. This is in fact so
+common, that there even is it's own context manager for it::
+
+   >>> from gpgliblib import gpgme
+   >>> backend = gpgme.GpgMeBackend(home=gnupg_home)
+   
+   >>> backend.list_keys()
+   [<GpgMeKey: 4C443E9B262ECB73835730DAA9711516C8D705FC>, <GpgMeKey: CC9F343794DBB20E13DE097EE53338B91AA9A0AC>]
+   >>> with backend.temp_keyring() as temp_backend:
+   ...     temp_backend.list_keys()
+   []
