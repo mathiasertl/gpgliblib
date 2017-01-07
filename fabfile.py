@@ -14,9 +14,15 @@
 # not, see <http://www.gnu.org/licenses/>.
 
 import os
+import tempfile
 
 from fabric.api import local
 from fabric.api import task
+
+from gpgliblib import gpgme
+from gpgliblib import gnupg
+
+testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
 
 
 @task
@@ -37,6 +43,60 @@ def check():
     local('isort --check-only -rc gpgliblib/')
 
     test()
+
+
+@task
+def test_mime_messages(fp=None, dest=None):
+    """Create test-messages using basic MIME messages.
+
+    Parameters
+    ----------
+
+    dest
+        Destination directory for the messages, defaults to ``build/test_backends``.
+    fp
+        Fingerprint to use, defaults to ``"CC9F343794DBB20E13DE097EE53338B91AA9A0AC"``.
+        If given, this should be one of the keys located in the ``testdata/`` directory..
+    """
+
+    if not fp:
+        fp = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
+    if not dest:
+        dest = os.path.join(os.path.abspath('build'), 'test_backends')
+
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+
+    def test_backend(backend):
+        dest_dir = os.path.join(dest, backend.__module__.split('.', 1)[1])
+        if not os.path.exists(dest_dir):
+            os.makedirs(dest_dir)
+
+        with open(os.path.join(testdata_dir, '%s.priv' % fp), 'rb') as stream:
+            backend.import_private_key(stream.read())
+
+        with open(os.path.join(testdata_dir, '%s.pub' % fp), 'rb') as stream:
+            backend.import_key(stream.read())
+
+        msg = backend.sign_message('foobar', fp)
+        with open(os.path.join(dest_dir, 'signed-only.eml'), 'wb') as stream:
+            stream.write(msg.as_bytes())
+
+        msg = backend.encrypt_message('foobar', recipients=[fp])
+        with open(os.path.join(dest_dir, 'encrypted-only.eml'), 'wb') as stream:
+            stream.write(msg.as_bytes())
+
+        msg = backend.encrypt_message('foobar', recipients=[fp], signers=[fp])
+        with open(os.path.join(dest_dir, 'signed-encrypted.eml'), 'wb') as stream:
+            stream.write(msg.as_bytes())
+
+    with tempfile.TemporaryDirectory() as home:
+        backend = gpgme.GpgMeBackend(home=home, default_trust=True)
+        test_backend(backend)
+
+    with tempfile.TemporaryDirectory() as home:
+        backend = gnupg.GnuPGBackend(home=home, default_trust=True)
+        test_backend(backend)
 
 
 @task

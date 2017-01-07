@@ -15,73 +15,8 @@
 
 from __future__ import unicode_literals, absolute_import
 
-import os
-import shutil
-import tempfile
-
-from distutils.cmd import Command
 from setuptools import find_packages
 from setuptools import setup
-
-testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
-
-
-# TODO: Move this to fabfile
-class BackendMailCommand(Command):
-    description = 'Create test-messages using basic MIME messages.'
-    user_options = [
-        ('dest=', 'd', 'Destination director for the messages.'),
-        ('fp=', None, 'Fingerprint to use for signing/encrypting.'),
-    ]
-
-    def initialize_options(self):
-        self.dest = os.path.join(os.path.abspath('build'), 'test_backends')
-
-        # default is my own GPG key ;-)
-        self.fp = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
-
-    def finalize_options(self):
-        if not os.path.exists(self.dest):
-            os.makedirs(self.dest)
-
-    def test_backend(self, backend):
-        from gpgmime.base import VALIDITY_ULTIMATE
-
-        dest_dir = os.path.join(self.dest, backend.__module__.split('.', 1)[1])
-        if not os.path.exists(dest_dir):
-            os.makedirs(dest_dir)
-
-        with open(os.path.join(testdata_dir, '%s.priv' % self.fp), 'rb') as stream:
-            backend.import_private_key(stream.read())
-
-        with open(os.path.join(testdata_dir, '%s.pub' % self.fp), 'rb') as stream:
-            backend.import_key(stream.read())
-
-        backend.set_trust(self.fp, VALIDITY_ULTIMATE)
-
-        msg = backend.sign_message('foobar', [self.fp])
-        with open(os.path.join(dest_dir, 'signed-only.eml'), 'wb') as stream:
-            stream.write(msg.as_bytes())
-
-        msg = backend.encrypt_message('foobar', recipients=[self.fp])
-        with open(os.path.join(dest_dir, 'encrypted-only.eml'), 'wb') as stream:
-            stream.write(msg.as_bytes())
-
-        msg = backend.encrypt_message('foobar', recipients=[self.fp], signers=[self.fp])
-        with open(os.path.join(dest_dir, 'signed-encrypted.eml'), 'wb') as stream:
-            stream.write(msg.as_bytes())
-
-    def test_gpgme(self):
-        tmpdir = tempfile.mkdtemp()
-
-        try:
-            from gpgmime import gpgme
-            self.test_backend(gpgme.GpgMeBackend(home=tmpdir))
-        finally:
-            shutil.rmtree(tmpdir)
-
-    def run(self):
-        self.test_gpgme()
 
 
 setup(
@@ -94,9 +29,6 @@ setup(
     url='https://github.com/mathiasertl/gpgliblib',
     packages=find_packages(),
     install_requires=[],
-    cmdclass={
-        'test_backends': BackendMailCommand,
-    },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Framework :: Django :: 1.8',

@@ -2,25 +2,24 @@
 Testing
 #######
 
-There is an automated test-suite to test the functions that should be
-implemented by a GPG backend (signing, encrypting, ...). In the ``testproject``
-directory, do::
+There is an automated testsuite to test the functions that should be
+implemented by a GPG backend (signing, encrypting, ...). Simply run::
 
-   python manage.py test
+   fab test
 
-Since there isn't any library to test PGP/MIME messages, there is no automated
-test-suite for the generation of messages. You can create sample data and
-manually test them with an email client.
+The testsuite tests key handling, encryption and signing.
 
-************
-Raw backends
-************
+*************
+Test GPG/MIME
+*************
 
-Run::
+Since there isn't any existing library for creating GPG/MIME messages, there is
+a fabfile target that creates messages that you can then check in your
+mailclient::
 
-   python setup.py test_backends
+   fab test_mime_messages
 
-to create test messages in ``build/test_backends``.
+The files are created in ``build/test_backends/``.
 
 ******************
 Django integration
