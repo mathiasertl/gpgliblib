@@ -79,6 +79,12 @@ with open(os.path.join(testdatadir, '%s.priv' % expired_fp), 'rb') as stream:
 with open(os.path.join(testdatadir, '%s.pub' % expired_fp), 'rb') as stream:
     expired_pub = stream.read()
 
+revoked_fp = 'BE57A1261FC904FF24FBD92F8D40928D3C5FF049'
+with open(os.path.join(testdatadir, '%s.priv' % revoked_fp), 'rb') as stream:
+    revoked_priv = stream.read()
+with open(os.path.join(testdatadir, '%s.pub' % revoked_fp), 'rb') as stream:
+    revoked_pub = stream.read()
+
 known_public_keys = {
     user1_fp: user1_pub,
     user2_fp: user2_pub,
@@ -86,6 +92,7 @@ known_public_keys = {
     user4_fp: user4_pub,
     expires_fp: expires_pub,
     expired_fp: expired_pub,
+    revoked_fp: revoked_pub,
 }
 
 
@@ -306,6 +313,19 @@ class TestCaseMixin(object):
 
             with self.assertRaises(GpgUntrustedKeyError):
                 self.backend.encrypt(data, priv_keys, always_trust=False)
+
+    def test_key_properties(self):
+        key = self.backend.import_key(user1_pub)[0]
+        self.assertFalse(key.revoked)
+        self.assertEqual(key.name, 'Private Citizen One')
+        self.assertEqual(key.comment, None)
+        self.assertEqual(key.email, 'user@example.com')
+
+        key = self.backend.import_key(revoked_pub)[0]
+        self.assertTrue(key.revoked)
+        self.assertEqual(key.name, 'Public Citizen One')
+        self.assertEqual(key.comment, 'revoked')
+        self.assertEqual(key.email, 'user+revoked@example.com')
 
     def setUp(self):
         self.home = tempfile.mkdtemp()

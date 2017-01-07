@@ -175,6 +175,20 @@ class GpgMeKey(GpgKey):
         self._loaded_key = None
 
     @property
+    def name(self):
+        return self._key.uids[0].name
+
+    @property
+    def comment(self):
+        comment = self._key.uids[0].comment
+        if comment:
+            return comment
+
+    @property
+    def email(self):
+        return self._key.uids[0].email
+
+    @property
     def trust(self):
         if self._key.owner_trust == gpgme.VALIDITY_UNKNOWN:
             return VALIDITY_UNKNOWN

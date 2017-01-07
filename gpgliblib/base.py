@@ -463,6 +463,21 @@ class GpgKey(object):
         pass
 
     @property
+    def name(self):
+        """Name for this key."""
+        raise NotImplementedError
+
+    @property
+    def comment(self):
+        """Comment for this key."""
+        raise NotImplementedError
+
+    @property
+    def email(self):
+        """Email for this key."""
+        raise NotImplementedError
+
+    @property
     def trust(self):
         """The current trust for this key.
 

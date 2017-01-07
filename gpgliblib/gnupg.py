@@ -17,6 +17,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 
 import os
+import re
 import tempfile
 from datetime import datetime
 from threading import local
@@ -160,6 +161,9 @@ class GnuPGKey(GpgKey):
     _loaded_list_keys = None
 
     def refresh(self):
+        self._comment = None
+        self._email = None
+        self._name = None
         self._loaded_list_keys = None
 
     @property
@@ -167,6 +171,25 @@ class GnuPGKey(GpgKey):
         if self._loaded_list_keys is None:
             self._loaded_list_keys = self.backend.gpg.list_keys(keys=self.fingerprint)[0]
         return self._loaded_list_keys
+
+    def _parse_uid(self, uid):
+        return re.search(r'(?P<name>.*?)( \((?P<comment>.*)\))? <(?P<email>.*)>$', uid).groupdict()
+
+    @property
+    def name(self):
+        return self._parse_uid(self._list_keys['uids'][0])['name']
+
+    @property
+    def comment(self):
+        return self._parse_uid(self._list_keys['uids'][0])['comment']
+
+    @property
+    def email(self):
+        return self._parse_uid(self._list_keys['uids'][0])['email']
+
+    @property
+    def revoked(self):
+        return self._list_keys.get('trust', '-') == 'r'
 
     @property
     def trust(self):
