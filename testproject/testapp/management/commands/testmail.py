@@ -40,11 +40,14 @@ class Command(BaseCommand):
         encrypt = [options['encrypt']]
         frm = options['from']
         to = [options['to']]
+        print('Using backend: %s' % backend)
 
         # import keys
+        with open(os.path.join(options['keydir'], '%s.pub' % options['encrypt'])) as stream:
+            backend.import_key(stream.read())
         with open(os.path.join(options['keydir'], '%s.pub' % options['sign'])) as stream:
             backend.import_key(stream.read())
-        with open(os.path.join(options['keydir'], '%s.priv' % options['encrypt'])) as stream:
+        with open(os.path.join(options['keydir'], '%s.priv' % options['sign'])) as stream:
             backend.import_private_key(stream.read())
 
         ##########################
@@ -52,6 +55,7 @@ class Command(BaseCommand):
         ##########################
 
         # only sign
+        print('signing with %s' % sign)
         msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='non-multipart, signed',
             body='non-multipart, signed',

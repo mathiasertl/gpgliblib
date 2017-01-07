@@ -181,6 +181,7 @@ class GpgEmailMessage(EmailMultiAlternatives):
         to_encrypt = self.get_base_message(message)
         backend = self.get_backend()
 
+        print('encrypt_message: %s' % backend)
         control_msg = backend.get_control_message()
         encrypted_msg = backend.get_octet_stream(to_encrypt, recipients=self.gpg_recipients,
                                                  signer=self.gpg_signer)
@@ -207,6 +208,7 @@ class GpgEmailMessage(EmailMultiAlternatives):
     def sign_message(self, message, **kwargs):
         to_sign = self.get_base_message(message)
         backend = self.get_backend()
+        print('### sign_message: %s' % backend)
 
         if isinstance(message, SafeMIMEMultipart):
             # We have to adjust the policy because Django SOMEHOW adjusts the line-length of

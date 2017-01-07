@@ -95,6 +95,7 @@ class GpgMeBackend(GpgBackendBase):
             else:
                 self.context.encrypt(recipients, flags, six.BytesIO(data), output_bytes)
         except gpgme.GpgmeError as e:
+            print(self, e)
             if e.source == gpgme.ERR_SOURCE_UNKNOWN and e.code == gpgme.ERR_GENERAL:
                 raise GpgUntrustedKeyError("Key not trusted.")
 
