@@ -155,6 +155,15 @@ class TestCaseMixin(object):
     def test_import_malformed_private_key(self):
         self.assertEqual(self.backend.import_private_key(b'foobar'), [])
 
+    def test_multiple_imports(self):
+        self.assertKeys(self.backend.import_key(user1_pub + user2_pub), [user1_fp, user2_fp])
+        self.assertKeys(self.backend.import_key(user1_pub + user2_pub), [user1_fp, user2_fp])
+
+        self.assertKeys(self.backend.import_private_key(user3_pub + user4_pub),
+                        [user3_fp, user4_fp])
+        self.assertKeys(self.backend.import_private_key(user3_pub + user4_pub),
+                        [user3_fp, user4_fp])
+
     def test_list_keys(self):
         self.assertEqual(self.backend.list_keys(), [])
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
