@@ -48,6 +48,10 @@ with open(os.path.join(testdatadir, '%s.priv' % user1_fp), 'r') as stream:
     user1_priv = stream.read()
 with open(os.path.join(testdatadir, '%s.pub' % user1_fp), 'r') as stream:
     user1_pub = stream.read()
+with open(os.path.join(testdatadir, '%s.bin.priv' % user1_fp), 'rb') as stream:
+    user1_bin_priv = stream.read()
+with open(os.path.join(testdatadir, '%s.bin.pub' % user1_fp), 'rb') as stream:
+    user1_bin_pub = stream.read()
 
 user2_fp = '28B9BC9D1F71C23D8CE2ABD04657F2D6FF6A0F95'
 with open(os.path.join(testdatadir, '%s.priv' % user2_fp), 'r') as stream:
@@ -142,6 +146,10 @@ class TestCaseMixin(object):
         self.assertKeys(self.backend.import_key(user2_pub), [user2_fp])
         self.assertKeys(self.backend.import_key(user2_pub), [user2_fp])
 
+    def test_import_bin_key(self):
+        self.assertKeys(self.backend.import_key(user1_bin_pub), [user1_fp])
+        self.assertKeys(self.backend.import_key(user1_bin_pub), [user1_fp])
+
     def test_import_malformed_key(self):
         self.assertEqual(self.backend.import_key(b'foobar'), [])
 
@@ -151,6 +159,10 @@ class TestCaseMixin(object):
 
         self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp])
         self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp])
+
+    def test_import_private_bin_key(self):
+        self.assertKeys(self.backend.import_private_key(user1_bin_pub), [user1_fp])
+        self.assertKeys(self.backend.import_private_key(user1_bin_pub), [user1_fp])
 
     def test_import_malformed_private_key(self):
         self.assertEqual(self.backend.import_private_key(b'foobar'), [])
