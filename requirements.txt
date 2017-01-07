@@ -1,4 +1,4 @@
-Django==1.10.4
+Django==1.10.5
 python-gnupg==0.3.9
 pygpgme==0.3
 six==1.10.0
