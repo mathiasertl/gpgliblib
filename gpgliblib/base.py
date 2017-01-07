@@ -191,8 +191,8 @@ class GpgBackendBase(object):
         Returns
         -------
 
-        str
-            The fingerprint of the (first) imported public key.
+        list of GpgKey
+            A list of GpgKey instances that were imported.
         """
         raise NotImplementedError
 
@@ -210,8 +210,8 @@ class GpgBackendBase(object):
         Returns
         -------
 
-        str
-            The fingerprint of the private key.
+        list of GpgKey
+            A list of GpgKey instances that were imported.
         """
         raise NotImplementedError
 
@@ -222,7 +222,15 @@ class GpgBackendBase(object):
         ----------
 
         query : str, optional
+            Only list keys matching the given query.
         secret_keys : bool, optional
+            Only return keys with a secret key.
+
+        Returns
+        -------
+
+        list of GpgKey
+            A list of GpgKey instances representing the keys that were found.
         """
         raise NotImplementedError
 
