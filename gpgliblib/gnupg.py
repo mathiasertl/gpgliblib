@@ -154,7 +154,7 @@ class GnuPGBackend(GpgBackendBase):
 
     def import_private_key(self, data, **kwargs):
         result = self.gpg.import_keys(data)
-        return [GnuPGKey(self, fp) for fp in result.fingerprints]
+        return list(set([GnuPGKey(self, fp) for fp in result.fingerprints]))
 
     def list_keys(self, query=None, secret_keys=False):
         kwargs = {'secret': secret_keys, }

@@ -154,7 +154,7 @@ class GpgMeBackend(GpgBackendBase):
 
     def import_private_key(self, data, **kwargs):
         result = self.context.import_(six.BytesIO(data))
-        return [GpgMeKey(self, r[0]) for r in result.imports]
+        return list(set([GpgMeKey(self, r[0]) for r in result.imports]))
 
     def list_keys(self, query=None, secret_keys=False):
         return [GpgMeKey(self, key=k) for k in self.context.keylist(query, secret_keys)]

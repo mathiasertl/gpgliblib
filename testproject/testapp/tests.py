@@ -146,10 +146,10 @@ class TestCaseMixin(object):
         self.assertEqual(self.backend.import_key(b'foobar'), [])
 
     def test_import_private_key(self):
-        self.assertKeys(self.backend.import_private_key(user1_priv), [user1_fp, user1_fp])
+        self.assertKeys(self.backend.import_private_key(user1_priv), [user1_fp])
         self.assertKeys(self.backend.import_private_key(user1_priv), [user1_fp])
 
-        self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp, user2_fp])
+        self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp])
         self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp])
 
     def test_import_malformed_private_key(self):
@@ -161,7 +161,7 @@ class TestCaseMixin(object):
         self.assertEqual(self.backend.list_keys(), [self.backend.get_key(user1_fp)])
 
         # import a private key
-        self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp, user2_fp])
+        self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp])
         self.assertEqual(self.backend.list_keys(),
                          [self.backend.get_key(user1_fp), self.backend.get_key(user2_fp)])
         self.assertEqual(self.backend.list_keys(secret_keys=True),
@@ -199,7 +199,7 @@ class TestCaseMixin(object):
         self.assertKeys(keys, [user3_fp])
 
         priv_keys = self.backend.import_private_key(user3_priv)
-        self.assertKeys(priv_keys, [user3_fp, user3_fp])
+        self.assertKeys(priv_keys, [user3_fp])
 
         signature = self.backend.sign(data, priv_keys[0])
         self.assertEqual(self.backend.verify(data, signature), user3_fp)
@@ -217,7 +217,7 @@ class TestCaseMixin(object):
         self.assertKeys(keys, [user1_fp])
 
         priv_keys = self.backend.import_private_key(user1_priv)
-        self.assertKeys(priv_keys, [user1_fp, user1_fp])
+        self.assertKeys(priv_keys, [user1_fp])
 
         encrypted = self.backend.encrypt(data, keys, always_trust=True)
         self.assertEqual(self.backend.decrypt(encrypted), data)
@@ -238,13 +238,13 @@ class TestCaseMixin(object):
         keys = self.backend.import_key(user3_pub)
         self.assertKeys(keys, [user3_fp])
         priv_keys = self.backend.import_private_key(user1_priv)
-        self.assertKeys(priv_keys, [user1_fp, user1_fp])
+        self.assertKeys(priv_keys, [user1_fp])
 
         encrypted = self.backend.sign_encrypt(data, recipients=keys, signer=priv_keys[0],
                                               always_trust=True)
 
         user3_keys = self.backend.import_private_key(user3_priv)
-        self.assertKeys(user3_keys, [user3_fp, user3_fp])
+        self.assertKeys(user3_keys, [user3_fp])
         self.assertEqual(self.backend.decrypt_verify(encrypted), (data, user1_fp))
 
         encrypted = self.backend.sign_encrypt(data, recipients=[user3_fp], signer=user1_fp,
@@ -302,7 +302,7 @@ class TestCaseMixin(object):
         self.assertKeys(keys, [user1_fp])
 
         priv_keys = self.backend.import_private_key(user1_priv)
-        self.assertKeys(priv_keys, [user1_fp, user1_fp])
+        self.assertKeys(priv_keys, [user1_fp])
 
         with self.assertRaises(GpgUntrustedKeyError):
             self.backend.encrypt(data, keys, always_trust=False)
@@ -313,7 +313,7 @@ class TestCaseMixin(object):
         self.assertKeys(keys, [user1_fp])
 
         priv_keys = self.backend.import_private_key(user1_priv)
-        self.assertKeys(priv_keys, [user1_fp, user1_fp])
+        self.assertKeys(priv_keys, [user1_fp])
 
         home = tempfile.mkdtemp()
 
@@ -331,7 +331,7 @@ class TestCaseMixin(object):
         self.assertKeys(keys, [user1_fp])
 
         priv_keys = self.backend.import_private_key(user1_priv)
-        self.assertKeys(priv_keys, [user1_fp, user1_fp])
+        self.assertKeys(priv_keys, [user1_fp])
 
         with self.assertRaises(GpgUntrustedKeyError):
             self.backend.encrypt(data, priv_keys)
