@@ -307,9 +307,6 @@ class TestCaseMixin(object):
             with self.assertRaises(GpgUntrustedKeyError):
                 self.backend.encrypt(data, priv_keys, always_trust=False)
 
-    def __exit__(self, *args, **kwargs):
-        print(args, kwargs)
-
     def setUp(self):
         self.home = tempfile.mkdtemp()
 
