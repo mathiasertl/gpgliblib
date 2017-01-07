@@ -85,6 +85,12 @@ with open(os.path.join(testdatadir, '%s.priv' % revoked_fp), 'rb') as stream:
 with open(os.path.join(testdatadir, '%s.pub' % revoked_fp), 'rb') as stream:
     revoked_pub = stream.read()
 
+multiple_fp = 'FF40CF5C4D6DDAA16D52B94288989BE6795A5C96'
+with open(os.path.join(testdatadir, '%s.priv' % multiple_fp), 'rb') as stream:
+    multiple_priv = stream.read()
+with open(os.path.join(testdatadir, '%s.pub' % multiple_fp), 'rb') as stream:
+    multiple_pub = stream.read()
+
 known_public_keys = {
     user1_fp: user1_pub,
     user2_fp: user2_pub,
@@ -93,6 +99,7 @@ known_public_keys = {
     expires_fp: expires_pub,
     expired_fp: expired_pub,
     revoked_fp: revoked_pub,
+    multiple_fp: multiple_pub,
 }
 
 
