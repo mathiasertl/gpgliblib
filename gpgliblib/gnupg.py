@@ -156,9 +156,21 @@ class GnuPGBackend(GpgBackendBase):
         result = self.gpg.import_keys(data)
         return [GnuPGKey(self, fp) for fp in result.fingerprints]
 
+    def list_keys(self, query=None, secret_keys=False):
+        kwargs = {'secret': secret_keys, }
+        if query:
+            kwargs['keys'] = query
+        return [GnuPGKey(self, r['fingerprint'], r) for r in self.gpg.list_keys(**kwargs)]
+
 
 class GnuPGKey(GpgKey):
     _loaded_list_keys = None
+
+    def __init__(self, backend, fingerprint, list_keys_result=None):
+        super(GnuPGKey, self).__init__(backend, fingerprint)
+
+        if list_keys_result:
+            self._loaded_list_keys = list_keys_result
 
     def refresh(self):
         self._comment = None

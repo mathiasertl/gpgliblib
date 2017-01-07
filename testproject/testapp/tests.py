@@ -155,6 +155,28 @@ class TestCaseMixin(object):
     def test_import_malformed_private_key(self):
         self.assertEqual(self.backend.import_private_key(b'foobar'), [])
 
+    def test_list_keys(self):
+        self.assertEqual(self.backend.list_keys(), [])
+        self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
+        self.assertEqual(self.backend.list_keys(), [self.backend.get_key(user1_fp)])
+
+        # import a private key
+        self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp, user2_fp])
+        self.assertEqual(self.backend.list_keys(),
+                         [self.backend.get_key(user1_fp), self.backend.get_key(user2_fp)])
+        self.assertEqual(self.backend.list_keys(secret_keys=True),
+                         [self.backend.get_key(user2_fp)])
+
+        # import second public key, test query
+        self.assertKeys(self.backend.import_key(user2_pub), [user2_fp])
+        self.assertEqual(self.backend.list_keys(query='Private Citizen Two'),
+                         [self.backend.get_key(user2_fp)])
+        self.assertEqual(self.backend.list_keys(query='user@example.net'),
+                         [self.backend.get_key(user2_fp)])
+        self.assertEqual(self.backend.list_keys(query='user@example.com'),
+                         [self.backend.get_key(user1_fp)])
+        self.assertEqual(self.backend.list_keys(query='bogus'), [])
+
     def test_no_expires(self):
         keys = self.backend.import_key(user1_pub)
         self.assertKeys(keys, [user1_fp])

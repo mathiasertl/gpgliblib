@@ -156,9 +156,21 @@ class GpgMeBackend(GpgBackendBase):
         result = self.context.import_(six.BytesIO(data))
         return [GpgMeKey(self, r[0]) for r in result.imports]
 
+    def list_keys(self, query=None, secret_keys=False):
+        return [GpgMeKey(self, key=k) for k in self.context.keylist(query, secret_keys)]
+
 
 class GpgMeKey(GpgKey):
     _loaded_key = None
+
+    def __init__(self, backend, fingerprint=None, key=None):
+        if not fingerprint and not key:
+            raise ValueError("Must pass either fingerprint or key.")
+        elif not fingerprint:
+            fingerprint = key.subkeys[0].fpr
+
+        super(GpgMeKey, self).__init__(backend, fingerprint)
+        self._loaded_key = key
 
     @property
     def _key(self):
