@@ -191,6 +191,17 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
+    def list_keys(self, query=None, secret_keys=False):
+        """List keys in the keyring.
+
+        Parameters
+        ----------
+
+        query : str, optional
+        secret_keys : bool, optional
+        """
+        raise NotImplementedError
+
     ################
     # Cryptography #
     ################
@@ -516,6 +527,9 @@ class GpgKey(object):
         """Shortcut for ``fingerprint``."""
 
         return self.fingerprint
+
+    def __str__(self):
+        return '<%s: %s>' % (self.__class__.__name__, self.fingerprint)
 
     def __eq__(self, other):
         return self.backend == other.backend and self.fingerprint == other.fingerprint
