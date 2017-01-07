@@ -118,7 +118,7 @@ gpg_backend = DefaultGPGProxy()
 class GpgEmailMessage(EmailMultiAlternatives):
     """Email message that allows you to sign/encrypt messages upon calling ``send()``.
 
-    All parameters are optional. if neither ``gpg_signers`` nor ``gpg_recipients`` is passed, the
+    All parameters are optional. if neither ``gpg_signer`` nor ``gpg_recipients`` is passed, the
     message will be sent unchanged.
 
     Parameters
@@ -215,8 +215,7 @@ class GpgEmailMessage(EmailMultiAlternatives):
             to_sign.policy = to_sign.policy.clone(max_line_length=0)
 
         # get the gpg signature
-        signature = backend.sign(to_sign.as_bytes(linesep='\r\n'), self.gpg_signer, add_cr=False,
-                                 **kwargs)
+        signature = backend.sign(to_sign.as_bytes(linesep='\r\n'), self.gpg_signer)
         signature_msg = backend.get_mime_signature(signature)
 
         if isinstance(message, SafeMIMEMultipart):
@@ -255,7 +254,7 @@ class GpgEmailMessage(EmailMultiAlternatives):
     def signed(self):
         """True if this message will be signed."""
 
-        return bool(self.gpg_signers)
+        return bool(self.gpg_signer)
 
     @property
     def encrypted(self):

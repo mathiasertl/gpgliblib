@@ -15,28 +15,37 @@
 
 from __future__ import unicode_literals, absolute_import
 
+import os
+
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from gpgliblib import django
-from gpgliblib import gpgme
+from gpgliblib.django import gpg_backends
 
 
 class Command(BaseCommand):
     help = "Send test-emails."
 
     def add_arguments(self, parser):
-        parser.add_argument('--sign', default='E8172F2940EA9F709842290870BD9664FA3947CD')
-        parser.add_argument('--encrypt', default='E8172F2940EA9F709842290870BD9664FA3947CD')
+        parser.add_argument('--keydir', default=settings.TESTDATA_DIR)
+        parser.add_argument('--backend', default='default')
+        parser.add_argument('--sign', default='CC9F343794DBB20E13DE097EE53338B91AA9A0AC')
+        parser.add_argument('--encrypt', default='CC9F343794DBB20E13DE097EE53338B91AA9A0AC')
         parser.add_argument('--from', default='mati@fsinf.at')
         parser.add_argument('--to', default='mati@fsinf.at')
 
-    def handle(self, *args, **options):
-        sign = [options['sign']]
+    def send_mails(self, backend, options):
+        sign = options['sign']
         encrypt = [options['encrypt']]
         frm = options['from']
         to = [options['to']]
 
-        backend = gpgme.GpgMeBackend()
+        # import keys
+        with open(os.path.join(options['keydir'], '%s.pub' % options['sign'])) as stream:
+            backend.import_key(stream.read())
+        with open(os.path.join(options['keydir'], '%s.priv' % options['encrypt'])) as stream:
+            backend.import_private_key(stream.read())
 
         ##########################
         # Non-multipart messages #
@@ -46,7 +55,7 @@ class Command(BaseCommand):
         msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='non-multipart, signed',
             body='non-multipart, signed',
-            gpg_backend=backend, gpg_signers=sign)
+            gpg_backend=backend, gpg_signer=sign)
         print('Sending %s' % msg.subject)
         msg.send()
 
@@ -62,7 +71,7 @@ class Command(BaseCommand):
         msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='non-multipart, signed/encrypted',
             body='non-multipart, signed/encrypted',
-            gpg_backend=backend, gpg_recipients=encrypt, gpg_signers=sign)
+            gpg_backend=backend, gpg_recipients=encrypt, gpg_signer=sign)
         print('Sending %s' % msg.subject)
         msg.send()
 
@@ -73,7 +82,7 @@ class Command(BaseCommand):
         msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='multipart, signed',
             body='multipart, signed',
-            gpg_backend=backend, gpg_signers=sign)
+            gpg_backend=backend, gpg_signer=sign)
         msg.attach_alternative('content in html', 'text/html')
         print('Sending %s' % msg.subject)
         msg.send()
@@ -91,7 +100,12 @@ class Command(BaseCommand):
         msg = django.GpgEmailMessage(
             to=to, from_email=frm, subject='multipart, signed/encrypted',
             body='multipart, signed/encrypted',
-            gpg_backend=backend, gpg_recipients=encrypt, gpg_signers=sign)
+            gpg_backend=backend, gpg_recipients=encrypt, gpg_signer=sign)
         msg.attach_alternative('content in html', 'text/html')
         print('Sending %s' % msg.subject)
         msg.send()
+
+    def handle(self, *args, **options):
+        backend = gpg_backends[options['backend']]
+        with backend.temp_keyring(default_trust=True) as temp_backend:
+            self.send_mails(temp_backend, options)
