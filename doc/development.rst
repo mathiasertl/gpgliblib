@@ -12,16 +12,18 @@ and implement these functions:
 * :py:func:`~gpgliblib.base.GpgBackendBase.import_private_key`
 * :py:func:`~gpgliblib.base.GpgBackendBase.expires`
 
-The constructor should take at least the same parameters as GpgBackendBase. Remember that any
-function may pass ``**kwargs`` to override any option passed to the constructor. For example,
-multiple invocations of :py:class:`~gpgliblib.base.GpgBackendBase.sign` might use different home
-directories::
+The constructor should take at least the same parameters as GpgBackendBase. If
+you provide additional keyword arguments, also be sure to override
+:py:func:`~gpgliblib.base.GpgBackendBase.get_settings` to make sure the
+:py:class:`~gpgliblib.base.GpgBackendBase.settings` context manager works
+correctly. For example::
 
-   >>> from gpgliblib.gpgme import GpgMeBackend
-   >>> backend = GpgMeBackend(home='/usr/local/default-keyring')
+   class MyBackend(GpgBackendBase):
+       def __init__(self, my_setting, **kwargs):
+           super(MyBackend, self).__init__(**kwargs)
+           self.my_setting = my_setting
 
-   # This should use the keyring from constructor
-   >>> backend.sign(b'foo', ['0x1234...'])
-
-   # This should use the other keyring
-   >>> backend.sign(b'bar', ['0x1234...'], home='/usr/local/other-keyring')
+       def get_settings(self):
+           settings = super(MyBackend, self).get_settings()
+           settings['my_setting'] = self.my_setting
+           return settings

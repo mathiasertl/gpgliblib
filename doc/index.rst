@@ -25,6 +25,7 @@ Contents:
    django
    backends
    api
+   limitations
    development
    testing
 
