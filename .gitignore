@@ -8,6 +8,7 @@
 /include/
 /lib/
 /pip-selfcheck.json
+/py2/
 /share/
 /testdata/keyring/
 /testproject/testproject/localsettings.py
