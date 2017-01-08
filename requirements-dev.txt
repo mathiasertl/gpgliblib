@@ -4,6 +4,7 @@ Sphinx==1.5.1
 ipython-genutils==0.1.0
 ipython>=5.1.0
 isort==4.2.5
+mock==2.0.0; python_version < '3'
 numpydoc==0.6.0
 pip>=9.0.1
 pygpgme==0.3
