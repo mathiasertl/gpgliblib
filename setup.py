@@ -23,7 +23,12 @@ setup(
     name='gpgliblib',
     version='0.1',
     description='Library for creating PGP/MIME mails with various library backends.',
-    long_description='TODO',  # TODO
+    long_description='''**gpgliblib** is a Python library providing a common, well documented and
+pythonic interface over various GPG libraries that exist for Python.
+
+**gpgliblib** currently offers basic encryption and signing functions, *basic* key handling
+features, GPG/MIME (`RFC3156 <https://tools.ietf.org/html/rfc3156>`_) message handling and `Django
+<https://www.djangoproject.com/>`_ integration.''',
     author='Mathias Ertl',
     author_email='mati@er.tl',
     url='https://github.com/mathiasertl/gpgliblib',
@@ -33,6 +38,7 @@ setup(
         'Development Status :: 4 - Beta',
         'Framework :: Django :: 1.8',
         'Framework :: Django :: 1.9',
+        'Framework :: Django :: 1.10',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
@@ -42,6 +48,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Security :: Cryptography',
         'Topic :: Security',
     ],
