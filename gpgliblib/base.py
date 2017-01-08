@@ -16,11 +16,12 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import tempfile
 from contextlib import contextmanager
 from datetime import datetime
 from email.encoders import encode_noop
 from email.mime.application import MIMEApplication
+import shutil
+import tempfile
 
 import six
 
@@ -123,6 +124,18 @@ class GpgBackendBase(object):
         my_settings.update(kwargs)
         yield self.__class__(**my_settings)
 
+    if six.PY3:
+        _tempdir = tempfile.TemporaryDirectory
+    else:
+        @contextmanager
+        def _tempdir(self):
+            path = tempfile.mkdtemp()
+
+            try:
+                yield path
+            finally:
+                shutil.rmtree(path)
+
     @contextmanager
     def temp_keyring(self, **kwargs):
         """Context manager with a temporary home directory.
@@ -134,7 +147,7 @@ class GpgBackendBase(object):
             with tempfile.TemporaryDirectory() as home, backend.settings(home=home) as backend:
                 yield backend
         """
-        with tempfile.TemporaryDirectory() as home, self.settings(home=home, **kwargs) as backend:
+        with self._tempdir() as home, self.settings(home=home, **kwargs) as backend:
             yield backend
 
     ##################
