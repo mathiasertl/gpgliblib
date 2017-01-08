@@ -124,18 +124,6 @@ class GpgBackendBase(object):
         my_settings.update(kwargs)
         yield self.__class__(**my_settings)
 
-    if six.PY3:
-        _tempdir = tempfile.TemporaryDirectory
-    else:
-        @contextmanager
-        def _tempdir(self):
-            path = tempfile.mkdtemp()
-
-            try:
-                yield path
-            finally:
-                shutil.rmtree(path)
-
     @contextmanager
     def temp_keyring(self, **kwargs):
         """Context manager with a temporary home directory.
@@ -492,6 +480,23 @@ class GpgBackendBase(object):
             Key id to sign the message with.
         """
         raise NotImplementedError
+
+    ##########
+    # Helper #
+    ##########
+
+    if six.PY3:
+        _tempdir = tempfile.TemporaryDirectory
+    else:
+        # python2-compatible version
+        @contextmanager
+        def _tempdir(self):
+            path = tempfile.mkdtemp()
+
+            try:
+                yield path
+            finally:
+                shutil.rmtree(path)
 
 
 class GpgKey(object):
