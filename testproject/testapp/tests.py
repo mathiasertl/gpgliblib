@@ -27,6 +27,8 @@ except ImportError:
 
 from datetime import datetime
 
+import six
+
 from django.test import TestCase
 
 from gpgliblib.base import VALIDITY_FULL
@@ -108,6 +110,10 @@ known_public_keys = {
 
 
 def load_tests(loader, tests, ignore):
+    if six.PY2:
+        # do not run doctests from sphinx in python2
+        return tests
+
     def lookup_gpg_key(fp):
         return known_public_keys[fp[2:]]
 
@@ -136,6 +142,9 @@ def load_tests(loader, tests, ignore):
 
 
 class TestCaseMixin(object):
+    if six.PY2:
+        assertCountEqual = TestCase.assertItemsEqual
+
     def assertKeys(self, result, expected):
         self.assertCountEqual([k.fp for k in result], expected)
 
