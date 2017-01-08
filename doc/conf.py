@@ -19,6 +19,9 @@
 #
 import os
 import sys
+from unittest.mock import MagicMock
+
+
 sys.path.insert(0, os.path.abspath('..'))
 sys.path.insert(0, os.path.join(os.path.abspath('..'), 'testproject'))
 os.environ['DJANGO_SETTINGS_MODULE'] = 'testproject.settings'
@@ -354,3 +357,12 @@ intersphinx_mapping = {
     'python': ('https://docs.python.org/', None),
     'django': ('http://django.readthedocs.org/en/latest/', None),
 }
+
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
+MOCK_MODULES = ['pygpgme', 'gpgme.editutil', 'gnupg', ]
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
