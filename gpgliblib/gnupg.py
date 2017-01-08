@@ -124,17 +124,10 @@ class GnuPGBackend(GpgBackendBase):
         return result.data
 
     def verify(self, data, signature):
-        fd, path = tempfile.mkstemp()
-
-        try:
-            # write data to temporary file (cannot use an in-memory stream :-()
-            stream = os.fdopen(fd, mode='wb')
+        with tempfile.NamedTemporaryFile() as stream:
             stream.write(signature)
             stream.flush()
-
-            verified = self.gpg.verify_data(path, data)
-        finally:
-            os.remove(path)
+            verified = self.gpg.verify_data(stream.name, data)
 
         if verified:
             return verified.fingerprint
