@@ -74,7 +74,7 @@ class GpgMeBackend(GpgBackendBase):
         return GpgMeKey(self, fingerprint)
 
     def _get_gpgme_key(self, obj):
-        if isinstance(obj, str):
+        if isinstance(obj, six.string_types):
             return GpgMeKey(self, obj)._key
         return obj._key
 
