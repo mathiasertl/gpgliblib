@@ -34,10 +34,10 @@ public and private keys, manage trust and query a keys expiry::
    >>> from gpgliblib import gpgme
    >>> from gpgliblib.base import VALIDITY_FULL
    >>> from gpgliblib.base import VALIDITY_UNKNOWN
-   
+
    >>> backend = gpgme.GpgMeBackend(home=gnupg_home)
    >>> fingerprint = '4C443E9B262ECB73835730DAA9711516C8D705FC'
-   
+
    >>> raw_key_data = backend.fetch_key('0x%s' % fingerprint)
    >>> key = backend.import_key(raw_key_data)[0]
    >>> key.fingerprint
@@ -57,6 +57,10 @@ public and private keys, manage trust and query a keys expiry::
    >>> key.expires is None
    True
 
+   # You can also export a key again
+   >>> key.export()[:36]
+   '-----BEGIN PGP PUBLIC KEY BLOCK-----'
+
 ******************
 Signing/Encrypting
 ******************
@@ -70,14 +74,14 @@ Signing and/or encrypting is straight forward::
    # import the private key so we can sign
    >>> key = backend.import_private_key(user1_priv)[0]
    >>> testdata = b'testdata, any byte string'
-   
+
    >>> sig = backend.sign(testdata, signer=key)
    >>> enc = backend.encrypt(testdata, recipients=[key])
    >>> both = backend.sign_encrypt(testdata, recipients=[key], signer=key)
 
    # You can also pass the fingerprint whenever you pass a key
    >>> sig2 = backend.sign(b'data to sign', signer=fingerprint)
-   
+
    # Verify signature/encrypted text
    >>> backend.verify(testdata, sig)
    'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
@@ -115,7 +119,7 @@ common, that there even is it's own context manager for it::
 
    >>> from gpgliblib import gpgme
    >>> backend = gpgme.GpgMeBackend(home=gnupg_home)
-   
+
    >>> backend.list_keys()
    [<GpgMeKey: 4C443E9B262ECB73835730DAA9711516C8D705FC>, <GpgMeKey: CC9F343794DBB20E13DE097EE53338B91AA9A0AC>]
    >>> with backend.temp_keyring() as temp_backend:
