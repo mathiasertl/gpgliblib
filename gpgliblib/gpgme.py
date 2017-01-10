@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from contextlib import contextmanager
 from datetime import datetime
 from threading import local
 
@@ -70,6 +71,25 @@ class GpgMeBackend(GpgBackendBase):
 
         return self._local.context
 
+    @contextmanager
+    def _attrs(self, signers=None, armor=None):
+        context = self.context
+
+        if signers is not None:
+            old_signers = context.signers
+            context.signers = signers
+        if armor is not None:
+            old_armor = context.armor
+            context.armor = armor
+
+        try:
+            yield context
+        finally:
+            if signers is not None:
+                context.signers = old_signers
+            if armor is not None:
+                context.armor = old_armor
+
     def get_key(self, fingerprint):
         return GpgMeKey(self, fingerprint)
 
@@ -106,11 +126,9 @@ class GpgMeBackend(GpgBackendBase):
     def sign(self, data, signer):
         output_bytes = six.BytesIO()
 
-        self.context.signers = [self._get_gpgme_key(signer)]
-        try:
-            self.context.sign(six.BytesIO(data), output_bytes, gpgme.SIG_MODE_DETACH)
-        finally:
-            self.context.signers = []
+        with self._attrs(signers=[self._get_gpgme_key(signer)]) as context:
+            context.sign(six.BytesIO(data), output_bytes, gpgme.SIG_MODE_DETACH)
+
         output_bytes.seek(0)
         return output_bytes.getvalue()
 
@@ -120,12 +138,8 @@ class GpgMeBackend(GpgBackendBase):
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
         always_trust = kwargs.get('always_trust', self._default_trust)
-        self.context.signers = [self._get_gpgme_key(signer)]
-
-        try:
+        with self._attrs(signers=[self._get_gpgme_key(signer)]):
             return self._encrypt(data, recipients, always_trust)
-        finally:
-            self.context.signers = []
 
     def verify(self, data, signature):
         signatures = self.context.verify(six.BytesIO(signature), six.BytesIO(data), None)
