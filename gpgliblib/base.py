@@ -587,24 +587,31 @@ class GpgKey(object):
     def export(self, mode=MODE_ARMOR, output=None):
         """Export the current public key.
 
+        The ``mode`` parameter controls the output format of the signature. If
+        :py:data:`~gpgliblib.base.MODE_ARMOR` is passed (which is the default), the key is in ASCII
+        armored format (as ``str``). If :py:data:`~gpgliblib.base.MODE_BINARY` is passed, the key
+        is returned in binary format (as ``binary``).
+
+        You can also pass the ``output`` parameter to directly write the key to a file-like
+        object. The file must be opened in binary mode (``"w+b"``). If output is passed, the
+        function does not return the key. Note that depending on the backend, the key may still be
+        read entirely into memory and only then written to the file.
+
+        .. versionadded:: 0.2.0
+
         Parameters
         ----------
 
         mode : {``MODE_ARMOR``, ``MODE_BINARY``}, optional
-            If ``MODE_ARMOR`` (the default), generate a ASCII-armored output, otherwise create
-            binary output.
+            One of the ``MODE_*`` constants.
         output : file-like object, optional
-            If passed, the signature will be written directly to the file-like object, opened to
-            write in binary mode (``"w+b"`` in Python 3).
+            If passed, the signature will be written directly to the file-like object.
 
         Returns
         -------
 
         str, bytes or None
-            By default, the function returns a ``str`` containing the ASCII armored key.  If
-            ``MODE_BINARY`` is passed as ``mode``, a ``binary`` object is returned, if ``ouptut``
-            is passed, it does not return a value.
-
+            The key in the specified format or ``None`` if ``output`` is passed.
         """
         raise NotImplementedError
 

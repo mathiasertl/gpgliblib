@@ -25,6 +25,10 @@ functions of backend implementations.
 Constants
 *********
 
+.. autodata:: gpgliblib.base.MODE_ARMOR
+
+.. autodata:: gpgliblib.base.MODE_BINARY
+
 .. autodata:: gpgliblib.base.VALIDITY_UNKNOWN
 
 .. autodata:: gpgliblib.base.VALIDITY_NEVER
