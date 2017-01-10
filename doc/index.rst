@@ -28,6 +28,7 @@ Contents:
    limitations
    development
    testing
+   changelog
 
 Indices and tables
 ==================
