@@ -594,15 +594,16 @@ class GpgKey(object):
             If ``MODE_ARMOR`` (the default), generate a ASCII-armored output, otherwise create
             binary output.
         output : file-like object, optional
-            If passed, the signature will be written directly to the file-like object.
+            If passed, the signature will be written directly to the file-like object, opened to
+            write in binary mode (``"wb"`` in Python 3).
 
         Returns
         -------
 
         str, bytes or None
-            By default, the function returns a ``str`` and bytes if ``MODE_BINARY`` is passed as
-            ``mode``. If ``ouptut`` is passed, it should be opened in binary mode (``"wb"`` in
-            Python 3).
+            By default, the function returns a ``str`` containing the ASCII armored key.  If
+            ``MODE_BINARY`` is passed as ``mode``, a ``binary`` object is returned, if ``ouptut``
+            is passed, it does not return a value.
 
         """
         raise NotImplementedError
