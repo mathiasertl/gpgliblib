@@ -247,8 +247,6 @@ class GnuPGKey(GpgKey):
         armor = mode == MODE_ARMOR
 
         data = self.backend.gpg.export_keys(self.fingerprint, armor=armor)
-        if six.PY3 and mode == MODE_ARMOR:
-            data = data.encode('utf-8')
 
         if output is None:
             return data

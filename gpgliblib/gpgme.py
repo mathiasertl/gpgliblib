@@ -277,4 +277,7 @@ class GpgMeKey(GpgKey):
             context.export(self.fingerprint, buf)
 
         if output is None:
-            return buf.getvalue()
+            value = buf.getvalue()
+            if mode == MODE_ARMOR:
+                return value.decode('utf-8')
+            return value

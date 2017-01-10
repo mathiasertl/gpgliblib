@@ -401,12 +401,12 @@ class TestCaseMixin(object):
         key = self.backend.import_key(user1_pub)[0]
         export = key.export()
 
-        self.assertTrue(isinstance(export, bytes))
+        self.assertTrue(isinstance(export, six.text_type))
 
         # NOTE: The exported key is not necessarily the same as the original, because this may
         #       contain headers (e.g. GnuPG version), so we just do some basic sanity checking.
-        self.assertTrue(export.startswith(b'-----BEGIN PGP PUBLIC KEY BLOCK-----\n'))
-        self.assertTrue(export.endswith(b'-----END PGP PUBLIC KEY BLOCK-----\n'))
+        self.assertTrue(export.startswith('-----BEGIN PGP PUBLIC KEY BLOCK-----\n'))
+        self.assertTrue(export.endswith('-----END PGP PUBLIC KEY BLOCK-----\n'))
 
         # Now we try to import that again, to see if it returns a key with the same fp
         key2 = self.backend.import_key(export)[0]

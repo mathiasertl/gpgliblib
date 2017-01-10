@@ -590,7 +590,7 @@ class GpgKey(object):
         Parameters
         ----------
 
-        mode : {gpgliblib.base.MODE_ARMOR, gpgliblib.base.MODE_BINARY}
+        mode : {``MODE_ARMOR``, ``MODE_BINARY``}, optional
             If ``MODE_ARMOR`` (the default), generate a ASCII-armored output, otherwise create
             binary output.
         output : file-like object, optional
@@ -599,8 +599,11 @@ class GpgKey(object):
         Returns
         -------
 
-        bytes
-            This function returns the key as bytes, if ``output`` was not passed.
+        str, bytes or None
+            By default, the function returns a ``str`` and bytes if ``MODE_BINARY`` is passed as
+            ``mode``. If ``ouptut`` is passed, it should be opened in binary mode (``"wb"`` in
+            Python 3).
+
         """
         raise NotImplementedError
 
