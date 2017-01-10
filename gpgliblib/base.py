@@ -595,7 +595,7 @@ class GpgKey(object):
             binary output.
         output : file-like object, optional
             If passed, the signature will be written directly to the file-like object, opened to
-            write in binary mode (``"wb"`` in Python 3).
+            write in binary mode (``"w+b"`` in Python 3).
 
         Returns
         -------

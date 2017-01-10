@@ -251,4 +251,6 @@ class GnuPGKey(GpgKey):
         if output is None:
             return data
         else:
+            if mode == MODE_ARMOR:
+                data = data.encode("utf-8")
             output.write(data)

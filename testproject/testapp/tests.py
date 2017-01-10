@@ -31,6 +31,7 @@ import six
 
 from django.test import TestCase
 
+from gpgliblib.base import MODE_ARMOR
 from gpgliblib.base import MODE_BINARY
 from gpgliblib.base import VALIDITY_FULL
 from gpgliblib.base import VALIDITY_MARGINAL
@@ -422,6 +423,36 @@ class TestCaseMixin(object):
         # Now we try to import that again, to see if it returns a key with the same fp
         key2 = self.backend.import_key(export)[0]
         self.assertEqual(key, key2)
+
+    def check_key_write_export(self, mode):
+        key = self.backend.import_key(user1_pub)[0]
+        buf = six.BytesIO()
+        key.export(mode=mode, output=buf)
+        export = buf.getvalue()
+
+        self.assertTrue(isinstance(export, six.binary_type))
+
+        # Now we try to import that again, to see if it returns a key with the same fp
+        key2 = self.backend.import_key(export)[0]
+        self.assertEqual(key, key2)
+
+        # Try to export to a file
+        with tempfile.NamedTemporaryFile() as out:
+            key.export(mode=mode, output=out)
+            out.flush()
+            with open(out.name, 'rb') as stream:
+                export2 = stream.read()
+
+        # this should just be the same
+        self.assertEqual(export, export2)
+        return export
+
+    def test_key_export_output(self):
+        export = self.check_key_write_export(MODE_ARMOR)
+        self.assertTrue(export.startswith(b'-----BEGIN PGP PUBLIC KEY BLOCK-----\n'))
+        self.assertTrue(export.endswith(b'-----END PGP PUBLIC KEY BLOCK-----\n'))
+
+        self.check_key_write_export(MODE_BINARY)
 
     def setUp(self):
         self.home = tempfile.mkdtemp()
