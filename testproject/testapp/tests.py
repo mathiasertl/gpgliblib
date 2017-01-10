@@ -31,6 +31,7 @@ import six
 
 from django.test import TestCase
 
+from gpgliblib.base import MODE_BINARY
 from gpgliblib.base import VALIDITY_FULL
 from gpgliblib.base import VALIDITY_MARGINAL
 from gpgliblib.base import VALIDITY_NEVER
@@ -395,6 +396,32 @@ class TestCaseMixin(object):
         self.assertEqual(key.name, 'Public Citizen One')
         self.assertEqual(key.comment, 'revoked')
         self.assertEqual(key.email, 'user+revoked@example.com')
+
+    def test_key_ascii_export(self):
+        key = self.backend.import_key(user1_pub)[0]
+        export = key.export()
+
+        self.assertTrue(isinstance(export, bytes))
+
+        # NOTE: The exported key is not necessarily the same as the original, because this may
+        #       contain headers (e.g. GnuPG version), so we just do some basic sanity checking.
+        self.assertTrue(export.startswith(b'-----BEGIN PGP PUBLIC KEY BLOCK-----\n'))
+        self.assertTrue(export.endswith(b'-----END PGP PUBLIC KEY BLOCK-----\n'))
+
+        # Now we try to import that again, to see if it returns a key with the same fp
+        key2 = self.backend.import_key(export)[0]
+        self.assertEqual(key, key2)
+
+    def test_key_binary_export(self):
+        key = self.backend.import_key(user1_pub)[0]
+        export = key.export(mode=MODE_BINARY)
+
+        self.assertTrue(isinstance(export, bytes))
+        self.assertEqual(user1_bin_pub, export)
+
+        # Now we try to import that again, to see if it returns a key with the same fp
+        key2 = self.backend.import_key(export)[0]
+        self.assertEqual(key, key2)
 
     def setUp(self):
         self.home = tempfile.mkdtemp()

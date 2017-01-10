@@ -34,6 +34,7 @@ from .base import GpgKeyNotFoundError
 from .base import GpgUntrustedKeyError
 from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
+from .base import MODE_ARMOR
 
 
 class GpgMeBackend(GpgBackendBase):
@@ -260,3 +261,20 @@ class GpgMeKey(GpgKey):
     @property
     def revoked(self):
         return self._key.revoked
+
+    def export(self, mode=MODE_ARMOR, output=None):
+        if output is None:
+            buf = six.BytesIO()
+        else:
+            buf = output
+
+        if mode == MODE_ARMOR:
+            args = {'armor': True}
+        else:
+            args = {'armor': False}
+
+        with self.backend._attrs(**args) as context:
+            context.export(self.fingerprint, buf)
+
+        if output is None:
+            return buf.getvalue()

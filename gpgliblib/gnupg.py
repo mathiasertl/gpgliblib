@@ -16,7 +16,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import os
 import re
 import tempfile
 from datetime import datetime
@@ -25,6 +24,7 @@ from threading import local
 import gnupg
 import six
 
+from .base import MODE_ARMOR
 from .base import VALIDITY_FULL
 from .base import VALIDITY_MARGINAL
 from .base import VALIDITY_NEVER
@@ -242,3 +242,15 @@ class GnuPGKey(GpgKey):
 
         timestamp = key['expires']
         return datetime.fromtimestamp(int(timestamp)) if timestamp else None
+
+    def export(self, mode=MODE_ARMOR, output=None):
+        armor = mode == MODE_ARMOR
+
+        data = self.backend.gpg.export_keys(self.fingerprint, armor=armor)
+        if six.PY3 and mode == MODE_ARMOR:
+            data = data.encode('utf-8')
+
+        if output is None:
+            return data
+        else:
+            output.write(data)

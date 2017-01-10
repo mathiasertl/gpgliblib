@@ -47,6 +47,12 @@ VALIDITY_FULL = 3
 #: A key is marked with "ultimate trust".
 VALIDITY_ULTIMATE = 4
 
+#: Generate ASCII armored output
+MODE_ARMOR = 0
+
+#: Generate binary output.
+MODE_BINARY = 1
+
 
 class GpgMimeError(Exception):
     """Base class for all exceptions."""
@@ -577,6 +583,26 @@ class GpgKey(object):
         """Shortcut for ``fingerprint``."""
 
         return self.fingerprint
+
+    def export(self, mode=MODE_ARMOR, output=None):
+        """Export the current public key.
+
+        Parameters
+        ----------
+
+        mode : {gpgliblib.base.MODE_ARMOR, gpgliblib.base.MODE_BINARY}
+            If ``MODE_ARMOR`` (the default), generate a ASCII-armored output, otherwise create
+            binary output.
+        output : file-like object, optional
+            If passed, the signature will be written directly to the file-like object.
+
+        Returns
+        -------
+
+        bytes
+            This function returns the key as bytes, if ``output`` was not passed.
+        """
+        raise NotImplementedError
 
     def __str__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.fingerprint)
