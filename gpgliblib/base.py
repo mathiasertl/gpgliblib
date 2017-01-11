@@ -527,7 +527,7 @@ class GpgKey(object):
 
     def __init__(self, backend, fingerprint):
         self.backend = backend
-        self.fingerprint = fingerprint
+        self.fingerprint = fingerprint.upper()
         self.refresh()
 
     def refresh(self):
@@ -547,6 +547,12 @@ class GpgKey(object):
     @property
     def email(self):
         """Email for this key."""
+        raise NotImplementedError
+
+    @property
+    def has_secret_key(self):
+        """``True`` if there is a secret key present for this key, ``False`` otherwise."""
+
         raise NotImplementedError
 
     @property

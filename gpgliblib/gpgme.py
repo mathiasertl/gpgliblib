@@ -183,6 +183,7 @@ class GpgMeBackend(GpgBackendBase):
 
 class GpgMeKey(GpgKey):
     _loaded_key = None
+    _loaded_secret_key = None
 
     def __init__(self, backend, fingerprint=None, key=None):
         if not fingerprint and not key:
@@ -197,12 +198,21 @@ class GpgMeKey(GpgKey):
     def _key(self):
         if self._loaded_key is None:
             try:
-                self._loaded_key = self.backend.context.get_key(self.fingerprint.upper())
+                self._loaded_key = self.backend.context.get_key(self.fingerprint)
             except gpgme.GpgmeError as e:
                 if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
                     raise GpgKeyNotFoundError("%s: key not found." % self.fingerprint)
                 raise
         return self._loaded_key
+
+    @property
+    def _secret_key(self):
+        if self._loaded_secret_key is None:
+            try:
+                self._loaded_secret_key = self.backend.context.get_key(self.fingerprint, True)
+            except gpgme.GpgmeError:
+                self._loaded_secret_key = False
+        return self._loaded_secret_key
 
     def refresh(self):
         self._loaded_key = None
@@ -220,6 +230,10 @@ class GpgMeKey(GpgKey):
     @property
     def email(self):
         return self._key.uids[0].email
+
+    @property
+    def has_secret_key(self):
+        return self._secret_key is not False
 
     @property
     def trust(self):

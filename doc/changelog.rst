@@ -7,8 +7,11 @@ ChangeLog
 **********************
 
 * Support for exporting keys via :py:func:`gpgliblib.base.GpgKey.export`.
-* Add :py:attr:`gpgliblib.base.GpgKey.keyid` and
-  :py:attr:`gpgliblib.base.GpgKey.long_keyid` convenience attributes.
+* Add new attributes for GPG keys:
+
+  * :py:attr:`gpgliblib.base.GpgKey.has_secret_key`
+  * :py:attr:`gpgliblib.base.GpgKey.keyid` and
+    :py:attr:`gpgliblib.base.GpgKey.long_keyid`
 
 ****************
 0.1 (2017-01-08)

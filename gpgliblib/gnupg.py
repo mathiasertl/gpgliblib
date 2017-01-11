@@ -158,6 +158,7 @@ class GnuPGBackend(GpgBackendBase):
 
 class GnuPGKey(GpgKey):
     _loaded_list_keys = None
+    _loaded_list_secret_keys = None
 
     def __init__(self, backend, fingerprint, list_keys_result=None):
         super(GnuPGKey, self).__init__(backend, fingerprint)
@@ -177,6 +178,13 @@ class GnuPGKey(GpgKey):
             self._loaded_list_keys = self.backend.gpg.list_keys(keys=self.fingerprint)[0]
         return self._loaded_list_keys
 
+    @property
+    def _list_secret_keys(self):
+        if self._loaded_list_secret_keys is None:
+            self._loaded_list_secret_keys = self.backend.gpg.list_keys(
+                keys=self.fingerprint, secret=True)[:1]
+        return self._loaded_list_secret_keys
+
     def _parse_uid(self, uid):
         return re.search(r'(?P<name>.*?)( \((?P<comment>.*)\))? <(?P<email>.*)>$', uid).groupdict()
 
@@ -191,6 +199,10 @@ class GnuPGKey(GpgKey):
     @property
     def email(self):
         return self._parse_uid(self._list_keys['uids'][0])['email']
+
+    @property
+    def has_secret_key(self):
+        return bool(self._list_secret_keys)
 
     @property
     def revoked(self):

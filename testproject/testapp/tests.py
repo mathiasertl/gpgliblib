@@ -388,9 +388,14 @@ class TestCaseMixin(object):
     def test_key_properties(self):
         key = self.backend.import_key(user1_pub)[0]
         self.assertFalse(key.revoked)
+        self.assertFalse(key.has_secret_key)
         self.assertEqual(key.name, 'Private Citizen One')
         self.assertEqual(key.comment, None)
         self.assertEqual(key.email, 'user@example.com')
+
+        # import the private key
+        key = self.backend.import_key(user1_priv)[0]
+        self.assertTrue(key.has_secret_key)
 
         key = self.backend.import_key(revoked_pub)[0]
         self.assertTrue(key.revoked)
