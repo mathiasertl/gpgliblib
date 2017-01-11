@@ -7,6 +7,7 @@ ChangeLog
 **********************
 
 * Support for exporting keys via :py:func:`gpgliblib.base.GpgKey.export`.
+* Support for deleting keys via :py:func:`gpgliblib.base.GpgKey.delete`.
 * Add new attributes for GPG keys:
 
   * :py:attr:`gpgliblib.base.GpgKey.has_secret_key`

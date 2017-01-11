@@ -35,6 +35,7 @@ from .base import GpgBadSignature
 from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgMimeError
+from .base import GpgSecretKeyPresent
 from .base import GpgUntrustedKeyError
 
 
@@ -266,3 +267,18 @@ class GnuPGKey(GpgKey):
             if mode == MODE_ARMOR:
                 data = data.encode("utf-8")
             output.write(data)
+
+    def delete(self, secret_key=False):
+        if self.has_secret_key and not secret_key:
+            raise GpgSecretKeyPresent('Secret key is present.')
+
+        if secret_key and self.has_secret_key:
+            # Delete secret key if present and requested
+            self.backend.gpg.delete_keys(self.fingerprint, True)
+
+        result = self.backend.gpg.delete_keys(self.fingerprint)
+        if result.status == 'No such key':
+            raise GpgKeyNotFoundError(self.fingerprint)
+        elif result.status == 'Must delete secret key first':
+            # This shouldn't really happen, since it is already checked above
+            raise GpgSecretKeyPresent('Secret key is present.')

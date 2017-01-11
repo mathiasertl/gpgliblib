@@ -24,17 +24,18 @@ import gpgme
 import gpgme.editutil
 import six
 
-from .base import VALIDITY_FULL
-from .base import VALIDITY_MARGINAL
-from .base import VALIDITY_NEVER
 from .base import GpgBackendBase
 from .base import GpgBadSignature
 from .base import GpgKey
 from .base import GpgKeyNotFoundError
+from .base import GpgSecretKeyPresent
 from .base import GpgUntrustedKeyError
+from .base import MODE_ARMOR
+from .base import VALIDITY_FULL
+from .base import VALIDITY_MARGINAL
+from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
-from .base import MODE_ARMOR
 
 
 class GpgMeBackend(GpgBackendBase):
@@ -201,7 +202,7 @@ class GpgMeKey(GpgKey):
                 self._loaded_key = self.backend.context.get_key(self.fingerprint)
             except gpgme.GpgmeError as e:
                 if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
-                    raise GpgKeyNotFoundError("%s: key not found." % self.fingerprint)
+                    raise GpgKeyNotFoundError(self.fingerprint)
                 raise
         return self._loaded_key
 
@@ -295,3 +296,10 @@ class GpgMeKey(GpgKey):
             if mode == MODE_ARMOR:
                 return value.decode('utf-8')
             return value
+
+    def delete(self, secret_key=False):
+        if self.has_secret_key and not secret_key:
+            raise GpgSecretKeyPresent('Secret key is present.')
+
+        # NOTE: unlike the unofficial docs, this function does not take any keyword arguments
+        self.backend.context.delete(self._key, secret_key)

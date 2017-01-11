@@ -10,7 +10,7 @@ handling has many limitations:
 * No support for user IDs.
 * No support for subkeys.
 * No support for many interesting key properties (e.g. key length and algorithm, ...)
-* No support for generating, deleting or uploading keys.
+* No support for generating or uploading keys.
 
 General limitations include:
 

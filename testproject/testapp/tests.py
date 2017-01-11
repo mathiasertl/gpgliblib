@@ -40,6 +40,7 @@ from gpgliblib.base import VALIDITY_ULTIMATE
 from gpgliblib.base import VALIDITY_UNKNOWN
 from gpgliblib.base import GpgKeyNotFoundError
 from gpgliblib.base import GpgUntrustedKeyError
+from gpgliblib.base import GpgSecretKeyPresent
 from gpgliblib.gpgme import GpgMeBackend
 from gpgliblib.gnupg import GnuPGBackend
 
@@ -143,13 +144,24 @@ def load_tests(loader, tests, ignore):
     return tests
 
 
-class TestCaseMixin(object):
+class GpgTestCase(TestCase):
     if six.PY2:
         assertCountEqual = TestCase.assertItemsEqual
+
+    def setUp(self):
+        super(GpgTestCase, self).setUp()
+        self.home = tempfile.mkdtemp()
+        self.backend = self.backend_class(home=self.home)
+
+    def tearDown(self):
+        super(GpgTestCase, self).tearDown()
+        shutil.rmtree(self.home)
 
     def assertKeys(self, result, expected):
         self.assertCountEqual([k.fp for k in result], expected)
 
+
+class BasicTestsMixin(object):
     def test_import_key(self):
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
@@ -459,20 +471,48 @@ class TestCaseMixin(object):
 
         self.check_key_write_export(MODE_BINARY)
 
+
+class DeleteKeyTestsMixin(object):
     def setUp(self):
-        self.home = tempfile.mkdtemp()
+        super(DeleteKeyTestsMixin, self).setUp()
+        self.key1 = self.backend.import_key(user1_pub)[0]
+        self.key2 = self.backend.import_key(user2_priv)[0]
 
-    def tearDown(self):
-        shutil.rmtree(self.home)
+    def test_basic(self):
+        self.assertEqual(self.backend.list_keys(user1_fp), [self.key1])
+        self.assertEqual(self.backend.list_keys(user2_fp), [self.key2])
+
+        self.key1.delete()
+        self.assertEqual(self.backend.list_keys(user1_fp), [])
+
+    def test_delete_secret(self):
+        self.key2.delete(secret_key=True)
+        self.assertEqual(self.backend.list_keys(user2_fp), [])
+
+    def test_secret_key_present(self):
+        with self.assertRaisesRegex(GpgSecretKeyPresent,
+                                    expected_regex='^Secret key is present\.$'):
+            self.key2.delete()
+
+        self.assertEqual(self.backend.list_keys(user2_fp), [self.key2])
+
+    def test_key_not_found(self):
+        key = self.backend.get_key(user3_fp)
+        with self.assertRaisesRegex(GpgKeyNotFoundError, expected_regex='^%s$' % user3_fp):
+            key.delete()
 
 
-class GpgMeTestCase(TestCaseMixin, TestCase):
-    def setUp(self):
-        super(GpgMeTestCase, self).setUp()
-        self.backend = GpgMeBackend(home=self.home)
+class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
+    backend_class = GpgMeBackend
 
 
-class GnuPGTestCase(TestCaseMixin, TestCase):
-    def setUp(self):
-        super(GnuPGTestCase, self).setUp()
-        self.backend = GnuPGBackend(home=self.home)
+class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
+    backend_class = GnuPGBackend
+
+
+class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgTestCase):
+    backend_class = GpgMeBackend
+
+
+class DeleteKeyGnuPGTestCase(DeleteKeyTestsMixin, GpgTestCase):
+    backend_class = GnuPGBackend
