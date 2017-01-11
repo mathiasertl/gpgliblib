@@ -589,6 +589,32 @@ class GpgKey(object):
 
         return self.fingerprint
 
+    @property
+    def keyid(self):
+        """Get the 8-letter key-id. Equivalent to the last 16 letters of the fingerprint.
+
+        .. versionadded:: 0.2.0
+
+        .. WARNING::
+
+           Using key IDs is not recommended. Use the full fingerprint whenever possible.
+           `More information <https://debian-administration.org/users/dkg/weblog/105>`_.
+        """
+        return self.fingerprint[-8:]
+
+    @property
+    def long_keyid(self):
+        """Get the 16-letter long key ID. Equivalent to the last 16 letters of the fingerprint.
+
+        .. versionadded:: 0.2.0
+
+        .. WARNING::
+
+           Using key IDs is not recommended. Use the full fingerprint whenever possible.
+           `More information <https://debian-administration.org/users/dkg/weblog/105>`_.
+        """
+        return self.fingerprint[-16:]
+
     def export(self, mode=MODE_ARMOR, output=None):
         """Export the current public key.
 
@@ -622,6 +648,8 @@ class GpgKey(object):
 
     def delete(self, secret_key=False):
         """Delete the key from the keyring.
+
+        .. versionadded:: 0.2.0
 
         Parameters
         ----------
