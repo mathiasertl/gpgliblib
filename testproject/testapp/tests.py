@@ -161,6 +161,15 @@ class GpgTestCase(TestCase):
         self.assertCountEqual([k.fp for k in result], expected)
 
 
+class GpgKeyTestCase(GpgTestCase):
+    """Subclass which already loads a public and a private key."""
+
+    def setUp(self):
+        super(GpgKeyTestCase, self).setUp()
+        self.key1 = self.backend.import_key(user1_pub)[0]
+        self.key2 = self.backend.import_key(user2_priv)[0]
+
+
 class BasicTestsMixin(object):
     def test_import_key(self):
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
@@ -415,9 +424,10 @@ class BasicTestsMixin(object):
         self.assertEqual(key.comment, 'revoked')
         self.assertEqual(key.email, 'user+revoked@example.com')
 
+
+class ExportKeyTestsMixin(object):
     def test_key_ascii_export(self):
-        key = self.backend.import_key(user1_pub)[0]
-        export = key.export()
+        export = self.key1.export()
 
         self.assertTrue(isinstance(export, six.text_type))
 
@@ -427,35 +437,33 @@ class BasicTestsMixin(object):
         self.assertTrue(export.endswith('-----END PGP PUBLIC KEY BLOCK-----\n'))
 
         # Now we try to import that again, to see if it returns a key with the same fp
-        key2 = self.backend.import_key(export)[0]
-        self.assertEqual(key, key2)
+        key1 = self.backend.import_key(export)[0]
+        self.assertEqual(self.key1, key1)
 
     def test_key_binary_export(self):
-        key = self.backend.import_key(user1_pub)[0]
-        export = key.export(mode=MODE_BINARY)
+        export = self.key1.export(mode=MODE_BINARY)
 
         self.assertTrue(isinstance(export, bytes))
         self.assertEqual(user1_bin_pub, export)
 
         # Now we try to import that again, to see if it returns a key with the same fp
-        key2 = self.backend.import_key(export)[0]
-        self.assertEqual(key, key2)
+        key1 = self.backend.import_key(export)[0]
+        self.assertEqual(self.key1, key1)
 
     def check_key_write_export(self, mode):
-        key = self.backend.import_key(user1_pub)[0]
         buf = six.BytesIO()
-        key.export(mode=mode, output=buf)
+        self.key1.export(mode=mode, output=buf)
         export = buf.getvalue()
 
         self.assertTrue(isinstance(export, six.binary_type))
 
         # Now we try to import that again, to see if it returns a key with the same fp
-        key2 = self.backend.import_key(export)[0]
-        self.assertEqual(key, key2)
+        key1 = self.backend.import_key(export)[0]
+        self.assertEqual(self.key1, key1)
 
         # Try to export to a file
         with tempfile.NamedTemporaryFile() as out:
-            key.export(mode=mode, output=out)
+            key1.export(mode=mode, output=out)
             out.flush()
             with open(out.name, 'rb') as stream:
                 export2 = stream.read()
@@ -473,11 +481,6 @@ class BasicTestsMixin(object):
 
 
 class DeleteKeyTestsMixin(object):
-    def setUp(self):
-        super(DeleteKeyTestsMixin, self).setUp()
-        self.key1 = self.backend.import_key(user1_pub)[0]
-        self.key2 = self.backend.import_key(user2_priv)[0]
-
     def test_basic(self):
         self.assertEqual(self.backend.list_keys(user1_fp), [self.key1])
         self.assertEqual(self.backend.list_keys(user2_fp), [self.key2])
@@ -510,9 +513,17 @@ class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = GnuPGBackend
 
 
-class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgTestCase):
+class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
-class DeleteKeyGnuPGTestCase(DeleteKeyTestsMixin, GpgTestCase):
+class ExportKeyGnuPGTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
+    backend_class = GnuPGBackend
+
+
+class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+    backend_class = GpgMeBackend
+
+
+class DeleteKeyGnuPGTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = GnuPGBackend
