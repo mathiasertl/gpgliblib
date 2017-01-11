@@ -58,6 +58,9 @@ for convenience.
 .. autoexception:: gpgliblib.base.GpgBadSignature
    :members:
 
+.. autoexception:: gpgliblib.base.GpgSecretKeyPresent
+   :members:
+
 
 ******************
 Django integration

@@ -83,6 +83,11 @@ class GpgBadSignature(GpgMimeError):
         super(GpgBadSignature, self).__init__(*args, **kwargs)
 
 
+class GpgSecretKeyPresent(GpgMimeError):
+    """Thrown when a key should be removed but a secret key is present."""
+    pass
+
+
 class GpgBackendBase(object):
     """Base class for all backends.
 
@@ -612,6 +617,25 @@ class GpgKey(object):
 
         str, bytes or None
             The key in the specified format or ``None`` if ``output`` is passed.
+        """
+        raise NotImplementedError
+
+    def delete(self, secret_key=False):
+        """Delete the key from the keyring.
+
+        Parameters
+        ----------
+
+        secret_key : bool, optional
+            If ``True``, also remove secret keys. If a secret key is present and ``secret_key`` is
+            ``False`` (the default), the function will raise
+            :py:class:`~gpgliblib.base.GpgSecretKeyPresent`.
+
+        Raises
+        ------
+
+        GpgSecretKeyPresent
+            If ``secret_key`` is ``False`` and a secret key is present.
         """
         raise NotImplementedError
 
