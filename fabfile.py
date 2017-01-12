@@ -36,6 +36,12 @@ def test():
 
 
 @task
+def coverage():
+    local('coverage run --source=gpgliblib testproject/manage.py test testapp')
+    local('coverage html')
+
+
+@task
 def check():
     """Run the testsuite and style-checks."""
 
