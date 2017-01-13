@@ -43,6 +43,7 @@ from gpgliblib.base import GpgUntrustedKeyError
 from gpgliblib.base import GpgSecretKeyPresent
 from gpgliblib.gpgme import GpgMeBackend
 from gpgliblib.gnupg import GnuPGBackend
+from gpgliblib.pyme import PymeBackend
 
 basedir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 testdatadir = os.path.join(basedir, 'testdata')
@@ -406,13 +407,15 @@ class BasicTestsMixin(object):
             with self.assertRaises(GpgUntrustedKeyError):
                 self.backend.encrypt(data, priv_keys, always_trust=False)
 
+
+class KeyPropertiesTestsMixin(object):
     def test_key_properties(self):
         key = self.backend.import_key(user1_pub)[0]
-        self.assertFalse(key.revoked)
-        self.assertFalse(key.has_secret_key)
         self.assertEqual(key.name, 'Private Citizen One')
         self.assertEqual(key.comment, None)
         self.assertEqual(key.email, 'user@example.com')
+        self.assertFalse(key.revoked)
+        self.assertFalse(key.has_secret_key)
 
         # import the private key
         key = self.backend.import_key(user1_priv)[0]
@@ -423,6 +426,10 @@ class BasicTestsMixin(object):
         self.assertEqual(key.name, 'Public Citizen One')
         self.assertEqual(key.comment, 'revoked')
         self.assertEqual(key.email, 'user+revoked@example.com')
+
+    def test_revoked(self):
+        key = self.backend.import_key(revoked_pub)[0]
+        self.assertTrue(key.revoked)
 
 
 class ExportKeyTestsMixin(object):
@@ -511,6 +518,18 @@ class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
 
 class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = GnuPGBackend
+
+
+class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+    backend_class = GpgMeBackend
+
+
+class KeyPropertiesGnuPGTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+    backend_class = GnuPGBackend
+
+
+class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+    backend_class = PymeBackend
 
 
 class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
