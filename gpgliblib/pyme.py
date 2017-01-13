@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 from threading import local
 
 from pyme import core
+from pyme.constants import PROTOCOL_OpenPGP
 from pyme.errors import GPGMEError
 
 from .base import GpgBackendBase
@@ -59,11 +60,16 @@ class PymeBackend(GpgBackendBase):
         if hasattr(self._local, 'context') is False:
             context = core.Context()
             context.set_armor(True)
-            # TODO: We cannot set path or home yet
+
+            if self._path or self._home:
+                context.set_engine_info(PROTOCOL_OpenPGP, self._path, self._home)
 
             self._local.context = context
 
         return self._local.context
+
+    def get_key(self, fingerprint):
+        return PymeKey(self, fingerprint)
 
     def import_key(self, data):
         newkey = core.Data(data)
@@ -72,23 +78,7 @@ class PymeBackend(GpgBackendBase):
         return [PymeKey(self, r.fpr) for r in result.imports]
 
     def import_private_key(self, data):
-        """Import a private key.
-
-        Parameters
-        ----------
-
-        data : str or bytes
-            The private key data. Can be in binary or in ASCII armored format.
-        **kwargs
-            Any additional parameters to the GPG backend.
-
-        Returns
-        -------
-
-        list of GpgKey
-            A list of GpgKey instances that were imported.
-        """
-        raise NotImplementedError
+        return self.import_key(data)
 
     def list_keys(self, query=None, secret_keys=False):
         """List keys in the keyring.
@@ -127,7 +117,13 @@ class PymeBackend(GpgBackendBase):
             If ``True``, always trust all keys, if ``False`` is passed, do not. The default value
             is what is passed to the constructor as ``default_trust``.
         """
-        raise NotImplementedError
+
+        data = core.Data(data)
+        cipher = core.Data()
+        keys = [PymeKey(self, f)._key for f in recipients]
+        self.context.op_encrypt(keys, 1, data, cipher)
+        cipher.seek(0, 0)
+        return cipher.read()
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
         """Sign and encrypt passed data with the given keys.
