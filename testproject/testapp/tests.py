@@ -520,6 +520,10 @@ class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = GnuPGBackend
 
 
+class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
+    backend_class = PymeBackend
+
+
 class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
@@ -540,9 +544,17 @@ class ExportKeyGnuPGTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = GnuPGBackend
 
 
+class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
+    backend_class = PymeBackend
+
+
 class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
 class DeleteKeyGnuPGTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = GnuPGBackend
+
+
+class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+    backend_class = PymeBackend
