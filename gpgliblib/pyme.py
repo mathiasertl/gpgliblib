@@ -28,24 +28,8 @@ from .base import MODE_ARMOR
 
 
 class PymeBackend(GpgBackendBase):
-    """Base class for all backends.
-
-    The parameters to the constructor supported by the base class are also supported by any
-    implementing subclasses. Any custom parameters are documented in the backends.
-
-    Parameters
-    ----------
-
-    home : str, optional
-        The GPG home directory. This is equivalent to the ``GNUPGHOME`` environment variable for
-        the ``gpg`` command line utility.
-    path : str, optional
-        Path to the ``gpg`` binary. The default is whatever the library uses (usually the first
-        instance found in your PATH) and may be ignored on backends that do not use the binary
-        directly.
-    default_trust : bool, optional
-        If ``True``, the backend will trust all keys by default.
-    """
+    # https://bitbucket.org/malb/pyme/src/790795b0ad11/examples/?at=master
+    # http://pyme.sourceforge.net/
 
     def __init__(self, home=None, path=None, default_trust=False):
         self._home = home
