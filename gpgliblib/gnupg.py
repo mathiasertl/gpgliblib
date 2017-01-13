@@ -223,7 +223,7 @@ class GnuPGKey(GpgKey):
             return VALIDITY_FULL  # 3
         elif trust == 'u':
             return VALIDITY_ULTIMATE  # 4
-        else:
+        else:  # pragma: no cover
             return VALIDITY_UNKNOWN  # 0
 
     @trust.setter
@@ -279,6 +279,6 @@ class GnuPGKey(GpgKey):
         result = self.backend.gpg.delete_keys(self.fingerprint)
         if result.status == 'No such key':
             raise GpgKeyNotFoundError(self.fingerprint)
-        elif result.status == 'Must delete secret key first':
+        elif result.status == 'Must delete secret key first':  # pragma: no cover
             # This shouldn't really happen, since it is already checked above
             raise GpgSecretKeyPresent('Secret key is present.')

@@ -153,7 +153,7 @@ class GpgBackendBase(object):
     # Key management #
     ##################
 
-    def fetch_key(self, search, keyserver='http://pool.sks-keyservers.net:11371', **kwargs):
+    def fetch_key(self, search, keyserver='http://pool.sks-keyservers.net:11371', **kwargs):  # NOQA pragma: no cover
         """Fetch a key from the given keyserver.
 
         Parameters
@@ -191,7 +191,7 @@ class GpgBackendBase(object):
         response = urlopen(url, **kwargs)
         return response.read().strip()
 
-    def import_key(self, data):
+    def import_key(self, data):  # pragma: no cover
         """Import a public key.
 
         Parameters
@@ -208,7 +208,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def import_private_key(self, data):
+    def import_private_key(self, data):  # pragma: no cover
         """Import a private key.
 
         Parameters
@@ -227,7 +227,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def list_keys(self, query=None, secret_keys=False):
+    def list_keys(self, query=None, secret_keys=False):  # pragma: no cover
         """List keys in the keyring.
 
         Parameters
@@ -250,7 +250,7 @@ class GpgBackendBase(object):
     # Cryptography #
     ################
 
-    def encrypt(self, data, recipients, **kwargs):
+    def encrypt(self, data, recipients, **kwargs):  # pragma: no cover
         """Encrypt passed data with the given keys.
 
         Parameters
@@ -266,7 +266,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def sign_encrypt(self, data, recipients, signer, **kwargs):
+    def sign_encrypt(self, data, recipients, signer, **kwargs):  # pragma: no cover
         """Sign and encrypt passed data with the given keys.
 
         Parameters
@@ -284,7 +284,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def verify(self, data, signature):
+    def verify(self, data, signature):  # pragma: no cover
         """Verify the data with the given (detached) signature.
 
         Parameters
@@ -309,7 +309,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def decrypt(self, data):
+    def decrypt(self, data):  # pragma: no cover
         """Decrypt the passed data.
 
         Parameters
@@ -326,7 +326,7 @@ class GpgBackendBase(object):
         """
         raise NotImplementedError
 
-    def decrypt_verify(self, data):
+    def decrypt_verify(self, data):  # pragma: no cover
         """Decrypt data and verify the embedded signature.
 
         Parameters
@@ -479,7 +479,7 @@ class GpgBackendBase(object):
         signature_msg = self.get_mime_signature(signature)
         return self.get_signed_message(message, signature_msg)
 
-    def sign(self, data, signer):
+    def sign(self, data, signer):  # pragma: no cover
         """Sign passed data with the given keys.
 
         Parameters
@@ -535,28 +535,28 @@ class GpgKey(object):
         pass
 
     @property
-    def name(self):
+    def name(self):  # pragma: no cover
         """Name for this key."""
         raise NotImplementedError
 
     @property
-    def comment(self):
+    def comment(self):  # pragma: no cover
         """Comment for this key."""
         raise NotImplementedError
 
     @property
-    def email(self):
-        """Email for this key."""
+    def email(self):  # pragma: no cover
+        """Emaail for this key."""
         raise NotImplementedError
 
     @property
-    def has_secret_key(self):
+    def has_secret_key(self):  # pragma: no cover
         """``True`` if there is a secret key present for this key, ``False`` otherwise."""
 
         raise NotImplementedError
 
     @property
-    def trust(self):
+    def trust(self):  # pragma: no cover
         """The current trust for this key.
 
         The value is one of the ``VALIDITY_*`` :ref:`constants <api-constants>` and can also be
@@ -566,11 +566,11 @@ class GpgKey(object):
         raise NotImplementedError
 
     @trust.setter
-    def trust(self, value):
+    def trust(self, value):  # pragma: no cover
         raise NotImplementedError
 
     @property
-    def expires(self):
+    def expires(self):  # pragma: no cover
         """If and when a key expires.
 
         This is a datetime for when the key expires, or ``None`` if it does not expire.
@@ -584,7 +584,7 @@ class GpgKey(object):
         return self.expires < datetime.utcnow()
 
     @property
-    def revoked(self):
+    def revoked(self):  # pragma: no cover
         """Boolean indicating if the key is revoked."""
 
         raise NotImplementedError
@@ -621,7 +621,7 @@ class GpgKey(object):
         """
         return self.fingerprint[-16:]
 
-    def export(self, mode=MODE_ARMOR, output=None):
+    def export(self, mode=MODE_ARMOR, output=None):  # pragma: no cover
         """Export the current public key.
 
         The ``mode`` parameter controls the output format of the signature. If
@@ -652,7 +652,7 @@ class GpgKey(object):
         """
         raise NotImplementedError
 
-    def delete(self, secret_key=False):
+    def delete(self, secret_key=False):  # pragma: no cover
         """Delete the key from the keyring.
 
         .. versionadded:: 0.2.0

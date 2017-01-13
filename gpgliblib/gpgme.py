@@ -248,7 +248,7 @@ class GpgMeKey(GpgKey):
             return VALIDITY_FULL
         elif self._key.owner_trust == gpgme.VALIDITY_ULTIMATE:
             return VALIDITY_ULTIMATE
-        else:
+        else:  # pragma: no cover
             return VALIDITY_UNKNOWN
 
     @trust.setter
