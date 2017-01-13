@@ -546,7 +546,7 @@ class GpgKey(object):
 
     @property
     def email(self):  # pragma: no cover
-        """Emaail for this key."""
+        """Email for this key."""
         raise NotImplementedError
 
     @property
