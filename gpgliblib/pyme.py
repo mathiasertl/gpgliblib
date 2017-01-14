@@ -20,7 +20,7 @@ from threading import local
 
 import six
 from pyme import core
-from pyme.constants import PROTOCOL_OpenPGP
+from pyme import constants
 from pyme.errors import GPGMEError
 
 from .base import GpgBackendBase
@@ -47,7 +47,7 @@ class PymeBackend(GpgBackendBase):
             context.set_armor(True)
 
             if self._path or self._home:
-                context.set_engine_info(PROTOCOL_OpenPGP, self._path, self._home)
+                context.set_engine_info(constants.PROTOCOL_OpenPGP, self._path, self._home)
 
             self._local.context = context
 
@@ -80,6 +80,13 @@ class PymeBackend(GpgBackendBase):
         keys = self.context.op_keylist_all(query, secret_keys)
         return [PymeKey(self, key=k) for k in keys]
 
+    def sign(self, data, signer):
+        data = core.Data(data)
+        sig = core.Data()
+        self.context.op_sign(data, sig, constants.SIG_MODE_DETACH)
+        sig.seek(0, 0)
+        return sig.read()
+
     def encrypt(self, data, recipients, **kwargs):
         data = core.Data(data)
         cipher = core.Data()
@@ -92,7 +99,11 @@ class PymeBackend(GpgBackendBase):
         raise NotImplementedError
 
     def verify(self, data, signature):
-        raise NotImplementedError
+        data = core.Data(data)
+        signature = core.Data(signature)
+        self.context.op_verify(signature, data, None)
+        result = self.context.op_verify_result()
+        return result.signatures[0].fpr
 
     def decrypt(self, data):
         cipher = core.Data(data)
@@ -121,19 +132,6 @@ class PymeBackend(GpgBackendBase):
 
         GpgBadSignature
             If the signature is invalid.
-        """
-        raise NotImplementedError
-
-    def sign(self, data, signer):
-        """Sign passed data with the given keys.
-
-        Parameters
-        ----------
-
-        data : bytes
-            The data to sign.
-        signer : str
-            Key id to sign the message with.
         """
         raise NotImplementedError
 
