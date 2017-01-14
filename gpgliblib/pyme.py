@@ -103,6 +103,7 @@ class PymeBackend(GpgBackendBase):
         signature = core.Data(signature)
         self.context.op_verify(signature, data, None)
         result = self.context.op_verify_result()
+        #TODO: no error handling here yet
         return result.signatures[0].fpr
 
     def decrypt(self, data):
