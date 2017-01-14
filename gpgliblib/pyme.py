@@ -18,6 +18,7 @@ from __future__ import unicode_literals
 
 from threading import local
 
+import six
 from pyme import core
 from pyme.constants import PROTOCOL_OpenPGP
 from pyme.errors import GPGMEError
@@ -59,33 +60,17 @@ class PymeBackend(GpgBackendBase):
         newkey = core.Data(data)
         self.context.op_import(newkey)
         result = self.context.op_import_result()
-        return [PymeKey(self, r.fpr) for r in result.imports]
+        return list(set([PymeKey(self, r.fpr) for r in result.imports]))
 
     def import_private_key(self, data):
         return self.import_key(data)
 
     def list_keys(self, query=None, secret_keys=False):
-        """List keys in the keyring.
+        if six.PY2 and isinstance(query, unicode):
+            query = query.encode('utf-8')
 
-        Parameters
-        ----------
-
-        query : str, optional
-            Only list keys matching the given query.
-        secret_keys : bool, optional
-            Only return keys with a secret key.
-
-        Returns
-        -------
-
-        list of GpgKey
-            A list of GpgKey instances representing the keys that were found.
-        """
-        raise NotImplementedError
-
-    ################
-    # Cryptography #
-    ################
+        keys = self.context.op_keylist_all(query, secret_keys)
+        return [PymeKey(self, key=k) for k in keys]
 
     def encrypt(self, data, recipients, **kwargs):
         """Encrypt passed data with the given keys.
@@ -210,10 +195,14 @@ class PymeKey(GpgKey):
     _loaded_key = None
     _loaded_secret_key = None
 
-    def __init__(self, backend, fingerprint):
-        self.backend = backend
-        self.fingerprint = fingerprint.upper()
-        self.refresh()
+    def __init__(self, backend, fingerprint=None, key=None):
+        if not fingerprint and not key:
+            raise ValueError("Must pass either fingerprint or key.")
+        elif not fingerprint:
+            fingerprint = key.subkeys[0].fpr
+
+        super(PymeKey, self).__init__(backend, fingerprint)
+        self._loaded_key = key
 
     def refresh(self):
         """Reset any in-memory data used by this key."""
