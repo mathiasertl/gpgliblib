@@ -43,7 +43,11 @@ from gpgliblib.base import GpgUntrustedKeyError
 from gpgliblib.base import GpgSecretKeyPresent
 from gpgliblib.gpgme import GpgMeBackend
 from gpgliblib.gnupg import GnuPGBackend
-from gpgliblib.pyme import PymeBackend
+
+try:
+    from gpgliblib.pyme import PymeBackend
+except ImportError:
+    PymeBackend = None
 
 basedir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 testdatadir = os.path.join(basedir, 'testdata')
@@ -545,8 +549,9 @@ class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = GnuPGBackend
 
 
-class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
-    backend_class = PymeBackend
+if PymeBackend is not None:
+    class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
+        backend_class = PymeBackend
 
 
 class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
@@ -557,8 +562,9 @@ class ListKeysGnuPGTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = GnuPGBackend
 
 
-class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
-    backend_class = PymeBackend
+if PymeBackend is not None:
+    class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
+        backend_class = PymeBackend
 
 
 class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
@@ -569,8 +575,9 @@ class KeyPropertiesGnuPGTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = GnuPGBackend
 
 
-class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-    backend_class = PymeBackend
+if PymeBackend is not None:
+    class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+        backend_class = PymeBackend
 
 
 class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
@@ -581,8 +588,9 @@ class ExportKeyGnuPGTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = GnuPGBackend
 
 
-class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-    backend_class = PymeBackend
+if PymeBackend is not None:
+    class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
+        backend_class = PymeBackend
 
 
 class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
@@ -593,5 +601,6 @@ class DeleteKeyGnuPGTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = GnuPGBackend
 
 
-class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-    backend_class = PymeBackend
+if PymeBackend is not None:
+    class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+        backend_class = PymeBackend
