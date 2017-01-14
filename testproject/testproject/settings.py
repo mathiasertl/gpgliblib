@@ -138,6 +138,13 @@ GPG_BACKENDS = {
             'verbose': True,
         },
     },
+    'pyme': {
+        'BACKEND': 'gpgliblib.pyme.PymeBackend',
+        'HOME': KEYRING_DIR,
+        'OPTIONS': {
+            'verbose': True,
+        },
+    },
 }
 
 try:
