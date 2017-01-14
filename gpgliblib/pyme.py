@@ -56,6 +56,14 @@ class PymeBackend(GpgBackendBase):
     def get_key(self, fingerprint):
         return PymeKey(self, fingerprint)
 
+    def _get_gpgme_key(self, obj):
+        if isinstance(obj, six.string_types):
+            if six.PY2 and isinstance(obj, unicode):
+                obj = obj.encode('utf-8')
+
+            return PymeKey(self, obj)._key
+        return obj._key
+
     def import_key(self, data):
         newkey = core.Data(data)
         self.context.op_import(newkey)
@@ -73,86 +81,25 @@ class PymeBackend(GpgBackendBase):
         return [PymeKey(self, key=k) for k in keys]
 
     def encrypt(self, data, recipients, **kwargs):
-        """Encrypt passed data with the given keys.
-
-        Parameters
-        ----------
-
-        data : bytes
-            The data to sign.
-        recipients : list of str
-            A list of full GPG fingerprints (without a ``"0x"`` prefix) to encrypt the message to.
-        always_trust : bool, optional
-            If ``True``, always trust all keys, if ``False`` is passed, do not. The default value
-            is what is passed to the constructor as ``default_trust``.
-        """
-
         data = core.Data(data)
         cipher = core.Data()
-        keys = [PymeKey(self, f)._key for f in recipients]
+        keys = [self._get_gpgme_key(r) for r in recipients]
         self.context.op_encrypt(keys, 1, data, cipher)
         cipher.seek(0, 0)
         return cipher.read()
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
-        """Sign and encrypt passed data with the given keys.
-
-        Parameters
-        ----------
-
-        data : bytes
-            The data to sign.
-        recipients : list of str
-            A list of full GPG fingerprints (without a ``"0x"`` prefix) to encrypt the message to.
-        signer : str
-            Key id to sign the message with.
-        always_trust : bool, optional
-            If ``True``, always trust all keys, if ``False`` is passed, do not. The default value
-            is what is passed to the constructor as ``default_trust``.
-        """
         raise NotImplementedError
 
     def verify(self, data, signature):
-        """Verify the data with the given (detached) signature.
-
-        Parameters
-        ----------
-
-        data : bytes
-            The data that was signed with the given signature.
-        signature : bytes
-            The detached signature.
-
-        Returns
-        -------
-
-        fingerprint : str
-            The fingerprint of the signature that was used to sign the data.
-
-        Raises
-        ------
-
-        GpgBadSignature
-            If the signature is invalid.
-        """
         raise NotImplementedError
 
     def decrypt(self, data):
-        """Decrypt the passed data.
-
-        Parameters
-        ----------
-
-        data : bytes
-            The encrypted data.
-
-        Returns
-        -------
-
-        bytes
-            The decrypted data.
-        """
-        raise NotImplementedError
+        cipher = core.Data(data)
+        output = core.Data()
+        self.context.op_decrypt(cipher, output)
+        output.seek(0, 0)
+        return output.read()
 
     def decrypt_verify(self, data):
         """Decrypt data and verify the embedded signature.
