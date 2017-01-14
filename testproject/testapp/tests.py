@@ -153,6 +153,10 @@ class GpgTestCase(TestCase):
         super(GpgTestCase, self).setUp()
         self.home = tempfile.mkdtemp()
         self.backend = self.backend_class(home=self.home)
+        self.user1 = self.backend.get_key(user1_fp)
+        self.user2 = self.backend.get_key(user2_fp)
+        self.user3 = self.backend.get_key(user3_fp)
+        self.user4 = self.backend.get_key(user4_fp)
 
     def tearDown(self):
         super(GpgTestCase, self).tearDown()
@@ -208,28 +212,6 @@ class BasicTestsMixin(object):
                         [user3_fp, user4_fp])
         self.assertKeys(self.backend.import_private_key(user3_pub + user4_pub),
                         [user3_fp, user4_fp])
-
-    def test_list_keys(self):
-        self.assertEqual(self.backend.list_keys(), [])
-        self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
-        self.assertEqual(self.backend.list_keys(), [self.backend.get_key(user1_fp)])
-
-        # import a private key
-        self.assertKeys(self.backend.import_private_key(user2_priv), [user2_fp])
-        self.assertEqual(self.backend.list_keys(),
-                         [self.backend.get_key(user1_fp), self.backend.get_key(user2_fp)])
-        self.assertEqual(self.backend.list_keys(secret_keys=True),
-                         [self.backend.get_key(user2_fp)])
-
-        # import second public key, test query
-        self.assertKeys(self.backend.import_key(user2_pub), [user2_fp])
-        self.assertEqual(self.backend.list_keys(query='Private Citizen Two'),
-                         [self.backend.get_key(user2_fp)])
-        self.assertEqual(self.backend.list_keys(query='user@example.net'),
-                         [self.backend.get_key(user2_fp)])
-        self.assertEqual(self.backend.list_keys(query='user@example.com'),
-                         [self.backend.get_key(user1_fp)])
-        self.assertEqual(self.backend.list_keys(query='bogus'), [])
 
     def test_no_expires(self):
         keys = self.backend.import_key(user1_pub)
@@ -408,6 +390,49 @@ class BasicTestsMixin(object):
                 self.backend.encrypt(data, priv_keys, always_trust=False)
 
 
+class ListKeysTestsMixin(object):
+    def test_empty_keyring(self):
+        self.assertEqual(self.backend.list_keys(), [])
+
+    def test_public_keys(self):
+        self.assertEqual(self.backend.import_key(user1_pub), [self.user1])
+        self.assertEqual(self.backend.list_keys(), [self.user1])
+
+        self.assertEqual(self.backend.import_key(user2_pub), [self.user2])
+        self.assertCountEqual(self.backend.list_keys(), [self.user1, self.user2])
+
+        # import private key and see if it appears
+        self.assertCountEqual(self.backend.import_private_key(user3_priv), [self.user3])
+        self.assertCountEqual(self.backend.list_keys(), [self.user1, self.user2, self.user3])
+
+    def test_private_keys(self):
+        self.assertCountEqual(self.backend.import_private_key(user3_priv), [self.user3])
+        self.assertCountEqual(self.backend.list_keys(secret_keys=True), [self.user3])
+        self.assertCountEqual(self.backend.list_keys(), [self.user3])
+
+        # import second public key
+        self.assertEqual(self.backend.import_key(user1_pub), [self.user1])
+        self.assertCountEqual(self.backend.list_keys(secret_keys=True), [self.user3])
+        self.assertCountEqual(self.backend.list_keys(), [self.user1, self.user3])
+
+    def test_query(self):
+        # empty keyring, so no results
+        self.assertEqual(self.backend.list_keys(query='bogus'), [])
+        self.assertEqual(self.backend.list_keys(query='Private Citizen Two'), [])
+        self.assertEqual(self.backend.list_keys(query='user@example.net'), [])
+        self.assertEqual(self.backend.list_keys(query='user@example.com'), [])
+
+        # import some keys
+        self.assertEqual(self.backend.import_key(user1_pub), [self.user1])
+        self.assertEqual(self.backend.import_key(user2_pub), [self.user2])
+
+        # test query
+        self.assertEqual(self.backend.list_keys(query='Private Citizen Two'), [self.user2])
+        self.assertEqual(self.backend.list_keys(query='user@example.net'), [self.user2])
+        self.assertEqual(self.backend.list_keys(query='user@example.com'), [self.user1])
+        self.assertEqual(self.backend.list_keys(query='bogus'), [])
+
+
 class KeyPropertiesTestsMixin(object):
     def test_key_properties(self):
         key = self.backend.import_key(user1_pub)[0]
@@ -521,6 +546,18 @@ class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
 
 
 class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
+    backend_class = PymeBackend
+
+
+class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
+    backend_class = GpgMeBackend
+
+
+class ListKeysGnuPGTestCase(ListKeysTestsMixin, GpgTestCase):
+    backend_class = GnuPGBackend
+
+
+class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = PymeBackend
 
 
