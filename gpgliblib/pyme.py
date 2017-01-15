@@ -268,7 +268,7 @@ class PymeKey(GpgKey):
         GpgSecretKeyPresent
             If ``secret_key`` is ``False`` and a secret key is present.
         """
-        raise NotImplementedError
+        self.backend.context.op_delete(self._key, secret_key)
 
     def __str__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.fingerprint)

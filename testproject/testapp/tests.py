@@ -530,16 +530,15 @@ class DeleteKeyTestsMixin(object):
         self.assertEqual(self.backend.list_keys(user2_fp), [])
 
     def test_secret_key_present(self):
-        with self.assertRaisesRegex(GpgSecretKeyPresent,
-                                    expected_regex='^Secret key is present\.$'):
-            self.key2.delete()
+        six.assertRaisesRegex(self, GpgSecretKeyPresent,
+                              '^Secret key is present\.$', self.key2.delete)
 
         self.assertEqual(self.backend.list_keys(user2_fp), [self.key2])
 
     def test_key_not_found(self):
         key = self.backend.get_key(user3_fp)
-        with self.assertRaisesRegex(GpgKeyNotFoundError, expected_regex='^%s$' % user3_fp):
-            key.delete()
+
+        six.assertRaisesRegex(self, GpgKeyNotFoundError, '^%s$' % user3_fp, key.delete)
 
 
 class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
