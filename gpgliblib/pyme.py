@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+import shutil
 from contextlib import contextmanager
 from threading import local
 
@@ -234,34 +235,6 @@ class PymeKey(GpgKey):
         return self._key.revoked == 1
 
     def export(self, mode=MODE_ARMOR, output=None):
-        """Export the current public key.
-
-        The ``mode`` parameter controls the output format of the signature. If
-        :py:data:`~gpgliblib.base.MODE_ARMOR` is passed (which is the default), the key is in ASCII
-        armored format (as ``str``). If :py:data:`~gpgliblib.base.MODE_BINARY` is passed, the key
-        is returned in binary format (as ``binary``).
-
-        You can also pass the ``output`` parameter to directly write the key to a file-like
-        object. The file must be opened in binary mode (``"w+b"``). If output is passed, the
-        function does not return the key. Note that depending on the backend, the key may still be
-        read entirely into memory and only then written to the file.
-
-        .. versionadded:: 0.2.0
-
-        Parameters
-        ----------
-
-        mode : {``MODE_ARMOR``, ``MODE_BINARY``}, optional
-            One of the ``MODE_*`` constants.
-        output : file-like object, optional
-            If passed, the signature will be written directly to the file-like object.
-
-        Returns
-        -------
-
-        str, bytes or None
-            The key in the specified format or ``None`` if ``output`` is passed.
-        """
         exp = core.Data()
         with self.backend._attrs(armor=mode == MODE_ARMOR) as context:
             context.op_export(self.fingerprint, 0, exp)
@@ -272,6 +245,9 @@ class PymeKey(GpgKey):
             if mode == MODE_ARMOR:
                 return value.decode('utf-8')
             return value
+        else:
+            exp.seek(0, 0)
+            shutil.copyfileobj(exp, output)
 
     def delete(self, secret_key=False):
         """Delete the key from the keyring.
