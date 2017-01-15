@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
+from contextlib import contextmanager
 from threading import local
 
 import six
@@ -53,6 +54,20 @@ class PymeBackend(GpgBackendBase):
 
         return self._local.context
 
+    @contextmanager
+    def _attrs(self, armor=None):
+        context = self.context
+
+        if armor is not None:
+            old_armor = context.get_armor()
+            context.set_armor(armor)
+
+        try:
+            yield context
+        finally:
+            if armor is not None:
+                context.set_armor(old_armor)
+
     def get_key(self, fingerprint):
         return PymeKey(self, fingerprint)
 
@@ -65,6 +80,9 @@ class PymeBackend(GpgBackendBase):
         return obj._key
 
     def import_key(self, data):
+        if six.PY2 and isinstance(data, unicode):
+            data = data.encode('utf-8')
+
         newkey = core.Data(data)
         self.context.op_import(newkey)
         result = self.context.op_import_result()
@@ -244,7 +262,16 @@ class PymeKey(GpgKey):
         str, bytes or None
             The key in the specified format or ``None`` if ``output`` is passed.
         """
-        raise NotImplementedError
+        exp = core.Data()
+        with self.backend._attrs(armor=mode == MODE_ARMOR) as context:
+            context.op_export(self.fingerprint, 0, exp)
+
+        if output is None:
+            exp.seek(0, 0)
+            value = exp.read()
+            if mode == MODE_ARMOR:
+                return value.decode('utf-8')
+            return value
 
     def delete(self, secret_key=False):
         """Delete the key from the keyring.
