@@ -492,6 +492,7 @@ class ExportKeyTestsMixin(object):
         export = buf.getvalue()
 
         self.assertTrue(isinstance(export, six.binary_type))
+        self.assertNotEqual(export, b'')
 
         # Now we try to import that again, to see if it returns a key with the same fp
         key1 = self.backend.import_key(export)[0]
