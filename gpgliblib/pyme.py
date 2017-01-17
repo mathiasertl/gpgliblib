@@ -178,15 +178,23 @@ class PymeKey(GpgKey):
     @property
     def _key(self):
         if self._loaded_key is None:
-            self._loaded_key = self.backend.context.get_key(self.fingerprint, False)
+            fingerprint = self.fingerprint
+            if six.PY2 is True and isinstance(fingerprint, unicode):
+                fingerprint = fingerprint.encode('utf-8')
+
+            self._loaded_key = self.backend.context.get_key(fingerprint, False)
 
         return self._loaded_key
 
     @property
     def _secret_key(self):
         if self._loaded_secret_key is None:
+            fingerprint = self.fingerprint
+            if six.PY2 is True and isinstance(fingerprint, unicode):
+                fingerprint = fingerprint.encode('utf-8')
+
             try:
-                self._loaded_secret_key = self.backend.context.get_key(self.fingerprint, True)
+                self._loaded_secret_key = self.backend.context.get_key(fingerprint, True)
             except GPGMEError:
                 self._loaded_secret_key = False
 
