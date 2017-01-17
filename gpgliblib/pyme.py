@@ -29,6 +29,7 @@ from .base import GpgBackendBase
 from .base import GpgKey
 from .base import MODE_ARMOR
 from .base import GpgSecretKeyPresent
+from .base import UnknownGpgliblibError
 
 
 class PymeBackend(GpgBackendBase):
@@ -276,7 +277,7 @@ class PymeKey(GpgKey):
             source = e.getsource()
             if code == 70 and source == 7:
                 raise GpgSecretKeyPresent('Secret key is present.')
-            raise
+            raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
 
     def __str__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.fingerprint)

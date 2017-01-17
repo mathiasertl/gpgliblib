@@ -88,6 +88,11 @@ class GpgSecretKeyPresent(GpgMimeError):
     pass
 
 
+class UnknownGpgliblibError(GpgMimeError):
+    """An unknown error in the underlying gpg libary."""
+    pass
+
+
 class GpgBackendBase(object):
     """Base class for all backends.
 
