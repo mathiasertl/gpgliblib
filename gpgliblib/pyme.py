@@ -18,6 +18,7 @@ from __future__ import unicode_literals
 
 import shutil
 from contextlib import contextmanager
+from datetime import datetime
 from threading import local
 
 import six
@@ -248,11 +249,9 @@ class PymeKey(GpgKey):
 
     @property
     def expires(self):
-        """If and when a key expires.
-
-        This is a datetime for when the key expires, or ``None`` if it does not expire.
-        """
-        raise NotImplementedError
+        expires = lambda i: datetime.fromtimestamp(i) if i else None
+        subkeys = {sk.fpr: expires(sk.expires) for sk in self._key.subkeys}
+        return subkeys[self.fingerprint]
 
     @property
     def revoked(self):
