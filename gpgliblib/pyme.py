@@ -125,7 +125,6 @@ class PymeBackend(GpgBackendBase):
         signature = core.Data(signature)
         self.context.op_verify(signature, data, None)
         result = self.context.op_verify_result()
-        #TODO: no error handling here yet
         return result.signatures[0].fpr
 
     def decrypt(self, data):
@@ -183,7 +182,14 @@ class PymeKey(GpgKey):
             if six.PY2 is True and isinstance(fingerprint, unicode):
                 fingerprint = fingerprint.encode('utf-8')
 
-            self._loaded_key = self.backend.context.get_key(fingerprint, False)
+            try:
+                self._loaded_key = self.backend.context.get_key(fingerprint, False)
+            except GPGMEError as e:
+                code = e.getcode()
+                source = e.getsource()
+                if code == 16383 and source == 7:
+                    raise GpgKeyNotFoundError(self.fingerprint)
+                raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
 
         return self._loaded_key
 
