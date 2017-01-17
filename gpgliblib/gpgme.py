@@ -167,6 +167,8 @@ class GpgMeBackend(GpgBackendBase):
     def import_key(self, data):
         if six.PY3 and isinstance(data, str):
             data = data.encode('utf-8')
+        elif six.PY2 is True and isinstance(data, unicode):
+            data = data.encode('utf-8')
 
         result = self.context.import_(six.BytesIO(data))
         return [GpgMeKey(self, r[0]) for r in result.imports]
