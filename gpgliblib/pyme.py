@@ -27,8 +27,9 @@ from pyme.errors import GPGMEError
 
 from .base import GpgBackendBase
 from .base import GpgKey
-from .base import MODE_ARMOR
+from .base import GpgKeyNotFoundError
 from .base import GpgSecretKeyPresent
+from .base import MODE_ARMOR
 from .base import UnknownGpgliblibError
 
 
@@ -285,6 +286,8 @@ class PymeKey(GpgKey):
             source = e.getsource()
             if code == 70 and source == 7:
                 raise GpgSecretKeyPresent('Secret key is present.')
+            elif code == 16383 and source == 7:
+                raise GpgKeyNotFoundError(self.fingerprint)
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
 
     def __str__(self):
