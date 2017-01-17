@@ -299,38 +299,6 @@ class BasicTestsMixin(object):
             self.backend.sign_encrypt(b'test', recipients=[user3_fp], signer=user1_fp,
                                       always_trust=True)
 
-    def test_trust(self):
-        keys = self.backend.import_key(user4_pub)
-        self.assertKeys(keys, [user4_fp])
-        self.assertEqual(keys[0].trust, VALIDITY_UNKNOWN)
-
-        # NOTE: We cannot set VALIDITY_UNKNOWN again
-        for trust in [VALIDITY_FULL, VALIDITY_MARGINAL, VALIDITY_NEVER, VALIDITY_ULTIMATE]:
-            keys[0].trust = trust
-            self.assertEqual(keys[0].trust, trust)
-
-    def test_set_unknown_trust(self):
-        keys = self.backend.import_key(user4_pub)
-        self.assertKeys(keys, [user4_fp])
-        self.assertEqual(keys[0].trust, VALIDITY_UNKNOWN)
-        keys[0].trust = VALIDITY_FULL
-
-        with self.assertRaises(ValueError):
-            keys[0].trust = VALIDITY_UNKNOWN
-
-        self.assertEqual(keys[0].trust, VALIDITY_FULL)
-
-    def test_set_random_trust(self):
-        keys = self.backend.import_key(user4_pub)
-        self.assertKeys(keys, [user4_fp])
-        self.assertEqual(keys[0].trust, VALIDITY_UNKNOWN)
-        keys[0].trust = VALIDITY_FULL
-
-        with self.assertRaises(ValueError):
-            keys[0].trust = 'foobar'
-
-        self.assertEqual(keys[0].trust, VALIDITY_FULL)
-
     def test_encrypt_no_key(self):
         data = b'testdata'
         with self.assertRaises(GpgKeyNotFoundError):
@@ -439,12 +407,11 @@ class ListKeysTestsMixin(object):
 
 class KeyPropertiesTestsMixin(object):
     def test_key_properties(self):
-        key = self.backend.import_key(user1_pub)[0]
-        self.assertEqual(key.name, 'Private Citizen One')
-        self.assertEqual(key.comment, None)
-        self.assertEqual(key.email, 'user@example.com')
-        self.assertFalse(key.revoked)
-        self.assertFalse(key.has_secret_key)
+        self.assertEqual(self.user1.name, 'Private Citizen One')
+        self.assertEqual(self.user1.comment, None)
+        self.assertEqual(self.user1.email, 'user@example.com')
+        self.assertFalse(self.user1.revoked)
+        self.assertFalse(self.user1.has_secret_key)
 
         # import the private key
         key = self.backend.import_key(user1_priv)[0]
@@ -459,6 +426,39 @@ class KeyPropertiesTestsMixin(object):
     def test_revoked(self):
         key = self.backend.import_key(revoked_pub)[0]
         self.assertTrue(key.revoked)
+
+
+class TrustTestsMixin(object):
+    def test_basic(self):
+        self.assertEqual(self.user1.trust, VALIDITY_UNKNOWN)
+        self.assertEqual(self.user2.trust, VALIDITY_UNKNOWN)
+
+        # NOTE: We cannot set VALIDITY_UNKNOWN again
+        for trust in [VALIDITY_FULL, VALIDITY_MARGINAL, VALIDITY_NEVER, VALIDITY_ULTIMATE]:
+            self.user1.trust = trust
+            self.assertEqual(self.user1.trust, trust)
+
+    def test_set_unknown_trust(self):
+        keys = self.backend.import_key(user4_pub)
+        self.assertKeys(keys, [user4_fp])
+        self.assertEqual(keys[0].trust, VALIDITY_UNKNOWN)
+        keys[0].trust = VALIDITY_FULL
+
+        with self.assertRaises(ValueError):
+            keys[0].trust = VALIDITY_UNKNOWN
+
+        self.assertEqual(keys[0].trust, VALIDITY_FULL)
+
+    def test_set_random_trust(self):
+        keys = self.backend.import_key(user4_pub)
+        self.assertKeys(keys, [user4_fp])
+        self.assertEqual(keys[0].trust, VALIDITY_UNKNOWN)
+        keys[0].trust = VALIDITY_FULL
+
+        with self.assertRaises(ValueError):
+            keys[0].trust = 'foobar'
+
+        self.assertEqual(keys[0].trust, VALIDITY_FULL)
 
 
 class ExportKeyTestsMixin(object):
@@ -577,6 +577,19 @@ class KeyPropertiesGnuPGTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
 
 if PymeBackend is not None:
     class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+        backend_class = PymeBackend
+
+
+class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
+    backend_class = GpgMeBackend
+
+
+class TrustGnuPGTestCase(TrustTestsMixin, GpgKeyTestCase):
+    backend_class = GnuPGBackend
+
+
+if PymeBackend is not None:
+    class TrustPymeTestCase(TrustTestsMixin, GpgKeyTestCase):
         backend_class = PymeBackend
 
 
