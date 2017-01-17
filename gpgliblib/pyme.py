@@ -28,6 +28,7 @@ from pyme.errors import GPGMEError
 from .base import GpgBackendBase
 from .base import GpgKey
 from .base import MODE_ARMOR
+from .base import GpgSecretKeyPresent
 
 
 class PymeBackend(GpgBackendBase):
@@ -268,7 +269,14 @@ class PymeKey(GpgKey):
         GpgSecretKeyPresent
             If ``secret_key`` is ``False`` and a secret key is present.
         """
-        self.backend.context.op_delete(self._key, secret_key)
+        try:
+            self.backend.context.op_delete(self._key, secret_key)
+        except GPGMEError as e:
+            code = e.getcode()
+            source = e.getsource()
+            if code == 70 and source == 7:
+                raise GpgSecretKeyPresent('Secret key is present.')
+            raise
 
     def __str__(self):
         return '<%s: %s>' % (self.__class__.__name__, self.fingerprint)
