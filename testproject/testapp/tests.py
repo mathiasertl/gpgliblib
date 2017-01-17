@@ -588,9 +588,9 @@ class TrustGnuPGTestCase(TrustTestsMixin, GpgKeyTestCase):
     backend_class = GnuPGBackend
 
 
-if PymeBackend is not None:
-    class TrustPymeTestCase(TrustTestsMixin, GpgKeyTestCase):
-        backend_class = PymeBackend
+#if PymeBackend is not None:
+#    class TrustPymeTestCase(TrustTestsMixin, GpgKeyTestCase):
+#        backend_class = PymeBackend
 
 
 class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):

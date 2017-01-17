@@ -30,8 +30,14 @@ from .base import GpgBackendBase
 from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgSecretKeyPresent
+from .base import GpgUntrustedKeyError
 from .base import MODE_ARMOR
 from .base import UnknownGpgliblibError
+from .base import VALIDITY_FULL
+from .base import VALIDITY_MARGINAL
+from .base import VALIDITY_NEVER
+from .base import VALIDITY_ULTIMATE
+from .base import VALIDITY_UNKNOWN
 
 
 class PymeBackend(GpgBackendBase):
@@ -118,15 +124,31 @@ class PymeBackend(GpgBackendBase):
         return sig.read()
 
     def encrypt(self, data, recipients, **kwargs):
+        always_trust = kwargs.get('always_trust', self._default_trust)
+
+        flags = 0
+        if always_trust is True:
+            flags |= constants.ENCRYPT_ALWAYS_TRUST
+
         data = core.Data(data)
         cipher = core.Data()
         keys = [self._get_gpgme_key(r) for r in recipients]
-        self.context.op_encrypt(keys, 1, data, cipher)
+
+        try:
+            self.context.op_encrypt(keys, flags, data, cipher)
+        except GPGMEError as e:
+            code = e.getcode()
+            source = e.getsource()
+            if code == 1 and source == 0:
+                raise GpgUntrustedKeyError('Key not trusted.')
+
+            raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
         cipher.seek(0, 0)
         return cipher.read()
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
-        raise NotImplementedError
+        with self._attrs(signer=signer):
+            return self.encrypt(data, recipients, **kwargs)
 
     def verify(self, data, signature):
         data = core.Data(data)
@@ -163,7 +185,13 @@ class PymeBackend(GpgBackendBase):
         GpgBadSignature
             If the signature is invalid.
         """
-        raise NotImplementedError
+        cipher = core.Data(data)
+        output = core.Data()
+        data = self.context.op_decrypt_verify(cipher, output)
+        output.seek(0, 0)
+        print(self.context.op_verify_result().signatures)
+        print('data', data)
+        return output.read(), ''
 
 
 class PymeKey(GpgKey):
@@ -241,7 +269,18 @@ class PymeKey(GpgKey):
         used to set the trust of a key.
         """
 
-        raise NotImplementedError
+        if self._key.owner_trust == constants.VALIDITY_UNKNOWN:
+            return VALIDITY_UNKNOWN
+        elif self._key.owner_trust == constants.VALIDITY_NEVER:
+            return VALIDITY_NEVER
+        elif self._key.owner_trust == constants.VALIDITY_MARGINAL:
+            return VALIDITY_MARGINAL
+        elif self._key.owner_trust == constants.VALIDITY_FULL:
+            return VALIDITY_FULL
+        elif self._key.owner_trust == constants.VALIDITY_ULTIMATE:
+            return VALIDITY_ULTIMATE
+        else:  # pragma: no cover
+            return VALIDITY_UNKNOWN
 
     @trust.setter
     def trust(self, value):
