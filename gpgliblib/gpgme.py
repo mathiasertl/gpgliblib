@@ -267,7 +267,7 @@ class GpgMeKey(GpgKey):
             raise ValueError("Unknown value passed.")
 
         gpgme.editutil.edit_trust(self.backend.context, self._key, value)
-        self.refresh()  # TODO: can we avoid reloading?
+        self.refresh()
 
     @property
     def expires(self):
