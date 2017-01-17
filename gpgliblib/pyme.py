@@ -59,18 +59,22 @@ class PymeBackend(GpgBackendBase):
         return self._local.context
 
     @contextmanager
-    def _attrs(self, armor=None):
+    def _attrs(self, armor=None, signer=None):
         context = self.context
 
         if armor is not None:
             old_armor = context.get_armor()
             context.set_armor(armor)
+        if signer is not None:
+            context.signers_add(self._get_gpgme_key(signer))
 
         try:
             yield context
         finally:
             if armor is not None:
                 context.set_armor(old_armor)
+            if signer is not None:
+                context.signers_clear()
 
     def get_key(self, fingerprint):
         return PymeKey(self, fingerprint)
@@ -105,7 +109,10 @@ class PymeBackend(GpgBackendBase):
     def sign(self, data, signer):
         data = core.Data(data)
         sig = core.Data()
-        self.context.op_sign(data, sig, constants.SIG_MODE_DETACH)
+
+        with self._attrs(signer=signer) as context:
+            context.op_sign(data, sig, constants.SIG_MODE_DETACH)
+
         sig.seek(0, 0)
         return sig.read()
 
