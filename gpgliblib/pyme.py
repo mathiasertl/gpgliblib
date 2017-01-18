@@ -43,6 +43,13 @@ from .base import VALIDITY_UNKNOWN
 class PymeBackend(GpgBackendBase):
     # https://bitbucket.org/malb/pyme/src/790795b0ad11/examples/?at=master
     # http://pyme.sourceforge.net/
+    """
+
+    Installation requires swig and python, gpgme and libgpg-error development headers. On
+    Debian/Ubuntu do::
+
+        apt-get install python3-dev libgpg-error-dev libgpgme-dev
+    """
 
     def __init__(self, home=None, path=None, default_trust=False):
         self._home = home
