@@ -39,6 +39,12 @@ from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
 
+if six.PY3:
+    from pyme.errors import SOURCE_GPGME
+else:
+    # The python2 version does not define these constants
+    SOURCE_GPGME = 7
+
 
 class PymeBackend(GpgBackendBase):
     # https://bitbucket.org/malb/pyme/src/790795b0ad11/examples/?at=master
@@ -230,7 +236,7 @@ class PymeKey(GpgKey):
             except GPGMEError as e:
                 code = e.getcode()
                 source = e.getsource()
-                if code == 16383 and source == 7:
+                if code == 16383 and source == SOURCE_GPGME:
                     raise GpgKeyNotFoundError(self.fingerprint)
                 raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
 
@@ -342,9 +348,9 @@ class PymeKey(GpgKey):
         except GPGMEError as e:
             code = e.getcode()
             source = e.getsource()
-            if code == 70 and source == 7:
+            if code == 70 and source == SOURCE_GPGME:
                 raise GpgSecretKeyPresent('Secret key is present.')
-            elif code == 16383 and source == 7:
+            elif code == 16383 and source == SOURCE_GPGME:
                 raise GpgKeyNotFoundError(self.fingerprint)
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
 
