@@ -136,8 +136,7 @@ def load_tests(loader, tests, ignore):
         self.patcher.start()
 
     def tearDown(self):
-        print('%s: %s' % (self.home, os.path.listdir(self.home)))
-        shutil.rmtree(self.home)
+        shutil.rmtree(self.home, ignore_errors=True)
         self.patcher.stop()
 
     docpath = os.path.join('..', '..', 'doc')
@@ -165,7 +164,7 @@ class GpgTestCase(TestCase):
 
     def tearDown(self):
         super(GpgTestCase, self).tearDown()
-        shutil.rmtree(self.home)
+        shutil.rmtree(self.home, ignore_errors=True)
 
     def assertKeys(self, result, expected):
         self.assertCountEqual([k.fp for k in result], expected)
