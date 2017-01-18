@@ -4,8 +4,8 @@
 various GPG libraries that exist for Python.
 
 **gpgliblib** currently offers basic encryption and signing functions, *basic* key handling
-features, GPG/MIME (`RFC3156 <https://tools.ietf.org/html/rfc3156>`_) message handling and `Django
-<https://www.djangoproject.com/>`_ integration
+features, GPG/MIME ([RFC3156](https://tools.ietf.org/html/rfc3156]) message handling and 
+[Django](https://www.djangoproject.com/) integration.
 
 This library can use [pygpgme](https://pypi.python.org/pypi/pygpgme/0.3) or
 [python-gnupg](https://pypi.python.org/pypi/python-gnupg) internally.
