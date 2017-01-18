@@ -41,9 +41,10 @@ from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
 
 if six.PY3:
+    from pyme.errors import EOF as END_OF_FILE
     from pyme.errors import SOURCE_GPGME
     from pyme.errors import SOURCE_UNKNOWN
-    from pyme.errors import EOF as END_OF_FILE
+    from pyme.errors import UNUSABLE_PUBKEY
 else:
     # The python2 version does not define these constants.
     SOURCE_UNKNOWN = 0
@@ -157,7 +158,13 @@ class PymeBackend(GpgBackendBase):
         except GPGMEError as e:
             code = e.getcode()
             source = e.getsource()
+
+            # Raised in gpg 1.x
             if code == 1 and source == SOURCE_UNKNOWN:
+                raise GpgUntrustedKeyError('Key not trusted.')
+
+            # Raised in gpg 2.x
+            elif code == UNUSABLE_PUBKEY and source == SOURCE_GPGME:  # pragma: py2
                 raise GpgUntrustedKeyError('Key not trusted.')
 
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
