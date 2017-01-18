@@ -31,6 +31,7 @@ from .base import GpgKeyNotFoundError
 from .base import GpgSecretKeyPresent
 from .base import GpgUntrustedKeyError
 from .base import MODE_ARMOR
+from .base import UnknownGpgliblibError
 from .base import VALIDITY_FULL
 from .base import VALIDITY_MARGINAL
 from .base import VALIDITY_NEVER
@@ -117,10 +118,15 @@ class GpgMeBackend(GpgBackendBase):
             else:
                 self.context.encrypt(recipients, flags, six.BytesIO(data), output_bytes)
         except gpgme.GpgmeError as e:
+            # Raised in gpg 1.x
             if e.source == gpgme.ERR_SOURCE_UNKNOWN and e.code == gpgme.ERR_GENERAL:
                 raise GpgUntrustedKeyError("Key not trusted.")
 
-            raise
+            # Raised in gpg 2.x
+            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_UNUSABLE_PUBKEY:
+                raise GpgUntrustedKeyError("Key not trusted.")
+
+            raise UnknownGpgliblibError(e.strerror)  # pragma: no cover
 
         output_bytes.seek(0)
         return output_bytes.getvalue()
