@@ -136,6 +136,7 @@ def load_tests(loader, tests, ignore):
         self.patcher.start()
 
     def tearDown(self):
+        print('%s: %s' % (self.home, os.path.listdir(self.home)))
         shutil.rmtree(self.home)
         self.patcher.stop()
 
