@@ -24,6 +24,7 @@ from threading import local
 import six
 from pyme import core
 from pyme import constants
+from pyme import errors
 from pyme.errors import GPGMEError
 
 from .base import GpgBackendBase
@@ -234,6 +235,10 @@ class PymeKey(GpgKey):
             try:
                 self._loaded_key = self.backend.context.get_key(fingerprint, False)
             except GPGMEError as e:
+                # pyme3 has convenient bindings for that
+                if six.PY3 and isinstance(e, errors.KeyNotFound):
+                    raise GpgKeyNotFoundError(e.keystr)
+
                 code = e.getcode()
                 source = e.getsource()
                 if code == 16383 and source == SOURCE_GPGME:
