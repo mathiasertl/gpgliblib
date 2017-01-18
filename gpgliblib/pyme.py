@@ -332,24 +332,6 @@ class PymeKey(GpgKey):
             shutil.copyfileobj(exp, output)
 
     def delete(self, secret_key=False):
-        """Delete the key from the keyring.
-
-        .. versionadded:: 0.2.0
-
-        Parameters
-        ----------
-
-        secret_key : bool, optional
-            If ``True``, also remove secret keys. If a secret key is present and ``secret_key`` is
-            ``False`` (the default), the function will raise
-            :py:class:`~gpgliblib.base.GpgSecretKeyPresent`.
-
-        Raises
-        ------
-
-        GpgSecretKeyPresent
-            If ``secret_key`` is ``False`` and a secret key is present.
-        """
         try:
             self.backend.context.op_delete(self._key, secret_key)
         except GPGMEError as e:
