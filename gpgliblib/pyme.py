@@ -42,8 +42,10 @@ from .base import VALIDITY_UNKNOWN
 
 if six.PY3:
     from pyme.errors import SOURCE_GPGME
+    from pyme.errors import SOURCE_UNKNOWN
 else:
-    # The python2 version does not define these constants
+    # The python2 version does not define these constants.
+    SOURCE_UNKNOWN = 0
     SOURCE_GPGME = 7
 
 
@@ -153,7 +155,7 @@ class PymeBackend(GpgBackendBase):
         except GPGMEError as e:
             code = e.getcode()
             source = e.getsource()
-            if code == 1 and source == 0:
+            if code == 1 and source == SOURCE_UNKNOWN:
                 raise GpgUntrustedKeyError('Key not trusted.')
 
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
