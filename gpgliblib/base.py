@@ -111,12 +111,18 @@ class GpgBackendBase(object):
         directly.
     default_trust : bool, optional
         If ``True``, the backend will trust all keys by default.
+    gnupg_version : tuple, optional
+        A tuple describing the current version of GnuPG. If given, it should be a tuple of integers
+        describing, e.g. ``(2, 1, 17)`` for version 2.1.17, minor version may be omitted. If and
+        how this parameter is used depends on the backend implementation, some backends will also
+        try to find out th ecurrent version by themself if required.
     """
 
-    def __init__(self, home=None, path=None, default_trust=False):
+    def __init__(self, home=None, path=None, default_trust=False, gnupg_version=None):
         self._home = home
         self._path = path
         self._default_trust = default_trust
+        self._gnupg_version = gnupg_version
 
     def get_settings(self):
         return {

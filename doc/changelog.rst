@@ -9,6 +9,8 @@ ChangeLog
 * Rename ``gpgliblib.gnupg.GnuPGBackend`` to
   :py:class:`gpgliblib.python_gnupg.PythonGnupgBackend` for consistency and to
   avoid confusion with its fork, `gnupg <http://pythonhosted.org/gnupg/>`_.
+* Backends now support the ``gnupg_version`` parameter to manually override the
+  version of gnupg being used.
 * Support for exporting keys via :py:func:`gpgliblib.base.GpgKey.export`.
 * Support for deleting keys via :py:func:`gpgliblib.base.GpgKey.delete`.
 * Add new attributes for GPG keys:
