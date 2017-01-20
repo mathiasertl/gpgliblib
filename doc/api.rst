@@ -46,7 +46,7 @@ Exceptions
 Backends catch the most common exceptions and wrap them in common error messages
 for convenience.
 
-.. autoexception:: gpgliblib.base.GpgMimeError
+.. autoexception:: gpgliblib.base.GpgliblibError
    :members:
 
 .. autoexception:: gpgliblib.base.GpgKeyNotFoundError
@@ -59,6 +59,9 @@ for convenience.
    :members:
 
 .. autoexception:: gpgliblib.base.GpgSecretKeyPresent
+   :members:
+
+.. autoexception:: gpgliblib.base.UnknownGpgliblibError
    :members:
 
 

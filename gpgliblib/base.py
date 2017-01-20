@@ -54,25 +54,25 @@ MODE_ARMOR = 0
 MODE_BINARY = 1
 
 
-class GpgMimeError(Exception):
+class GpgliblibError(Exception):
     """Base class for all exceptions."""
 
     pass
 
 
-class GpgKeyNotFoundError(GpgMimeError):
+class GpgKeyNotFoundError(GpgliblibError):
     """Thrown when a key was not found."""
 
     pass
 
 
-class GpgUntrustedKeyError(GpgMimeError):
+class GpgUntrustedKeyError(GpgliblibError):
     """Thrown when a given key was not trusted."""
 
     pass
 
 
-class GpgBadSignature(GpgMimeError):
+class GpgBadSignature(GpgliblibError):
     """Thrown when a signature is invalid."""
 
     #: Errors returned by the library in use.
@@ -83,12 +83,12 @@ class GpgBadSignature(GpgMimeError):
         super(GpgBadSignature, self).__init__(*args, **kwargs)
 
 
-class GpgSecretKeyPresent(GpgMimeError):
+class GpgSecretKeyPresent(GpgliblibError):
     """Thrown when a key should be removed but a secret key is present."""
     pass
 
 
-class UnknownGpgliblibError(GpgMimeError):
+class UnknownGpgliblibError(GpgliblibError):
     """An unknown error in the underlying gpg libary."""
     pass
 

@@ -34,7 +34,7 @@ from .base import GpgBackendBase
 from .base import GpgBadSignature
 from .base import GpgKey
 from .base import GpgKeyNotFoundError
-from .base import GpgMimeError
+from .base import UnknownGpgliblibError
 from .base import GpgSecretKeyPresent
 from .base import GpgUntrustedKeyError
 
@@ -116,8 +116,8 @@ class PythonGnupgBackend(GpgBackendBase):
                 raise GpgKeyNotFoundError
             elif result.status == '':
                 raise GpgUntrustedKeyError('Key not trusted.')
-            else:
-                raise GpgMimeError("Unknown error: %s" % result.status)
+
+            raise UnknownGpgliblibError("Unknown error: %s" % result.status)
         return result.data
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
