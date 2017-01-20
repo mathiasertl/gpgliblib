@@ -151,7 +151,7 @@ class PymeBackend(GpgBackendBase):
         sig.seek(0, 0)
         return sig.read()
 
-    def encrypt(self, data, recipients, **kwargs):
+    def _encrypt(self, data, recipients, sign=False, **kwargs):
         always_trust = kwargs.get('always_trust', self._default_trust)
 
         flags = 0
@@ -163,7 +163,10 @@ class PymeBackend(GpgBackendBase):
         keys = [self._get_gpgme_key(r) for r in recipients]
 
         try:
-            self.context.op_encrypt(keys, flags, data, cipher)
+            if sign is True:
+                self.context.op_encrypt_sign(keys, flags, data, cipher)
+            else:
+                self.context.op_encrypt(keys, flags, data, cipher)
         except GPGMEError as e:
             code = e.getcode()
             source = e.getsource()
@@ -180,9 +183,12 @@ class PymeBackend(GpgBackendBase):
         cipher.seek(0, 0)
         return cipher.read()
 
+    def encrypt(self, data, recipients, **kwargs):
+        return self._encrypt(data, recipients, **kwargs)
+
     def sign_encrypt(self, data, recipients, signer, **kwargs):
         with self._attrs(signer=signer):
-            return self.encrypt(data, recipients, **kwargs)
+            return self.encrypt(data, recipients, sign=True, **kwargs)
 
     def verify(self, data, signature):
         data = core.Data(data)
@@ -223,9 +229,8 @@ class PymeBackend(GpgBackendBase):
         output = core.Data()
         data = self.context.op_decrypt_verify(cipher, output)
         output.seek(0, 0)
-        print(self.context.op_verify_result().signatures)
-        print('data', data)
-        return output.read(), ''
+        result = self.context.op_verify_result()
+        return output.read(), result.signatures[0].fpr
 
 
 class PymeKey(GpgKey):
