@@ -93,6 +93,15 @@ class GpgMeBackend(GpgBackendBase):
             if armor is not None:
                 context.armor = old_armor
 
+    @property
+    def gnupg_version(self):
+        if self._gnupg_version is None:
+            engines = gpgme.get_engine_info()
+            engine = [e for e in engines if e.protocol == gpgme.PROTOCOL_OpenPGP][0]
+            self._gnupg_version = tuple([int(r) for r in engine.version.split('.')])
+
+        return self._gnupg_version
+
     def get_key(self, fingerprint):
         return GpgMeKey(self, fingerprint)
 
