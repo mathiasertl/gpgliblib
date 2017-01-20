@@ -535,6 +535,8 @@ class DeleteKeyTestsMixin(object):
         self.key1.delete()
         self.assertEqual(self.backend.list_keys(user1_fp), [])
 
+    @unittest.skipIf(gnupg_version >= (2, 1),
+                     'GnuPG >= 2.1 does not support removing secret keys non-interactively.')
     def test_delete_secret(self):
         self.key2.delete(secret_key=True)
         self.assertEqual(self.backend.list_keys(user2_fp), [])
