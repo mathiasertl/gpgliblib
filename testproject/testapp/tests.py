@@ -546,7 +546,7 @@ class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = GpgMeBackend
 
 
-class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
+class BasicPythonGnupgTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = PythonGnupgBackend
 
 
@@ -559,7 +559,7 @@ class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = GpgMeBackend
 
 
-class ListKeysGnuPGTestCase(ListKeysTestsMixin, GpgTestCase):
+class ListKeysPythonGnupgTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = PythonGnupgBackend
 
 
@@ -572,7 +572,7 @@ class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
-class KeyPropertiesGnuPGTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+class KeyPropertiesPythonGnupgTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
@@ -585,7 +585,7 @@ class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
-class TrustGnuPGTestCase(TrustTestsMixin, GpgKeyTestCase):
+class TrustPythonGnupgTestCase(TrustTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
@@ -598,7 +598,7 @@ class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
-class ExportKeyGnuPGTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
+class ExportKeyPythonGnupgTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
@@ -611,7 +611,7 @@ class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
-class DeleteKeyGnuPGTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+class DeleteKeyPythonGnupgTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
