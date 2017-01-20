@@ -276,36 +276,6 @@ class GpgMeKey(GpgKey):
         else:  # pragma: no cover
             return VALIDITY_UNKNOWN
 
-    @gpgme.editutil.key_editor
-    def _edit_trust_gnupg2(self, ctx, key, trust):
-        """Copy of gpgme.editutil.edit_trust fixed for gpg2."""
-        if trust not in (gpgme.VALIDITY_UNDEFINED,
-                         gpgme.VALIDITY_NEVER,
-                         gpgme.VALIDITY_MARGINAL,
-                         gpgme.VALIDITY_FULL,
-                         gpgme.VALIDITY_ULTIMATE):
-            raise ValueError('Bad trust value %d' % trust)
-
-        status, args = yield None
-
-        # we need to yield an additional None in gpg2.
-        status, args = yield None
-
-        assert args == 'keyedit.prompt'
-        status, args = yield 'trust\n'
-
-        assert args == 'edit_ownertrust.value'
-        status, args = yield '%d\n' % trust
-
-        if args == 'edit_ownertrust.set_ultimate.okay':
-            status, args = yield 'Y\n'
-
-        assert args == 'keyedit.prompt'
-        status, args = yield 'quit\n'
-
-        assert args == 'keyedit.save.okay'
-        status, args = yield 'Y\n'
-
     @trust.setter
     def trust(self, value):
         if value == VALIDITY_NEVER:
@@ -320,7 +290,38 @@ class GpgMeKey(GpgKey):
             raise ValueError("Unknown value passed.")
 
         if self.backend.gnupg_version >= (2, ):
-            self._edit_trust_gnupg2(self.backend.context, self._key, value)
+
+            @gpgme.editutil.key_editor
+            def _edit_trust_gnupg2(ctx, key, trust):
+                """Copy of gpgme.editutil.edit_trust fixed for gpg2."""
+                if trust not in (gpgme.VALIDITY_UNDEFINED,
+                                 gpgme.VALIDITY_NEVER,
+                                 gpgme.VALIDITY_MARGINAL,
+                                 gpgme.VALIDITY_FULL,
+                                 gpgme.VALIDITY_ULTIMATE):
+                    raise ValueError('Bad trust value %d' % trust)
+
+                status, args = yield None
+
+                # we need to yield an additional None in gpg2.
+                status, args = yield None
+
+                assert args == 'keyedit.prompt'
+                status, args = yield 'trust\n'
+
+                assert args == 'edit_ownertrust.value'
+                status, args = yield '%d\n' % trust
+
+                if args == 'edit_ownertrust.set_ultimate.okay':
+                    status, args = yield 'Y\n'
+
+                assert args == 'keyedit.prompt'
+                status, args = yield 'quit\n'
+
+                assert args == 'keyedit.save.okay'
+                status, args = yield 'Y\n'
+
+            _edit_trust_gnupg2(self.backend.context, self._key, value)
         else:
             gpgme.editutil.edit_trust(self.backend.context, self._key, value)
         self.refresh()
