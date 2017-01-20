@@ -18,6 +18,7 @@ import tempfile
 
 from fabric.api import local
 from fabric.api import task
+from fabric.context_managers import shell_env
 
 from gpgliblib import gpgme
 from gpgliblib import python_gnupg
@@ -36,9 +37,10 @@ def test():
 
 
 @task
-def coverage():
-    local('coverage run --source=gpgliblib testproject/manage.py test testapp')
-    local('coverage html')
+def coverage(gpgver='2.1'):
+    with shell_env(GNUPG_VERSION=gpgver):
+        local('coverage run --source=gpgliblib testproject/manage.py test testapp')
+        local('coverage html')
 
 
 @task
