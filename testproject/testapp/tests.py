@@ -42,6 +42,7 @@ from gpgliblib.base import VALIDITY_UNKNOWN
 from gpgliblib.base import GpgKeyNotFoundError
 from gpgliblib.base import GpgUntrustedKeyError
 from gpgliblib.base import GpgSecretKeyPresent
+from gpgliblib.base import GpgBadSignature
 from gpgliblib.gpgme import GpgMeBackend
 from gpgliblib.python_gnupg import PythonGnupgBackend
 
@@ -241,25 +242,6 @@ class BasicTestsMixin(object):
         keys = self.backend.import_key(expired_pub)
         self.assertKeys(keys, [expired_fp])
         self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 7, 56, 25))
-
-    def test_sign(self):
-        data = b'testdata'
-
-        keys = self.backend.import_key(user3_pub)
-        self.assertKeys(keys, [user3_fp])
-
-        priv_keys = self.backend.import_private_key(user3_priv)
-        self.assertKeys(priv_keys, [user3_fp])
-
-        signature = self.backend.sign(data, priv_keys[0])
-        self.assertEqual(self.backend.verify(data, signature), user3_fp)
-
-        signature = self.backend.sign(data, user3_fp)
-        self.assertEqual(self.backend.verify(data, signature), user3_fp)
-
-    def test_sign_unknown_key(self):
-        with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.sign(b'testdata', user3_fp)
 
     def test_encrypt(self):
         data = b'testdata'
@@ -553,6 +535,40 @@ class DeleteKeyTestsMixin(object):
         six.assertRaisesRegex(self, GpgKeyNotFoundError, '^%s$' % user3_fp, key.delete)
 
 
+class SignVerifyTestsMixin(object):
+    def test_sign(self):
+        data = b'testdata'
+        signature = self.backend.sign(data, user2_fp)
+        self.assertEqual(self.backend.verify(data, signature), user2_fp)
+
+        signature = self.backend.sign(data, self.user2)
+        self.assertEqual(self.backend.verify(data, signature), user2_fp)
+
+    def test_verify_false_text(self):
+        data = b'testdata'
+        broken = b'foobar'
+        signature = self.backend.sign(data, user2_fp)
+        six.assertRaisesRegex(self, GpgBadSignature, 'Bad signature',
+                              self.backend.verify, broken, signature)
+
+    def test_verify_broken_sig(self):
+        data = b'testdata'
+        signature = self.backend.sign(data, user2_fp)
+
+        # gpg handles this kind of signature corruption
+        self.assertEqual(self.backend.verify(data, signature + b'foo'), user2_fp)
+
+    def test_verify_wrong_sig(self):
+        data = b'testdata'
+        signature = self.backend.sign(data + b'foo', user2_fp)
+        six.assertRaisesRegex(self, GpgBadSignature, 'Bad signature',
+                              self.backend.verify, data, signature)
+
+    def test_sign_unknown_key(self):
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.sign(b'testdata', user3_fp)
+
+
 @unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = GpgMeBackend
@@ -652,4 +668,21 @@ class DeleteKeyPythonGnupgTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
 @unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
 @unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
 class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+    backend_class = PymeBackend
+
+
+@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+class SignVerifyGpgMeTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
+    backend_class = GpgMeBackend
+    backend_kwargs = {'gnupg_version': gnupg_version, }
+
+
+@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+class SignVerifyPythonGnupgTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
+    backend_class = PythonGnupgBackend
+
+
+@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
+class SignVerifyPymeTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
     backend_class = PymeBackend
