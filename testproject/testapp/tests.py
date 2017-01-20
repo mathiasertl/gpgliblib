@@ -19,6 +19,7 @@ import doctest
 import os
 import shutil
 import tempfile
+import unittest
 
 try:
     from unittest import mock
@@ -549,9 +550,9 @@ class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = PythonGnupgBackend
 
 
-if PymeBackend is not None:
-    class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
-        backend_class = PymeBackend
+@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
+    backend_class = PymeBackend
 
 
 class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
@@ -562,9 +563,9 @@ class ListKeysGnuPGTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = PythonGnupgBackend
 
 
-if PymeBackend is not None:
-    class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
-        backend_class = PymeBackend
+@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
+    backend_class = PymeBackend
 
 
 class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
@@ -575,9 +576,9 @@ class KeyPropertiesGnuPGTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
-if PymeBackend is not None:
-    class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-        backend_class = PymeBackend
+@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+    backend_class = PymeBackend
 
 
 class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
@@ -588,9 +589,9 @@ class TrustGnuPGTestCase(TrustTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
-#if PymeBackend is not None:
-#    class TrustPymeTestCase(TrustTestsMixin, GpgKeyTestCase):
-#        backend_class = PymeBackend
+#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+#class TrustPymeTestCase(TrustTestsMixin, GpgKeyTestCase):
+#    backend_class = PymeBackend
 
 
 class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
@@ -601,9 +602,9 @@ class ExportKeyGnuPGTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
-if PymeBackend is not None:
-    class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-        backend_class = PymeBackend
+@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
+    backend_class = PymeBackend
 
 
 class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
@@ -614,6 +615,6 @@ class DeleteKeyGnuPGTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
-if PymeBackend is not None:
-    class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-        backend_class = PymeBackend
+@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+    backend_class = PymeBackend
