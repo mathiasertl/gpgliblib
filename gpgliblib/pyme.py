@@ -43,6 +43,7 @@ from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
 
 if six.PY3:
+    from pyme.errors import DECRYPT_FAILED
     from pyme.errors import EOF as END_OF_FILE
     from pyme.errors import SOURCE_GPGME
     from pyme.errors import SOURCE_UNKNOWN
@@ -52,7 +53,7 @@ else:
     SOURCE_UNKNOWN = 0
     SOURCE_GPGME = 7
     END_OF_FILE = 16383
-    ERR_DECRYPT_FAILED = 152
+    DECRYPT_FAILED = 152
 
 
 class PymeBackend(GpgBackendBase):
@@ -214,7 +215,7 @@ class PymeBackend(GpgBackendBase):
             code = e.getcode()
             source = e.getsource()
 
-            if code == ERR_DECRYPT_FAILED and source == SOURCE_GPGME:
+            if code == DECRYPT_FAILED and source == SOURCE_GPGME:
                 raise GpgDecryptionFailed(e.getstring())
 
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
