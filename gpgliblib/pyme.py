@@ -28,6 +28,7 @@ from pyme import errors
 from pyme.errors import GPGMEError
 
 from .base import GpgBackendBase
+from .base import GpgBadSignature
 from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgSecretKeyPresent
@@ -195,7 +196,11 @@ class PymeBackend(GpgBackendBase):
         signature = core.Data(signature)
         self.context.op_verify(signature, data, None)
         result = self.context.op_verify_result()
-        return result.signatures[0].fpr
+        signatures = result.signatures
+        errors = list(filter(lambda s: s.status != 0, signatures))
+        if not errors:
+            return result.signatures[0].fpr
+        raise GpgBadSignature("Bad signature", errors=errors)
 
     def decrypt(self, data):
         cipher = core.Data(data)
