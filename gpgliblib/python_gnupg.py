@@ -153,7 +153,7 @@ class PythonGnupgBackend(GpgBackendBase):
 
         if verified:
             return verified.fingerprint
-        raise GpgBadSignature("Bad Signature")
+        raise GpgBadSignature("Bad signature")
 
     def decrypt(self, data):
         result = self.gpg.decrypt(data)
