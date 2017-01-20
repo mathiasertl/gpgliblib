@@ -46,12 +46,17 @@ class GpgMeBackend(GpgBackendBase):
 
     All ``kwargs`` for the constructor are passed to :py:class:`~gpgmime.base.GpgBackendBase`.
 
+    ``pygpgme`` cannot get the GnuPG version used by itself, and setting key trust works different
+    depending on what version is used. This backend thus requires the ``gnupg_version`` parameter
+    to be passed if you want to set the trust of keys.
+
     This backend requires that you install ``pygpgme``::
 
         pip install pygpgme
 
     Note that there is also `unofficial (and incomplete) documentation
     <https://pygpgme.readthedocs.io/en/latest/api.html>`_ for pygpgme.
+
 
     Parameters
     ----------

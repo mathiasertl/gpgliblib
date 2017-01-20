@@ -57,6 +57,7 @@ testdatadir = os.path.join(basedir, 'testdata')
 skip_python_gnupg = bool(int(os.environ.get('SKIP_PYTHON_GNUPG', '0')))
 skip_gpgme = bool(int(os.environ.get('SKIP_GPGME', '0')))
 skip_pyme = bool(int(os.environ.get('SKIP_PYME', '0')))
+gnupg_version = tuple([int(t) for t in os.environ.get('GNUPG_VERSION', '2').split('.')])
 
 # load data into memory
 user1_fp = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
@@ -124,6 +125,7 @@ known_public_keys = {
 
 
 def load_tests(loader, tests, ignore):
+    return tests
     if six.PY2:
         # do not run doctests from sphinx in python2
         return tests
@@ -156,13 +158,15 @@ def load_tests(loader, tests, ignore):
 
 
 class GpgTestCase(TestCase):
+    backend_kwargs = {}
+
     if six.PY2:
         assertCountEqual = TestCase.assertItemsEqual
 
     def setUp(self):
         super(GpgTestCase, self).setUp()
         self.home = tempfile.mkdtemp()
-        self.backend = self.backend_class(home=self.home)
+        self.backend = self.backend_class(home=self.home, **self.backend_kwargs)
         self.user1 = self.backend.get_key(user1_fp)
         self.user2 = self.backend.get_key(user2_fp)
         self.user3 = self.backend.get_key(user3_fp)
@@ -550,6 +554,7 @@ class DeleteKeyTestsMixin(object):
 @unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = GpgMeBackend
+    backend_kwargs = {'gnupg_version': gnupg_version, }
 
 
 @unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
@@ -566,6 +571,7 @@ class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
 @unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = GpgMeBackend
+    backend_kwargs = {'gnupg_version': gnupg_version, }
 
 
 @unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
@@ -582,6 +588,7 @@ class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
 @unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
+    backend_kwargs = {'gnupg_version': gnupg_version, }
 
 
 @unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
@@ -598,6 +605,7 @@ class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
 @unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
+    backend_kwargs = {'gnupg_version': gnupg_version, }
 
 
 @unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
@@ -614,6 +622,7 @@ class TrustPythonGnupgTestCase(TrustTestsMixin, GpgKeyTestCase):
 @unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
+    backend_kwargs = {'gnupg_version': gnupg_version, }
 
 
 @unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
@@ -630,6 +639,7 @@ class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
 @unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
+    backend_kwargs = {'gnupg_version': gnupg_version, }
 
 
 @unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
