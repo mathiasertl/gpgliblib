@@ -83,6 +83,12 @@ class GpgBadSignature(GpgliblibError):
         super(GpgBadSignature, self).__init__(*args, **kwargs)
 
 
+class GpgDecryptionFailed(GpgliblibError):
+    """Thrown when decryption failed."""
+
+    pass
+
+
 class GpgSecretKeyPresent(GpgliblibError):
     """Thrown when a key should be removed but a secret key is present."""
     pass

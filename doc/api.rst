@@ -64,6 +64,9 @@ for convenience.
 .. autoexception:: gpgliblib.base.UnknownGpgliblibError
    :members:
 
+.. autoexception:: gpgliblib.base.GpgDecryptionFailed
+   :members:
+
 
 ******************
 Django integration
