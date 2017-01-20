@@ -55,6 +55,11 @@ class PythonGnupgBackend(GpgBackendBase):
        * `Bitbucket repository <https://bitbucket.org/vinay.sajip/python-gnupg/overview>`_
        * `GitHub mirror <https://github.com/vsajip/python-gnupg>`_
 
+    .. NOTE::
+
+       If you use GnuPG >= 2.0, you need at least version 0.4.0 of ``python-gnupg``. At the time of
+       writing (2017-01-20) 0.4.0 is not yet released, but the hg-checkout works.
+
     Paraemters
     ----------
     verbose : bool, optional
@@ -129,6 +134,7 @@ class PythonGnupgBackend(GpgBackendBase):
         if result.ok is False:
             if result.status in ['invalid recipient', '']:
                 raise GpgKeyNotFoundError
+            raise UnknownGpgliblibError(result.status)
         return result.data
 
     def verify(self, data, signature):
