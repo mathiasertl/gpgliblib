@@ -57,7 +57,10 @@ else:
 
 
 class PymeBackend(GpgBackendBase):
-    """A gpgliblib backend using `pyme3 <https://pypi.python.org/pypi/pyme3>`_."""
+    """A gpgliblib backend using `pyme3 <https://pypi.python.org/pypi/pyme3>`_.
+
+    .. versionadded:: 0.2.0
+    """
 
     def __init__(self, home=None, path=None, default_trust=False):
         self._home = home

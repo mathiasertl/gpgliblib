@@ -644,7 +644,7 @@ class GpgKey(object):
         The ``mode`` parameter controls the output format of the signature. If
         :py:data:`~gpgliblib.base.MODE_ARMOR` is passed (which is the default), the key is in ASCII
         armored format (as ``str``). If :py:data:`~gpgliblib.base.MODE_BINARY` is passed, the key
-        is returned in binary format (as ``binary``).
+        is returned in binary format (as ``bytes``).
 
         You can also pass the ``output`` parameter to directly write the key to a file-like
         object. The file must be opened in binary mode (``"w+b"``). If output is passed, the
