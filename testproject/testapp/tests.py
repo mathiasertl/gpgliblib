@@ -270,22 +270,6 @@ class BasicTestsMixin(object):
             self.backend.sign_encrypt(b'test', recipients=[user3_fp], signer=user1_fp,
                                       always_trust=True)
 
-    def test_encrypt_no_key(self):
-        data = b'testdata'
-        with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.encrypt(data, [user1_fp], always_trust=False)
-
-    def test_encrypt_no_trust(self):
-        data = b'testdata'
-        keys = self.backend.import_key(user1_pub)
-        self.assertKeys(keys, [user1_fp])
-
-        priv_keys = self.backend.import_private_key(user1_priv)
-        self.assertKeys(priv_keys, [user1_fp])
-
-        with self.assertRaises(GpgUntrustedKeyError):
-            self.backend.encrypt(data, keys, always_trust=False)
-
     def test_settings(self):
         data = b'testdata'
         keys = self.backend.import_key(user1_pub)
@@ -538,6 +522,10 @@ class EncryptDecryptTestsMixin(object):
 
         with self.assertRaises(GpgKeyNotFoundError):
             self.backend.encrypt(b'foobar', [user3_fp])
+
+    def test_encrypt_no_trust(self):
+        with self.assertRaises(GpgUntrustedKeyError):
+            self.backend.encrypt(b'foobar', [self.user2], always_trust=False)
 
 
 class SignVerifyTestsMixin(object):
