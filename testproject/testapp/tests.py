@@ -32,6 +32,11 @@ import six
 
 from django.test import TestCase
 
+from gpgliblib.base import GpgBadSignature
+from gpgliblib.base import GpgDecryptionFailed
+from gpgliblib.base import GpgKeyNotFoundError
+from gpgliblib.base import GpgSecretKeyPresent
+from gpgliblib.base import GpgUntrustedKeyError
 from gpgliblib.base import MODE_ARMOR
 from gpgliblib.base import MODE_BINARY
 from gpgliblib.base import VALIDITY_FULL
@@ -39,10 +44,6 @@ from gpgliblib.base import VALIDITY_MARGINAL
 from gpgliblib.base import VALIDITY_NEVER
 from gpgliblib.base import VALIDITY_ULTIMATE
 from gpgliblib.base import VALIDITY_UNKNOWN
-from gpgliblib.base import GpgKeyNotFoundError
-from gpgliblib.base import GpgUntrustedKeyError
-from gpgliblib.base import GpgSecretKeyPresent
-from gpgliblib.base import GpgBadSignature
 from gpgliblib.gpgme import GpgMeBackend
 from gpgliblib.python_gnupg import PythonGnupgBackend
 
@@ -523,6 +524,13 @@ class EncryptDecryptTestsMixin(object):
         # also test with fingerprints
         encrypted = self.backend.encrypt(data, [user2_fp], always_trust=True)
         self.assertEqual(self.backend.decrypt(encrypted), data)
+
+    def test_encrypt_no_private_key(self):
+        data = b'testdata'
+        encrypted = self.backend.encrypt(data, [self.user1], always_trust=True)
+
+        with self.assertRaises(GpgDecryptionFailed):
+            self.backend.decrypt(encrypted)
 
     def test_encrypt_unkown_key(self):
         with self.assertRaises(GpgKeyNotFoundError):
