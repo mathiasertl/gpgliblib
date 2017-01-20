@@ -243,28 +243,6 @@ class BasicTestsMixin(object):
         self.assertKeys(keys, [expired_fp])
         self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 7, 56, 25))
 
-    def test_encrypt(self):
-        data = b'testdata'
-        keys = self.backend.import_key(user1_pub)
-        self.assertKeys(keys, [user1_fp])
-
-        priv_keys = self.backend.import_private_key(user1_priv)
-        self.assertKeys(priv_keys, [user1_fp])
-
-        encrypted = self.backend.encrypt(data, keys, always_trust=True)
-        self.assertEqual(self.backend.decrypt(encrypted), data)
-
-        # also test with fingerprints
-        encrypted = self.backend.encrypt(data, [user1_fp], always_trust=True)
-        self.assertEqual(self.backend.decrypt(encrypted), data)
-
-    def test_encrypt_unkown_key(self):
-        with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.encrypt(b'foobar', [user1_fp], always_trust=True)
-
-        with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.encrypt(b'foobar', [user1_fp])
-
     def test_sign_encrypt(self):
         data = b'testdata'
         keys = self.backend.import_key(user3_pub)
@@ -535,6 +513,25 @@ class DeleteKeyTestsMixin(object):
         six.assertRaisesRegex(self, GpgKeyNotFoundError, '^%s$' % user3_fp, key.delete)
 
 
+class EncryptDecryptTestsMixin(object):
+    def test_encrypt(self):
+        data = b'testdata'
+
+        encrypted = self.backend.encrypt(data, [self.user2], always_trust=True)
+        self.assertEqual(self.backend.decrypt(encrypted), data)
+
+        # also test with fingerprints
+        encrypted = self.backend.encrypt(data, [user2_fp], always_trust=True)
+        self.assertEqual(self.backend.decrypt(encrypted), data)
+
+    def test_encrypt_unkown_key(self):
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.encrypt(b'foobar', [user3_fp], always_trust=True)
+
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.encrypt(b'foobar', [user3_fp])
+
+
 class SignVerifyTestsMixin(object):
     def test_sign(self):
         data = b'testdata'
@@ -668,6 +665,23 @@ class DeleteKeyPythonGnupgTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
 @unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
 @unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
 class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+    backend_class = PymeBackend
+
+
+@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+class EncryptDecryptGpgMeTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
+    backend_class = GpgMeBackend
+    backend_kwargs = {'gnupg_version': gnupg_version, }
+
+
+@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+class EncryptDecryptPythonGnupgTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
+    backend_class = PythonGnupgBackend
+
+
+@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
+class EncryptDecryptPymeTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
     backend_class = PymeBackend
 
 
