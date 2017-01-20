@@ -53,6 +53,11 @@ except ImportError:
 basedir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 testdatadir = os.path.join(basedir, 'testdata')
 
+# allow caller to skip tests with environment variables
+skip_python_gnupg = bool(int(os.environ.get('SKIP_PYTHON_GNUPG', '0')))
+skip_gpgme = bool(int(os.environ.get('SKIP_GPGME', '0')))
+skip_pyme = bool(int(os.environ.get('SKIP_PYME', '0')))
+
 # load data into memory
 user1_fp = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
 with open(os.path.join(testdatadir, '%s.priv' % user1_fp), 'r') as stream:
@@ -542,79 +547,97 @@ class DeleteKeyTestsMixin(object):
         six.assertRaisesRegex(self, GpgKeyNotFoundError, '^%s$' % user3_fp, key.delete)
 
 
+@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = GpgMeBackend
 
 
+@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
 class BasicPythonGnupgTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = PythonGnupgBackend
 
 
 @unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
 class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
     backend_class = PymeBackend
 
 
+@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = GpgMeBackend
 
 
+@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
 class ListKeysPythonGnupgTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = PythonGnupgBackend
 
 
 @unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
 class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
     backend_class = PymeBackend
 
 
+@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
+@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
 class KeyPropertiesPythonGnupgTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
 @unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
 class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
     backend_class = PymeBackend
 
 
+@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
+@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
 class TrustPythonGnupgTestCase(TrustTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
 #@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
 #class TrustPymeTestCase(TrustTestsMixin, GpgKeyTestCase):
 #    backend_class = PymeBackend
 
 
+@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
+@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
 class ExportKeyPythonGnupgTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
 @unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
 class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
     backend_class = PymeBackend
 
 
+@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
 class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = GpgMeBackend
 
 
+@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
 class DeleteKeyPythonGnupgTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = PythonGnupgBackend
 
 
 @unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
 class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
     backend_class = PymeBackend
