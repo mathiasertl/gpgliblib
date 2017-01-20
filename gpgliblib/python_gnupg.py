@@ -114,7 +114,7 @@ class PythonGnupgBackend(GpgBackendBase):
     def sign(self, data, signer):
         fp = self._get_fp(signer)
         result = self.gpg.sign(data, keyid=fp, detach=True)
-        if not result.data:  # signing does not provide status or ok :-(
+        if not result.data or fp != result.fingerprint:  # signing does not provide status or ok
             raise GpgKeyNotFoundError(fp)
         return result.data
 
