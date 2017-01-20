@@ -138,14 +138,10 @@ class PythonGnupgBackend(GpgBackendBase):
 
         result = self.gpg.encrypt(data, recipients, sign=signer, always_trust=always_trust)
         if result.ok is False:
-            if result.status == 'invalid recipient':
-                raise GpgKeyNotFoundError()
-
             # gpg2: the error code returned in gpg2 (INV_SGNR) is not supported, 'incorrect
             # passphrase' is just the default
-            elif result.status == 'incorrect passphrase':
+            if result.status in ['invalid recipient', '', 'incorrect passphrase']:
                 raise GpgKeyNotFoundError()
-
             raise UnknownGpgliblibError(result.status)
         return result.data
 
