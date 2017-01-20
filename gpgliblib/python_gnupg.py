@@ -96,6 +96,12 @@ class PythonGnupgBackend(GpgBackendBase):
 
         return self._local.gpg
 
+    @property
+    def gnupg_version(self):
+        if self._gnupg_version is None:
+            return self.gpg.version
+        self._gnupg_version
+
     def get_key(self, fingerprint):
         return GnuPGKey(self, fingerprint)
 
