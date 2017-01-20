@@ -614,7 +614,7 @@ class GpgKey(object):
 
     @property
     def keyid(self):
-        """Get the 8-letter key-id. Equivalent to the last 16 letters of the fingerprint.
+        """Get the 8-letter key-id. Equivalent to the last 8 letters of the fingerprint.
 
         .. versionadded:: 0.2.0
 
