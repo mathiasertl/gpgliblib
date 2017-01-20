@@ -102,6 +102,15 @@ class PymeBackend(GpgBackendBase):
             if signer is not None:
                 context.signers_clear()
 
+    @property
+    def gnupg_version(self):
+        if self._gnupg_version is None:
+            engines = self.context.get_engine_info()
+            engine = [e for e in engines if e.protocol == constants.PROTOCOL_OpenPGP][0]
+            self._gnupg_version = tuple([int(r) for r in engine.version.split('.')])
+
+        return self._gnupg_version
+
     def get_key(self, fingerprint):
         return PymeKey(self, fingerprint)
 
