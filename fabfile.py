@@ -20,7 +20,7 @@ from fabric.api import local
 from fabric.api import task
 
 from gpgliblib import gpgme
-from gpgliblib import gnupg
+from gpgliblib import python_gnupg
 
 testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
 
@@ -101,7 +101,7 @@ def test_mime_messages(fp=None, dest=None):
         test_backend(backend)
 
     with tempfile.TemporaryDirectory() as home:
-        backend = gnupg.GnuPGBackend(home=home, default_trust=True)
+        backend = python_gnupg.PythonGnupgBackend(home=home, default_trust=True)
         test_backend(backend)
 
 

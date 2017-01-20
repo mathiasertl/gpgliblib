@@ -39,14 +39,21 @@ from .base import GpgSecretKeyPresent
 from .base import GpgUntrustedKeyError
 
 
-class GnuPGBackend(GpgBackendBase):
-    """A backend using `python-gnupg <https://pythonhosted.org/python-gnupg/>`_.
+class PythonGnupgBackend(GpgBackendBase):
+    """A backend using `python-gnupg <https://pypi.python.org/pypi/python-gnupg>`_.
 
-    All ``kwargs`` for the constructor are passed to :py:class:`~gpgmime.base.GpgBackendBase`.
+    This backend supports a few additional parameters, all other ``kwargs`` to the constructor are
+    passed to :py:class:`~gpgmime.base.GpgBackendBase`.
 
     This backend requires that you install ``python-gnupg``::
 
         pip install python-gnupg
+
+    .. seealso::
+
+       * `Documenation <https://pythonhosted.org/python-gnupg/>`_
+       * `Bitbucket repository <https://bitbucket.org/vinay.sajip/python-gnupg/overview>`_
+       * `GitHub mirror <https://github.com/vsajip/python-gnupg>`_
 
     Paraemters
     ----------
@@ -63,7 +70,7 @@ class GnuPGBackend(GpgBackendBase):
         self._use_agent = use_agent
         self._options = options
         self._local = local()
-        super(GnuPGBackend, self).__init__(**kwargs)
+        super(PythonGnupgBackend, self).__init__(**kwargs)
 
     @property
     def gpg(self):

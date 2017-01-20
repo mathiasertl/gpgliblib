@@ -42,7 +42,7 @@ from gpgliblib.base import GpgKeyNotFoundError
 from gpgliblib.base import GpgUntrustedKeyError
 from gpgliblib.base import GpgSecretKeyPresent
 from gpgliblib.gpgme import GpgMeBackend
-from gpgliblib.gnupg import GnuPGBackend
+from gpgliblib.python_gnupg import PythonGnupgBackend
 
 try:
     from gpgliblib.pyme import PymeBackend
@@ -546,7 +546,7 @@ class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
 
 
 class BasicGnuPGTestCase(BasicTestsMixin, GpgTestCase):
-    backend_class = GnuPGBackend
+    backend_class = PythonGnupgBackend
 
 
 if PymeBackend is not None:
@@ -559,7 +559,7 @@ class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
 
 
 class ListKeysGnuPGTestCase(ListKeysTestsMixin, GpgTestCase):
-    backend_class = GnuPGBackend
+    backend_class = PythonGnupgBackend
 
 
 if PymeBackend is not None:
@@ -572,7 +572,7 @@ class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
 
 
 class KeyPropertiesGnuPGTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-    backend_class = GnuPGBackend
+    backend_class = PythonGnupgBackend
 
 
 if PymeBackend is not None:
@@ -585,7 +585,7 @@ class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
 
 
 class TrustGnuPGTestCase(TrustTestsMixin, GpgKeyTestCase):
-    backend_class = GnuPGBackend
+    backend_class = PythonGnupgBackend
 
 
 #if PymeBackend is not None:
@@ -598,7 +598,7 @@ class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
 
 
 class ExportKeyGnuPGTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-    backend_class = GnuPGBackend
+    backend_class = PythonGnupgBackend
 
 
 if PymeBackend is not None:
@@ -611,7 +611,7 @@ class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
 
 
 class DeleteKeyGnuPGTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-    backend_class = GnuPGBackend
+    backend_class = PythonGnupgBackend
 
 
 if PymeBackend is not None:

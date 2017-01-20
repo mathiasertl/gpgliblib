@@ -13,5 +13,5 @@ gpgme
 python-gnupg
 ************
 
-.. autoclass:: gpgliblib.gnupg.GnuPGBackend
+.. autoclass:: gpgliblib.python_gnupg.PythonGnupgBackend
    :members:
