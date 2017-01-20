@@ -364,7 +364,7 @@ intersphinx_mapping = {
 #    def __getattr__(cls, name):
 #        return MagicMock()
 #
-MOCK_MODULES = ['gpgme', 'gpgme.editutil', 'gnupg', ]
+MOCK_MODULES = ['gpgme', 'gpgme.editutil', 'gnupg', 'pyme', 'pyme.errors', 'pyme.constants']
 #sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 autodoc_mock_imports = MOCK_MODULES

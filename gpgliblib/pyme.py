@@ -57,15 +57,7 @@ else:
 
 
 class PymeBackend(GpgBackendBase):
-    # https://bitbucket.org/malb/pyme/src/790795b0ad11/examples/?at=master
-    # http://pyme.sourceforge.net/
-    """
-
-    Installation requires swig and python, gpgme and libgpg-error development headers. On
-    Debian/Ubuntu do::
-
-        apt-get install python3-dev libgpg-error-dev libgpgme-dev
-    """
+    """A gpgliblib backend using `pyme3 <https://pypi.python.org/pypi/pyme3>`_."""
 
     def __init__(self, home=None, path=None, default_trust=False):
         self._home = home
@@ -224,26 +216,6 @@ class PymeBackend(GpgBackendBase):
         return output.read()
 
     def decrypt_verify(self, data):
-        """Decrypt data and verify the embedded signature.
-
-        Parameters
-        ----------
-
-        data : bytes
-            The signed and encrypted data.
-
-        Returns
-        -------
-
-        (bytes, str)
-            The decrypted data and the fingerprint of the key used in the signature.
-
-        Raises
-        ------
-
-        GpgBadSignature
-            If the signature is invalid.
-        """
         cipher = core.Data(data)
         output = core.Data()
         data = self.context.op_decrypt_verify(cipher, output)

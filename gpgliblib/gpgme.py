@@ -43,30 +43,14 @@ from .base import VALIDITY_UNKNOWN
 
 
 class GpgMeBackend(GpgBackendBase):
-    """A backend using `pygpgme <https://pypi.python.org/pypi/pygpgme/>`_.
-
-    All ``kwargs`` for the constructor are passed to :py:class:`~gpgmime.base.GpgBackendBase`.
+    """A gpgliblib backend using `pygpgme <https://pypi.python.org/pypi/pygpgme/>`_.
 
     ``pygpgme`` cannot get the GnuPG version used by itself, and setting key trust works different
     depending on what version is used. This backend thus requires the ``gnupg_version`` parameter
     to be passed if you want to set the trust of keys.
-
-    This backend requires that you install ``pygpgme``::
-
-        pip install pygpgme
-
-    Note that there is also `unofficial (and incomplete) documentation
-    <https://pygpgme.readthedocs.io/en/latest/api.html>`_ for pygpgme.
-
-
-    Parameters
-    ----------
-
-    context : gpgme.Context, optional
-        A default context to use. If not passed, a new context with no parameters will be used.
     """
 
-    def __init__(self, context=None, **kwargs):
+    def __init__(self, **kwargs):
         super(GpgMeBackend, self).__init__(**kwargs)
         self._local = local()
 

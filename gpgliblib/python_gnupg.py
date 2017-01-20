@@ -41,28 +41,15 @@ from .base import VALIDITY_UNKNOWN
 
 
 class PythonGnupgBackend(GpgBackendBase):
-    """A backend using `python-gnupg <https://pypi.python.org/pypi/python-gnupg>`_.
+    """A gpgliblib backend using `python-gnupg <https://pypi.python.org/pypi/python-gnupg>`_.
 
     This backend supports a few additional parameters, all other ``kwargs`` to the constructor are
     passed to :py:class:`~gpgmime.base.GpgBackendBase`.
 
-    This backend requires that you install ``python-gnupg``::
 
-        pip install python-gnupg
-
-    .. seealso::
-
-       * `Documenation <https://pythonhosted.org/python-gnupg/>`_
-       * `Bitbucket repository <https://bitbucket.org/vinay.sajip/python-gnupg/overview>`_
-       * `GitHub mirror <https://github.com/vsajip/python-gnupg>`_
-
-    .. NOTE::
-
-       If you use GnuPG >= 2.0, you need at least version 0.4.0 of ``python-gnupg``. At the time of
-       writing (2017-01-20) 0.4.0 is not yet released, but the hg-checkout works.
-
-    Paraemters
+    Parameters
     ----------
+
     verbose : bool, optional
         Print additional information to the command line.
     use_agent : bool, optional
