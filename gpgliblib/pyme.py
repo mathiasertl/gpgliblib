@@ -29,6 +29,7 @@ from pyme.errors import GPGMEError
 
 from .base import GpgBackendBase
 from .base import GpgBadSignature
+from .base import GpgDecryptionFailed
 from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgSecretKeyPresent
@@ -51,6 +52,7 @@ else:
     SOURCE_UNKNOWN = 0
     SOURCE_GPGME = 7
     END_OF_FILE = 16383
+    ERR_DECRYPT_FAILED = 152
 
 
 class PymeBackend(GpgBackendBase):
@@ -205,7 +207,18 @@ class PymeBackend(GpgBackendBase):
     def decrypt(self, data):
         cipher = core.Data(data)
         output = core.Data()
-        self.context.op_decrypt(cipher, output)
+
+        try:
+            self.context.op_decrypt(cipher, output)
+        except GPGMEError as e:
+            code = e.getcode()
+            source = e.getsource()
+
+            if code == ERR_DECRYPT_FAILED and source == SOURCE_GPGME:
+                raise GpgDecryptionFailed(e.getstring())
+
+            raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
+
         output.seek(0, 0)
         return output.read()
 

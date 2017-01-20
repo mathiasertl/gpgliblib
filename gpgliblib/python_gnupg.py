@@ -24,19 +24,20 @@ from threading import local
 import gnupg
 import six
 
+from .base import GpgBackendBase
+from .base import GpgBadSignature
+from .base import GpgDecryptionFailed
+from .base import GpgKey
+from .base import GpgKeyNotFoundError
+from .base import GpgSecretKeyPresent
+from .base import GpgUntrustedKeyError
 from .base import MODE_ARMOR
+from .base import UnknownGpgliblibError
 from .base import VALIDITY_FULL
 from .base import VALIDITY_MARGINAL
 from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
-from .base import GpgBackendBase
-from .base import GpgBadSignature
-from .base import GpgKey
-from .base import GpgKeyNotFoundError
-from .base import UnknownGpgliblibError
-from .base import GpgSecretKeyPresent
-from .base import GpgUntrustedKeyError
 
 
 class PythonGnupgBackend(GpgBackendBase):
@@ -157,7 +158,9 @@ class PythonGnupgBackend(GpgBackendBase):
 
     def decrypt(self, data):
         result = self.gpg.decrypt(data)
-        return result.data
+        if result.ok:
+            return result.data
+        raise GpgDecryptionFailed(result.status)
 
     def decrypt_verify(self, data):
         result = self.gpg.decrypt(data)

@@ -27,6 +27,7 @@ import six
 
 from .base import GpgBackendBase
 from .base import GpgBadSignature
+from .base import GpgDecryptionFailed
 from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgSecretKeyPresent
@@ -176,7 +177,13 @@ class GpgMeBackend(GpgBackendBase):
 
     def decrypt(self, data):
         output = six.BytesIO()
-        self.context.decrypt(six.BytesIO(data), output)
+        try:
+            self.context.decrypt(six.BytesIO(data), output)
+        except gpgme.GpgmeError as e:
+            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_DECRYPT_FAILED:
+                raise GpgDecryptionFailed(e.strerror)
+            raise UnknownGpgliblibError(e.strerror)  # pragma: no cover
+
         return output.getvalue()
 
     def decrypt_verify(self, data):
