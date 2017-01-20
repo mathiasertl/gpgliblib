@@ -229,21 +229,6 @@ class BasicTestsMixin(object):
         self.assertKeys(self.backend.import_private_key(user3_pub + user4_pub),
                         [user3_fp, user4_fp])
 
-    def test_no_expires(self):
-        keys = self.backend.import_key(user1_pub)
-        self.assertKeys(keys, [user1_fp])
-        self.assertIsNone(keys[0].expires)
-
-    def test_expires(self):
-        keys = self.backend.import_key(expires_pub)
-        self.assertKeys(keys, [expires_fp])
-        self.assertEqual(keys[0].expires, datetime(2046, 8, 12, 7, 53, 29))
-
-    def test_expired(self):
-        keys = self.backend.import_key(expired_pub)
-        self.assertKeys(keys, [expired_fp])
-        self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 7, 56, 25))
-
     def test_sign_encrypt(self):
         data = b'testdata'
         keys = self.backend.import_key(user3_pub)
@@ -381,6 +366,21 @@ class KeyPropertiesTestsMixin(object):
     def test_revoked(self):
         key = self.backend.import_key(revoked_pub)[0]
         self.assertTrue(key.revoked)
+
+    def test_no_expires(self):
+        keys = self.backend.import_key(user1_pub)
+        self.assertKeys(keys, [user1_fp])
+        self.assertIsNone(keys[0].expires)
+
+    def test_expires(self):
+        keys = self.backend.import_key(expires_pub)
+        self.assertKeys(keys, [expires_fp])
+        self.assertEqual(keys[0].expires, datetime(2046, 8, 12, 7, 53, 29))
+
+    def test_expired(self):
+        keys = self.backend.import_key(expired_pub)
+        self.assertKeys(keys, [expired_fp])
+        self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 7, 56, 25))
 
 
 class TrustTestsMixin(object):
