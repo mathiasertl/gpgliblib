@@ -30,8 +30,6 @@ from datetime import datetime
 
 import six
 
-from django.test import TestCase
-
 from gpgliblib.base import GpgBadSignature
 from gpgliblib.base import GpgDecryptionFailed
 from gpgliblib.base import GpgKeyNotFoundError
@@ -159,11 +157,11 @@ def load_tests(loader, tests, ignore):
     return tests
 
 
-class GpgTestCase(TestCase):
+class GpgTestCase(unittest.TestCase):
     backend_kwargs = {}
 
     if six.PY2:
-        assertCountEqual = TestCase.assertItemsEqual
+        assertCountEqual = unittest.TestCase.assertItemsEqual
 
     def setUp(self):
         super(GpgTestCase, self).setUp()
