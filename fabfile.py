@@ -35,6 +35,7 @@ def test(name=None):
     if name is None:
         suite = unittest.TestLoader().discover('tests')
     else:
+        # fabric does not have the current directory in the path for some reason
         sys.path.insert(0, os.path.dirname(__file__))
         suite = unittest.TestLoader().loadTestsFromName(name)
 
