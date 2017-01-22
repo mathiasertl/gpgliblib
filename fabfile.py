@@ -14,7 +14,9 @@
 # not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 import tempfile
+import unittest
 
 from fabric.api import local
 from fabric.api import task
@@ -27,13 +29,16 @@ testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
 
 
 @task
-def test():
+def test(name=None):
     """Run the testsuite."""
 
-    old = os.getcwd()
-    os.chdir('testproject')
-    local('python manage.py test')
-    os.chdir(old)
+    if name is None:
+        suite = unittest.TestLoader().discover('tests')
+    else:
+        sys.path.insert(0, os.path.dirname(__file__))
+        suite = unittest.TestLoader().loadTestsFromName(name)
+
+    unittest.TextTestRunner().run(suite)
 
 
 @task

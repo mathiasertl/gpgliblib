@@ -50,7 +50,7 @@ try:
 except ImportError:
     PymeBackend = None
 
-basedir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+basedir = os.path.dirname(os.path.dirname(__file__))
 testdatadir = os.path.join(basedir, 'testdata')
 
 # allow caller to skip tests with environment variables
@@ -124,7 +124,7 @@ known_public_keys = {
 }
 
 
-def load_tests(loader, tests, ignore):
+def _load_tests(loader, tests, ignore):
     return tests
     if six.PY2:
         # do not run doctests from sphinx in python2
@@ -373,12 +373,12 @@ class KeyPropertiesTestsMixin(object):
     def test_expires(self):
         keys = self.backend.import_key(expires_pub)
         self.assertKeys(keys, [expires_fp])
-        self.assertEqual(keys[0].expires, datetime(2046, 8, 12, 7, 53, 29))
+        self.assertEqual(keys[0].expires, datetime(2046, 8, 12, 9, 53, 29))
 
     def test_expired(self):
         keys = self.backend.import_key(expired_pub)
         self.assertKeys(keys, [expired_fp])
-        self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 7, 56, 25))
+        self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 9, 56, 25))
 
 
 class TrustTestsMixin(object):
