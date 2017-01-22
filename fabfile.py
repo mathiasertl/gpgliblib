@@ -29,17 +29,31 @@ testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
 
 
 @task
-def test(name=None):
+def test(name=None, backends=None):
     """Run the testsuite."""
 
-    if name is None:
-        suite = unittest.TestLoader().discover('tests')
+    if backends is None:
+        backends = ['gpgliblib.gpgme.GpgMeBackend',
+                    'gpgliblib.python_gnupg.PythonGnupgBackend', ]
     else:
-        # fabric does not have the current directory in the path for some reason
-        sys.path.insert(0, os.path.dirname(__file__))
-        suite = unittest.TestLoader().loadTestsFromName(name)
+        backends = backends.split('|')
 
-    unittest.TextTestRunner().run(suite)
+    suites = []
+    for backend in backends:
+        print('backend', backend)
+        os.environ['GPGLIBLIB_BACKEND'] = backend
+
+        if name is None:
+            suite = unittest.TestLoader().discover('tests')
+        else:
+            # fabric does not have the current directory in the path for some reason
+            sys.path.insert(0, os.path.dirname(__file__))
+            suite = unittest.TestLoader().loadTestsFromName(name)
+
+        suites.append(suite)
+
+    big_suite = unittest.TestSuite(suites)
+    unittest.TextTestRunner().run(big_suite)
 
 
 @task

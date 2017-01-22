@@ -43,7 +43,7 @@ from gpgliblib.base import VALIDITY_NEVER
 from gpgliblib.base import VALIDITY_ULTIMATE
 from gpgliblib.base import VALIDITY_UNKNOWN
 from gpgliblib.gpgme import GpgMeBackend
-from gpgliblib.python_gnupg import PythonGnupgBackend
+#from gpgliblib.python_gnupg import PythonGnupgBackend
 
 try:
     from gpgliblib.pyme import PymeBackend
@@ -58,6 +58,9 @@ skip_python_gnupg = bool(int(os.environ.get('SKIP_PYTHON_GNUPG', '0')))
 skip_gpgme = bool(int(os.environ.get('SKIP_GPGME', '0')))
 skip_pyme = bool(int(os.environ.get('SKIP_PYME', '0')))
 gnupg_version = tuple([int(t) for t in os.environ.get('GNUPG_VERSION', '2').split('.')])
+
+# Get backend class from environment
+backend = os.environ.get('GPGLIBLIB_BACKEND', 'gpgliblib.gpgme.GpgMeBackend')
 
 # load data into memory
 user1_fp = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
@@ -166,6 +169,11 @@ class GpgTestCase(unittest.TestCase):
     def setUp(self):
         super(GpgTestCase, self).setUp()
         self.home = tempfile.mkdtemp()
+
+        _path, _clsname = backend.rsplit('.', 1)
+        mod = __import__(_path, globals(), locals(), [_clsname])
+        self.backend_class = getattr(mod, _clsname)
+
         self.backend = self.backend_class(home=self.home, **self.backend_kwargs)
         self.user1 = self.backend.get_key(user1_fp)
         self.user2 = self.backend.get_key(user2_fp)
@@ -189,7 +197,7 @@ class GpgKeyTestCase(GpgTestCase):
         self.key2 = self.backend.import_key(user2_priv)[0]
 
 
-class BasicTestsMixin(object):
+class BasicTests(GpgTestCase):
     def test_import_key(self):
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
@@ -560,66 +568,49 @@ class SignVerifyTestsMixin(object):
             self.backend.sign(b'testdata', user3_fp)
 
 
-@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-class BasicGpgMeTestCase(BasicTestsMixin, GpgTestCase):
-    backend_class = GpgMeBackend
-    backend_kwargs = {'gnupg_version': gnupg_version, }
-
-
-@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-class BasicPythonGnupgTestCase(BasicTestsMixin, GpgTestCase):
-    backend_class = PythonGnupgBackend
-
-
-@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-class BasicPymeTestCase(BasicTestsMixin, GpgTestCase):
-    backend_class = PymeBackend
-
-
-@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
-    backend_class = GpgMeBackend
-    backend_kwargs = {'gnupg_version': gnupg_version, }
-
-
-@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-class ListKeysPythonGnupgTestCase(ListKeysTestsMixin, GpgTestCase):
-    backend_class = PythonGnupgBackend
-
-
-@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
-    backend_class = PymeBackend
-
-
-@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-    backend_class = GpgMeBackend
-    backend_kwargs = {'gnupg_version': gnupg_version, }
-
-
-@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-class KeyPropertiesPythonGnupgTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-    backend_class = PythonGnupgBackend
-
-
-@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-    backend_class = PymeBackend
-
-
-@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
-    backend_class = GpgMeBackend
-    backend_kwargs = {'gnupg_version': gnupg_version, }
-
-
-@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-class TrustPythonGnupgTestCase(TrustTestsMixin, GpgKeyTestCase):
-    backend_class = PythonGnupgBackend
+#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+#class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
+#    backend_class = GpgMeBackend
+#    backend_kwargs = {'gnupg_version': gnupg_version, }
+#
+#
+#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+#class ListKeysPythonGnupgTestCase(ListKeysTestsMixin, GpgTestCase):
+#    backend_class = PythonGnupgBackend
+#
+#
+#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
+#class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
+#    backend_class = PymeBackend
+#
+#
+#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+#class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+#    backend_class = GpgMeBackend
+#    backend_kwargs = {'gnupg_version': gnupg_version, }
+#
+#
+#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+#class KeyPropertiesPythonGnupgTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+#    backend_class = PythonGnupgBackend
+#
+#
+#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
+#class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
+#    backend_class = PymeBackend
+#
+#
+#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+#class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
+#    backend_class = GpgMeBackend
+#    backend_kwargs = {'gnupg_version': gnupg_version, }
+#
+#
+#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+#class TrustPythonGnupgTestCase(TrustTestsMixin, GpgKeyTestCase):
+#    backend_class = PythonGnupgBackend
 
 
 #@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
@@ -628,69 +619,69 @@ class TrustPythonGnupgTestCase(TrustTestsMixin, GpgKeyTestCase):
 #    backend_class = PymeBackend
 
 
-@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-    backend_class = GpgMeBackend
-    backend_kwargs = {'gnupg_version': gnupg_version, }
-
-
-@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-class ExportKeyPythonGnupgTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-    backend_class = PythonGnupgBackend
-
-
-@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-    backend_class = PymeBackend
-
-
-@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-    backend_class = GpgMeBackend
-    backend_kwargs = {'gnupg_version': gnupg_version, }
-
-
-@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-class DeleteKeyPythonGnupgTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-    backend_class = PythonGnupgBackend
-
-
-@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-    backend_class = PymeBackend
-
-
-@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-class EncryptDecryptGpgMeTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
-    backend_class = GpgMeBackend
-    backend_kwargs = {'gnupg_version': gnupg_version, }
-
-
-@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-class EncryptDecryptPythonGnupgTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
-    backend_class = PythonGnupgBackend
-
-
-@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-class EncryptDecryptPymeTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
-    backend_class = PymeBackend
-
-
-@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-class SignVerifyGpgMeTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
-    backend_class = GpgMeBackend
-    backend_kwargs = {'gnupg_version': gnupg_version, }
-
-
-@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-class SignVerifyPythonGnupgTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
-    backend_class = PythonGnupgBackend
-
-
-@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-class SignVerifyPymeTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
-    backend_class = PymeBackend
+#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+#class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
+#    backend_class = GpgMeBackend
+#    backend_kwargs = {'gnupg_version': gnupg_version, }
+#
+#
+#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+#class ExportKeyPythonGnupgTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
+#    backend_class = PythonGnupgBackend
+#
+#
+#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
+#class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
+#    backend_class = PymeBackend
+#
+#
+#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+#class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+#    backend_class = GpgMeBackend
+#    backend_kwargs = {'gnupg_version': gnupg_version, }
+#
+#
+#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+#class DeleteKeyPythonGnupgTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+#    backend_class = PythonGnupgBackend
+#
+#
+#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
+#class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
+#    backend_class = PymeBackend
+#
+#
+#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+#class EncryptDecryptGpgMeTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
+#    backend_class = GpgMeBackend
+#    backend_kwargs = {'gnupg_version': gnupg_version, }
+#
+#
+#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+#class EncryptDecryptPythonGnupgTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
+#    backend_class = PythonGnupgBackend
+#
+#
+#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
+#class EncryptDecryptPymeTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
+#    backend_class = PymeBackend
+#
+#
+#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
+#class SignVerifyGpgMeTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
+#    backend_class = GpgMeBackend
+#    backend_kwargs = {'gnupg_version': gnupg_version, }
+#
+#
+#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
+#class SignVerifyPythonGnupgTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
+#    backend_class = PythonGnupgBackend
+#
+#
+#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
+#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
+#class SignVerifyPymeTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
+#    backend_class = PymeBackend
