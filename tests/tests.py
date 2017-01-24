@@ -43,7 +43,6 @@ from gpgliblib.base import VALIDITY_NEVER
 from gpgliblib.base import VALIDITY_ULTIMATE
 from gpgliblib.base import VALIDITY_UNKNOWN
 from gpgliblib.gpgme import GpgMeBackend
-from gpgliblib.python_gnupg import PythonGnupgBackend
 
 try:
     from gpgliblib.pyme import PymeBackend
@@ -158,14 +157,14 @@ def load_tests(loader, tests, ignore):
     return tests
 
 
-class GpgTestCase(unittest.TestCase):
+class GpgTestMixin(object):
     backend_kwargs = {}
 
     if six.PY2:
         assertCountEqual = unittest.TestCase.assertItemsEqual
 
     def setUp(self):
-        super(GpgTestCase, self).setUp()
+        super(GpgTestMixin, self).setUp()
         self.home = tempfile.mkdtemp()
 
         # load backend class
@@ -180,23 +179,23 @@ class GpgTestCase(unittest.TestCase):
         self.user4 = self.backend.get_key(user4_fp)
 
     def tearDown(self):
-        super(GpgTestCase, self).tearDown()
+        super(GpgTestMixin, self).tearDown()
         shutil.rmtree(self.home, ignore_errors=True)
 
     def assertKeys(self, result, expected):
         self.assertCountEqual([k.fp for k in result], expected)
 
 
-class GpgKeyTestCase(GpgTestCase):
+class GpgKeyTestMixin(GpgTestMixin):
     """Subclass which already loads a public and a private key."""
 
     def setUp(self):
-        super(GpgKeyTestCase, self).setUp()
+        super(GpgKeyTestMixin, self).setUp()
         self.key1 = self.backend.import_key(user1_pub)[0]
         self.key2 = self.backend.import_key(user2_priv)[0]
 
 
-class BasicTests(GpgTestCase):
+class BasicTests(GpgTestMixin, unittest.TestCase):
     def test_import_key(self):
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
         self.assertKeys(self.backend.import_key(user1_pub), [user1_fp])
@@ -307,7 +306,7 @@ class BasicTests(GpgTestCase):
                 self.backend.encrypt(data, priv_keys, always_trust=False)
 
 
-class ListKeysTestsMixin(object):
+class ListKeysTestsMixin(GpgTestMixin, unittest.TestCase):
     def test_empty_keyring(self):
         self.assertEqual(self.backend.list_keys(), [])
 
@@ -350,7 +349,7 @@ class ListKeysTestsMixin(object):
         self.assertEqual(self.backend.list_keys(query='bogus'), [])
 
 
-class KeyPropertiesTestsMixin(object):
+class KeyPropertiesTestsMixin(GpgKeyTestMixin, unittest.TestCase):
     def test_key_properties(self):
         self.assertEqual(self.user1.name, 'Private Citizen One')
         self.assertEqual(self.user1.comment, None)
@@ -388,7 +387,7 @@ class KeyPropertiesTestsMixin(object):
         self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 9, 56, 25))
 
 
-class TrustTestsMixin(object):
+class TrustTestsMixin(GpgKeyTestMixin, unittest.TestCase):
     def test_basic(self):
         self.assertEqual(self.user1.trust, VALIDITY_UNKNOWN)
         self.assertEqual(self.user2.trust, VALIDITY_UNKNOWN)
@@ -421,7 +420,7 @@ class TrustTestsMixin(object):
         self.assertEqual(keys[0].trust, VALIDITY_FULL)
 
 
-class ExportKeyTestsMixin(object):
+class ExportKeyTestsMixin(GpgKeyTestMixin, unittest.TestCase):
     def test_key_ascii_export(self):
         export = self.key1.export()
 
@@ -477,7 +476,7 @@ class ExportKeyTestsMixin(object):
         self.check_key_write_export(MODE_BINARY)
 
 
-class DeleteKeyTestsMixin(object):
+class DeleteKeyTestsMixin(GpgKeyTestMixin, unittest.TestCase):
     def test_basic(self):
         self.assertEqual(self.backend.list_keys(user1_fp), [self.key1])
         self.assertEqual(self.backend.list_keys(user2_fp), [self.key2])
@@ -503,7 +502,7 @@ class DeleteKeyTestsMixin(object):
         six.assertRaisesRegex(self, GpgKeyNotFoundError, '^%s$' % user3_fp, key.delete)
 
 
-class EncryptDecryptTestsMixin(object):
+class EncryptDecryptTestsMixin(GpgKeyTestMixin, unittest.TestCase):
     def test_encrypt(self):
         data = b'testdata'
 
@@ -533,7 +532,7 @@ class EncryptDecryptTestsMixin(object):
             self.backend.encrypt(b'foobar', [self.user2], always_trust=False)
 
 
-class SignVerifyTestsMixin(object):
+class SignVerifyTestsMixin(GpgKeyTestMixin, unittest.TestCase):
     def test_sign(self):
         data = b'testdata'
         signature = self.backend.sign(data, user2_fp)
@@ -565,122 +564,3 @@ class SignVerifyTestsMixin(object):
     def test_sign_unknown_key(self):
         with self.assertRaises(GpgKeyNotFoundError):
             self.backend.sign(b'testdata', user3_fp)
-
-
-#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-#class ListKeysGpgMeTestCase(ListKeysTestsMixin, GpgTestCase):
-#    backend_class = GpgMeBackend
-#    backend_kwargs = {'gnupg_version': gnupg_version, }
-#
-#
-#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-#class ListKeysPythonGnupgTestCase(ListKeysTestsMixin, GpgTestCase):
-#    backend_class = PythonGnupgBackend
-#
-#
-#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-#class ListKeysPymeTestCase(ListKeysTestsMixin, GpgTestCase):
-#    backend_class = PymeBackend
-#
-#
-#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-#class KeyPropertiesGpgMeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-#    backend_class = GpgMeBackend
-#    backend_kwargs = {'gnupg_version': gnupg_version, }
-#
-#
-#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-#class KeyPropertiesPythonGnupgTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-#    backend_class = PythonGnupgBackend
-#
-#
-#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-#class KeyPropertiesPymeTestCase(KeyPropertiesTestsMixin, GpgKeyTestCase):
-#    backend_class = PymeBackend
-#
-#
-#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-#class TrustGpgMeTestCase(TrustTestsMixin, GpgKeyTestCase):
-#    backend_class = GpgMeBackend
-#    backend_kwargs = {'gnupg_version': gnupg_version, }
-#
-#
-#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-#class TrustPythonGnupgTestCase(TrustTestsMixin, GpgKeyTestCase):
-#    backend_class = PythonGnupgBackend
-
-
-#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-#class TrustPymeTestCase(TrustTestsMixin, GpgKeyTestCase):
-#    backend_class = PymeBackend
-
-
-#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-#class ExportKeyGpgMeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-#    backend_class = GpgMeBackend
-#    backend_kwargs = {'gnupg_version': gnupg_version, }
-#
-#
-#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-#class ExportKeyPythonGnupgTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-#    backend_class = PythonGnupgBackend
-#
-#
-#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-#class ExportKeyPymeTestCase(ExportKeyTestsMixin, GpgKeyTestCase):
-#    backend_class = PymeBackend
-#
-#
-#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-#class DeleteKeyGpgMeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-#    backend_class = GpgMeBackend
-#    backend_kwargs = {'gnupg_version': gnupg_version, }
-#
-#
-#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-#class DeleteKeyPythonGnupgTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-#    backend_class = PythonGnupgBackend
-#
-#
-#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-#class DeleteKeyPymeTestCase(DeleteKeyTestsMixin, GpgKeyTestCase):
-#    backend_class = PymeBackend
-#
-#
-#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-#class EncryptDecryptGpgMeTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
-#    backend_class = GpgMeBackend
-#    backend_kwargs = {'gnupg_version': gnupg_version, }
-#
-#
-#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-#class EncryptDecryptPythonGnupgTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
-#    backend_class = PythonGnupgBackend
-#
-#
-#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-#class EncryptDecryptPymeTestCase(EncryptDecryptTestsMixin, GpgKeyTestCase):
-#    backend_class = PymeBackend
-#
-#
-#@unittest.skipIf(skip_gpgme, 'Skipped via environment variable.')
-#class SignVerifyGpgMeTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
-#    backend_class = GpgMeBackend
-#    backend_kwargs = {'gnupg_version': gnupg_version, }
-#
-#
-#@unittest.skipIf(skip_python_gnupg, 'Skipped via environment variable.')
-#class SignVerifyPythonGnupgTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
-#    backend_class = PythonGnupgBackend
-#
-#
-#@unittest.skipUnless(PymeBackend is not None, 'Could not import pyme')
-#@unittest.skipIf(skip_pyme, 'Skipped via environment variable.')
-#class SignVerifyPymeTestCase(SignVerifyTestsMixin, GpgKeyTestCase):
-#    backend_class = PymeBackend
