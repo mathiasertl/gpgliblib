@@ -43,7 +43,7 @@ from gpgliblib.base import VALIDITY_NEVER
 from gpgliblib.base import VALIDITY_ULTIMATE
 from gpgliblib.base import VALIDITY_UNKNOWN
 from gpgliblib.gpgme import GpgMeBackend
-#from gpgliblib.python_gnupg import PythonGnupgBackend
+from gpgliblib.python_gnupg import PythonGnupgBackend
 
 try:
     from gpgliblib.pyme import PymeBackend
@@ -58,9 +58,6 @@ skip_python_gnupg = bool(int(os.environ.get('SKIP_PYTHON_GNUPG', '0')))
 skip_gpgme = bool(int(os.environ.get('SKIP_GPGME', '0')))
 skip_pyme = bool(int(os.environ.get('SKIP_PYME', '0')))
 gnupg_version = tuple([int(t) for t in os.environ.get('GNUPG_VERSION', '2').split('.')])
-
-# Get backend class from environment
-backend = os.environ.get('GPGLIBLIB_BACKEND', 'gpgliblib.gpgme.GpgMeBackend')
 
 # load data into memory
 user1_fp = 'CC9F343794DBB20E13DE097EE53338B91AA9A0AC'
@@ -127,8 +124,9 @@ known_public_keys = {
 }
 
 
-def _load_tests(loader, tests, ignore):
+def load_tests(loader, tests, ignore):
     return tests
+
     if six.PY2:
         # do not run doctests from sphinx in python2
         return tests
@@ -170,7 +168,8 @@ class GpgTestCase(unittest.TestCase):
         super(GpgTestCase, self).setUp()
         self.home = tempfile.mkdtemp()
 
-        _path, _clsname = backend.rsplit('.', 1)
+        # load backend class
+        _path, _clsname = self.backend_name.rsplit('.', 1)
         mod = __import__(_path, globals(), locals(), [_clsname])
         self.backend_class = getattr(mod, _clsname)
 

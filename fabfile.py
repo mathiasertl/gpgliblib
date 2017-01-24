@@ -28,6 +28,21 @@ from gpgliblib import python_gnupg
 testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
 
 
+class TestLoader(unittest.TestLoader):
+    """TestLoader that creates a dynamic subclass for every TestCase with the backend passed in the
+    constructor.
+    """
+
+    def __init__(self, name):
+        self.name = name
+
+    def loadTestsFromTestCase(self, cls):
+        name = '%s%s' % (self.name.rsplit('.', 1)[1], cls.__name__)
+        cls = type(name, (cls, ), {'backend_name': self.name})
+        tests = super(TestLoader, self).loadTestsFromTestCase(cls)
+        return tests
+
+
 @task
 def test(name=None, backends=None):
     """Run the testsuite."""
@@ -40,15 +55,12 @@ def test(name=None, backends=None):
 
     suites = []
     for backend in backends:
-        print('backend', backend)
-        os.environ['GPGLIBLIB_BACKEND'] = backend
-
         if name is None:
-            suite = unittest.TestLoader().discover('tests')
+            suite = TestLoader(backend).discover('tests')
         else:
             # fabric does not have the current directory in the path for some reason
             sys.path.insert(0, os.path.dirname(__file__))
-            suite = unittest.TestLoader().loadTestsFromName(name)
+            suite = TestLoader(backend).loadTestsFromName(name)
 
         suites.append(suite)
 
