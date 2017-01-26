@@ -45,9 +45,9 @@ from gpgliblib.base import VALIDITY_UNKNOWN
 from gpgliblib.gpgme import GpgMeBackend
 
 try:
-    from gpgliblib.pyme import PymeBackend
+    import pyme
 except ImportError:
-    PymeBackend = None
+    pyme = None
 
 basedir = os.path.dirname(os.path.dirname(__file__))
 testdatadir = os.path.join(basedir, 'testdata')
@@ -164,6 +164,9 @@ class GpgTestMixin(object):
         assertCountEqual = unittest.TestCase.assertItemsEqual
 
     def setUp(self):
+        if self.backend_name == 'gpgliblib.pyme.PymeBackend' and pyme is None:
+            self.skipTest('pyme is not available.')
+
         super(GpgTestMixin, self).setUp()
         self.home = tempfile.mkdtemp()
 
