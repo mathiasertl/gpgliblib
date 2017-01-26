@@ -131,7 +131,7 @@ GPG_BACKENDS = {
         'BACKEND': 'gpgliblib.gpgme.GpgMeBackend',
         'HOME': KEYRING_DIR,
     },
-    'gnupg': {
+    'python-gnupg': {
         'BACKEND': 'gpgliblib.python_gnupg.PythonGnupgBackend',
         'HOME': KEYRING_DIR,
         'OPTIONS': {
