@@ -82,7 +82,7 @@ create ``testproject/testproject/localsettings.py`` (in the same directory as
 Coverage report
 ===============
 
-You can also create a coverage report via
+You can also create a coverage report via::
 
    fab coverage
 
