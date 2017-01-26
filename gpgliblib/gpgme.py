@@ -23,6 +23,10 @@ from threading import local
 import gpgme
 import gpgme.editutil
 import six
+from gpgme import ERR_SOURCE_UNKNOWN
+from gpgme import ERR_GENERAL
+from gpgme import ERR_SOURCE_GPGME
+from gpgme import ERR_UNUSABLE_PUBKEY
 
 from .base import GpgBackendBase
 from .base import GpgBadSignature
@@ -31,7 +35,6 @@ from .base import GpgKey
 from .base import GpgKeyNotFoundError
 from .base import GpgSecretKeyPresent
 from .base import GpgUntrustedKeyError
-from .base import GpgliblibError
 from .base import MODE_ARMOR
 from .base import UnknownGpgliblibError
 from .base import VALIDITY_FULL
@@ -117,12 +120,10 @@ class GpgMeBackend(GpgBackendBase):
             else:
                 self.context.encrypt(recipients, flags, six.BytesIO(data), output_bytes)
         except gpgme.GpgmeError as e:
-            # Raised in gpg 1.x
-            if e.source == gpgme.ERR_SOURCE_UNKNOWN and e.code == gpgme.ERR_GENERAL:
+            if e.source == ERR_SOURCE_UNKNOWN and e.code == ERR_GENERAL:  # pragma: gpg1
                 raise GpgUntrustedKeyError("Key not trusted.")
 
-            # Raised in gpg 2.x
-            if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_UNUSABLE_PUBKEY:
+            if e.source == ERR_SOURCE_GPGME and e.code == ERR_UNUSABLE_PUBKEY:  # pragma: gpg2
                 raise GpgUntrustedKeyError("Key not trusted.")
 
             raise UnknownGpgliblibError(e.strerror)  # pragma: no cover
