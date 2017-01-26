@@ -356,8 +356,9 @@ class GpgBackendBase(object):
         Returns
         -------
 
-        (bytes, str)
-            The decrypted data and the fingerprint of the key used in the signature.
+        (bytes, str or None)
+            The decrypted data and the fingerprint of the key used in the signature. If ``data``
+            wasn't signed, the signature is ``None``.
 
         Raises
         ------
