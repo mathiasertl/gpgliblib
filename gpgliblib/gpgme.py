@@ -175,7 +175,10 @@ class GpgMeBackend(GpgBackendBase):
 
         errors = list(filter(lambda s: s.status is not None, signatures))
         if not errors:
-            return output.getvalue(), signatures[0].fpr
+            if signatures:
+                return output.getvalue(), signatures[0].fpr
+            else:
+                return output.getvalue(), None
 
     def import_key(self, data):
         if six.PY3 and isinstance(data, str):  # pragma: py3
