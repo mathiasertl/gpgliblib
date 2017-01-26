@@ -39,6 +39,13 @@ Constants
 
 .. autodata:: gpgliblib.base.VALIDITY_ULTIMATE
 
+*****************
+Utility functions
+*****************
+
+.. automodule:: gpgliblib.utils
+   :members:
+
 **********
 Exceptions
 **********
