@@ -309,7 +309,7 @@ class BasicTests(GpgTestMixin, unittest.TestCase):
                 self.backend.encrypt(data, priv_keys, always_trust=False)
 
 
-class ListKeysTestsMixin(GpgTestMixin, unittest.TestCase):
+class ListKeysTests(GpgTestMixin, unittest.TestCase):
     def test_empty_keyring(self):
         self.assertEqual(self.backend.list_keys(), [])
 
@@ -352,7 +352,7 @@ class ListKeysTestsMixin(GpgTestMixin, unittest.TestCase):
         self.assertEqual(self.backend.list_keys(query='bogus'), [])
 
 
-class KeyPropertiesTestsMixin(GpgKeyTestMixin, unittest.TestCase):
+class KeyPropertiesTests(GpgKeyTestMixin, unittest.TestCase):
     def test_key_properties(self):
         self.assertEqual(self.user1.name, 'Private Citizen One')
         self.assertEqual(self.user1.comment, None)
@@ -390,7 +390,7 @@ class KeyPropertiesTestsMixin(GpgKeyTestMixin, unittest.TestCase):
         self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 9, 56, 25))
 
 
-class TrustTestsMixin(GpgKeyTestMixin, unittest.TestCase):
+class TrustTests(GpgKeyTestMixin, unittest.TestCase):
     def test_basic(self):
         self.assertEqual(self.user1.trust, VALIDITY_UNKNOWN)
         self.assertEqual(self.user2.trust, VALIDITY_UNKNOWN)
@@ -423,7 +423,7 @@ class TrustTestsMixin(GpgKeyTestMixin, unittest.TestCase):
         self.assertEqual(keys[0].trust, VALIDITY_FULL)
 
 
-class ExportKeyTestsMixin(GpgKeyTestMixin, unittest.TestCase):
+class ExportKeyTests(GpgKeyTestMixin, unittest.TestCase):
     def test_key_ascii_export(self):
         export = self.key1.export()
 
@@ -479,7 +479,7 @@ class ExportKeyTestsMixin(GpgKeyTestMixin, unittest.TestCase):
         self.check_key_write_export(MODE_BINARY)
 
 
-class DeleteKeyTestsMixin(GpgKeyTestMixin, unittest.TestCase):
+class DeleteKeyTests(GpgKeyTestMixin, unittest.TestCase):
     def test_basic(self):
         self.assertEqual(self.backend.list_keys(user1_fp), [self.key1])
         self.assertEqual(self.backend.list_keys(user2_fp), [self.key2])
@@ -505,7 +505,7 @@ class DeleteKeyTestsMixin(GpgKeyTestMixin, unittest.TestCase):
         six.assertRaisesRegex(self, GpgKeyNotFoundError, '^%s$' % user3_fp, key.delete)
 
 
-class EncryptDecryptTestsMixin(GpgKeyTestMixin, unittest.TestCase):
+class EncryptDecryptTests(GpgKeyTestMixin, unittest.TestCase):
     def test_encrypt(self):
         data = b'testdata'
 
@@ -535,7 +535,7 @@ class EncryptDecryptTestsMixin(GpgKeyTestMixin, unittest.TestCase):
             self.backend.encrypt(b'foobar', [self.user2], always_trust=False)
 
 
-class SignVerifyTestsMixin(GpgKeyTestMixin, unittest.TestCase):
+class SignVerifyTests(GpgKeyTestMixin, unittest.TestCase):
     def test_sign(self):
         data = b'testdata'
         signature = self.backend.sign(data, user2_fp)
