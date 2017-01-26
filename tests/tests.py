@@ -370,24 +370,30 @@ class KeyPropertiesTests(GpgKeyTestMixin, unittest.TestCase):
         self.assertEqual(key.comment, 'revoked')
         self.assertEqual(key.email, 'user+revoked@example.com')
 
+        self.assertEqual(key.fingerprint, 'BE57A1261FC904FF24FBD92F8D40928D3C5FF049')
+        self.assertEqual(key.fp, 'BE57A1261FC904FF24FBD92F8D40928D3C5FF049')
+        self.assertEqual(key.keyid, '3C5FF049')
+        self.assertEqual(key.long_keyid, '8D40928D3C5FF049')
+
     def test_revoked(self):
         key = self.backend.import_key(revoked_pub)[0]
         self.assertTrue(key.revoked)
 
     def test_no_expires(self):
-        keys = self.backend.import_key(user1_pub)
-        self.assertKeys(keys, [user1_fp])
-        self.assertIsNone(keys[0].expires)
+        self.assertIsNone(self.user1.expires)
+        self.assertFalse(self.user1.expired)
 
     def test_expires(self):
         keys = self.backend.import_key(expires_pub)
         self.assertKeys(keys, [expires_fp])
         self.assertEqual(keys[0].expires, datetime(2046, 8, 12, 9, 53, 29))
+        self.assertFalse(keys[0].expired)
 
     def test_expired(self):
         keys = self.backend.import_key(expired_pub)
         self.assertKeys(keys, [expired_fp])
         self.assertEqual(keys[0].expires, datetime(2016, 8, 20, 9, 56, 25))
+        self.assertTrue(keys[0].expires)
 
 
 class TrustTests(GpgKeyTestMixin, unittest.TestCase):
