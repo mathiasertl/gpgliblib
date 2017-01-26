@@ -16,7 +16,6 @@
 from __future__ import absolute_import
 from __future__ import unicode_literals
 
-import warnings
 from contextlib import contextmanager
 from datetime import datetime
 from threading import local
@@ -40,6 +39,7 @@ from .base import VALIDITY_MARGINAL
 from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
+from .utils import get_version
 
 
 class GpgMeBackend(GpgBackendBase):
@@ -53,9 +53,6 @@ class GpgMeBackend(GpgBackendBase):
     def __init__(self, **kwargs):
         super(GpgMeBackend, self).__init__(**kwargs)
         self._local = local()
-
-        if self._gnupg_version is None:
-            warnings.warn('gnupg_version parameter is required for setting trust.')
 
     @property
     def context(self):
@@ -91,7 +88,7 @@ class GpgMeBackend(GpgBackendBase):
     @property
     def gnupg_version(self):
         if self._gnupg_version is None:
-            raise GpgliblibError('gpgme.GpgMeBackend requires gnupg_version parameter.')
+            self._gnupg_version = get_version()
 
         return self._gnupg_version
 
