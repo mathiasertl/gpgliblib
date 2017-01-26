@@ -236,32 +236,6 @@ class BasicTests(GpgTestMixin, unittest.TestCase):
         self.assertKeys(self.backend.import_private_key(user3_pub + user4_pub),
                         [user3_fp, user4_fp])
 
-    def test_sign_encrypt(self):
-        data = b'testdata'
-        keys = self.backend.import_key(user3_pub)
-        self.assertKeys(keys, [user3_fp])
-        priv_keys = self.backend.import_private_key(user1_priv)
-        self.assertKeys(priv_keys, [user1_fp])
-
-        encrypted = self.backend.sign_encrypt(data, recipients=keys, signer=priv_keys[0],
-                                              always_trust=True)
-
-        user3_keys = self.backend.import_private_key(user3_priv)
-        self.assertKeys(user3_keys, [user3_fp])
-        self.assertEqual(self.backend.decrypt_verify(encrypted), (data, user1_fp))
-
-        encrypted = self.backend.sign_encrypt(data, recipients=[user3_fp], signer=user1_fp,
-                                              always_trust=True)
-        self.assertEqual(self.backend.decrypt_verify(encrypted), (data, user1_fp))
-
-    def test_sign_encrypt_unknown_key(self):
-        with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signer=user1_fp)
-
-        with self.assertRaises(GpgKeyNotFoundError):
-            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signer=user1_fp,
-                                      always_trust=True)
-
     def test_settings(self):
         data = b'testdata'
         keys = self.backend.import_key(user1_pub)
@@ -573,3 +547,40 @@ class SignVerifyTests(GpgKeyTestMixin, unittest.TestCase):
     def test_sign_unknown_key(self):
         with self.assertRaises(GpgKeyNotFoundError):
             self.backend.sign(b'testdata', user3_fp)
+
+
+class SignEncryptTests(GpgKeyTestMixin, unittest.TestCase):
+    def test_sign_encrypt(self):
+        data = b'testdata'
+        keys = self.backend.import_key(user3_pub)
+        self.assertKeys(keys, [user3_fp])
+        priv_keys = self.backend.import_private_key(user1_priv)
+        self.assertKeys(priv_keys, [user1_fp])
+
+        encrypted = self.backend.sign_encrypt(data, recipients=keys, signer=priv_keys[0],
+                                              always_trust=True)
+
+        user3_keys = self.backend.import_private_key(user3_priv)
+        self.assertKeys(user3_keys, [user3_fp])
+        self.assertEqual(self.backend.decrypt_verify(encrypted), (data, user1_fp))
+
+        encrypted = self.backend.sign_encrypt(data, recipients=[user3_fp], signer=user1_fp,
+                                              always_trust=True)
+        self.assertEqual(self.backend.decrypt_verify(encrypted), (data, user1_fp))
+
+    def test_no_signature(self):
+        data = b'testdata'
+        encrypted = self.backend.encrypt(data, [self.user2], always_trust=True)
+        self.assertEqual(self.backend.decrypt_verify(encrypted), (data, None))
+
+    def test_no_trust(self):
+        six.assertRaisesRegex(self, GpgUntrustedKeyError, 'Key not trusted.',
+                              self.backend.encrypt, b'test', recipients=[self.user1])
+
+    def test_sign_encrypt_unknown_key(self):
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signer=user1_fp)
+
+        with self.assertRaises(GpgKeyNotFoundError):
+            self.backend.sign_encrypt(b'test', recipients=[user3_fp], signer=user1_fp,
+                                      always_trust=True)
