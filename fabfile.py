@@ -20,11 +20,11 @@ import unittest
 
 from fabric.api import local
 from fabric.api import task
-from fabric.context_managers import shell_env
 
 from gpgliblib import gpgme
 from gpgliblib import python_gnupg
 
+coverage_dir = os.path.join(os.path.dirname(__file__), 'build', 'coverage')
 testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
 
 
@@ -77,10 +77,18 @@ def test(name=None, backend=None):
 
 
 @task
-def coverage(gpgver='2.1'):
-    with shell_env(GNUPG_VERSION=gpgver):
-        local('coverage run --source=gpgliblib testproject/manage.py test testapp')
-        local('coverage html')
+def coverage():
+    import coverage
+
+    cov = coverage.Coverage(source=['gpgliblib', ])
+    cov.start()
+
+    test()
+
+    cov.stop()
+    cov.save()
+
+    cov.html_report(directory=coverage_dir)
 
 
 @task
