@@ -27,6 +27,7 @@ from gpgme import ERR_SOURCE_UNKNOWN
 from gpgme import ERR_GENERAL
 from gpgme import ERR_SOURCE_GPGME
 from gpgme import ERR_UNUSABLE_PUBKEY
+from gpgme import ERR_EOF
 
 from .base import GpgBackendBase
 from .base import GpgBadSignature
@@ -177,9 +178,9 @@ class GpgMeBackend(GpgBackendBase):
             return output.getvalue(), signatures[0].fpr
 
     def import_key(self, data):
-        if six.PY3 and isinstance(data, str):
+        if six.PY3 and isinstance(data, str):  # pragma: py3
             data = data.encode('utf-8')
-        elif six.PY2 is True and isinstance(data, unicode):
+        elif six.PY2 is True and isinstance(data, unicode):  # pragma: py2
             data = data.encode('utf-8')
 
         result = self.context.import_(six.BytesIO(data))
@@ -215,7 +216,7 @@ class GpgMeKey(GpgKey):
             try:
                 self._loaded_key = self.backend.context.get_key(self.fingerprint)
             except gpgme.GpgmeError as e:
-                if e.source == gpgme.ERR_SOURCE_GPGME and e.code == gpgme.ERR_EOF:
+                if e.source == ERR_SOURCE_GPGME and e.code == ERR_EOF:
                     raise GpgKeyNotFoundError(self.fingerprint)
                 raise
         return self._loaded_key
@@ -278,7 +279,7 @@ class GpgMeKey(GpgKey):
         else:
             raise ValueError("Unknown value passed.")
 
-        if self.backend.gnupg_version >= (2, ):
+        if self.backend.gnupg_version >= (2, ):  # pragma: gpg2
 
             @gpgme.editutil.key_editor
             def _edit_trust_gnupg2(ctx, key, trust):

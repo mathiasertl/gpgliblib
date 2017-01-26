@@ -22,6 +22,7 @@ import six
 from fabric.api import local
 from fabric.api import task
 
+sys.path.insert(0, os.path.dirname(__file__))
 coverage_dir = os.path.join(os.path.dirname(__file__), 'build', 'coverage')
 testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
 
@@ -60,7 +61,6 @@ def test(name=None, backend=None):
         backends = [backend]
 
     suites = []
-    sys.path.insert(0, os.path.dirname(__file__))
 
     for backend in backends:
         if name is None:
@@ -87,6 +87,14 @@ def coverage():
         cov.exclude('pragma: py2')
 
     cov.start()
+
+    # exclude code for specific GPG versions
+    from gpgliblib.utils import get_version
+    version = get_version()
+    if version >= (2, ):
+        cov.exclude('pragma: gpg1')
+    elif version < (2, ):
+        cov.exclude('pragma: gpg2')
 
     test()
 
