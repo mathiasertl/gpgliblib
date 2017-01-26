@@ -599,6 +599,9 @@ class GpgKey(object):
     def expired(self):
         """Returns True if the key is expired right now."""
 
+        if not self.expires:
+            return False
+
         return self.expires < datetime.utcnow()
 
     @property
