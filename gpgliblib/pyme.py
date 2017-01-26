@@ -224,7 +224,10 @@ class PymeBackend(GpgBackendBase):
         data = self.context.op_decrypt_verify(cipher, output)
         output.seek(0, 0)
         result = self.context.op_verify_result()
-        return output.read(), result.signatures[0].fpr
+        if result.signatures:
+            return output.read(), result.signatures[0].fpr
+        else:
+            return output.read(), None
 
 
 class PymeKey(GpgKey):

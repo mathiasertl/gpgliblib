@@ -281,12 +281,22 @@ class GnuPGKey(GpgKey):
             output.write(data)
 
     def delete(self, secret_key=False):
+        """
+        .. NOTE:: Removing secret keys does not work with gpg2.
+        """
         if self.has_secret_key and not secret_key:
             raise GpgSecretKeyPresent('Secret key is present.')
 
         if secret_key and self.has_secret_key:
             # Delete secret key if present and requested
-            self.backend.gpg.delete_keys(self.fingerprint, True)
+
+            # python-gnupg < 0.4 does not take a password parameter, so we only add it for >= 0.4
+            lib_version = tuple([int(e) for e in gnupg.__version__.split('.')[:2]])
+            kwargs = {}
+            if lib_version >= (0, 4, ):
+                kwargs['passphrase'] = b''
+
+            self.backend.gpg.delete_keys(self.fingerprint, True, **kwargs)
 
         result = self.backend.gpg.delete_keys(self.fingerprint)
         if result.status == 'No such key':
