@@ -23,11 +23,11 @@ from threading import local
 import gpgme
 import gpgme.editutil
 import six
-from gpgme import ERR_SOURCE_UNKNOWN
+from gpgme import ERR_EOF
 from gpgme import ERR_GENERAL
 from gpgme import ERR_SOURCE_GPGME
+from gpgme import ERR_SOURCE_UNKNOWN
 from gpgme import ERR_UNUSABLE_PUBKEY
-from gpgme import ERR_EOF
 
 from .base import GpgBackendBase
 from .base import GpgBadSignature
