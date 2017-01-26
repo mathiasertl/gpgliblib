@@ -170,7 +170,8 @@ class GpgBackendBase(object):
     # Key management #
     ##################
 
-    def fetch_key(self, search, keyserver='http://pool.sks-keyservers.net:11371', **kwargs):  # NOQA pragma: no cover
+    def fetch_key(self, search, keyserver='http://pool.sks-keyservers.net:11371',
+                  **kwargs):  # pragma: no cover
         """Fetch a key from the given keyserver.
 
         Parameters
@@ -513,9 +514,9 @@ class GpgBackendBase(object):
     # Helper #
     ##########
 
-    if six.PY3:
+    if six.PY3:  # pragma: py3
         _tempdir = tempfile.TemporaryDirectory
-    else:
+    else:  # pragma: py2
         # python2-compatible version
         @contextmanager
         def _tempdir(self):
@@ -547,7 +548,7 @@ class GpgKey(object):
         self.fingerprint = fingerprint.upper()
         self.refresh()
 
-    def refresh(self):
+    def refresh(self):  # pragma: no cover
         """Reset any in-memory data used by this key."""
         pass
 
