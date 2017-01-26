@@ -218,7 +218,8 @@ class GpgMeKey(GpgKey):
             except gpgme.GpgmeError as e:
                 if e.source == ERR_SOURCE_GPGME and e.code == ERR_EOF:
                     raise GpgKeyNotFoundError(self.fingerprint)
-                raise
+
+                raise UnknownGpgliblibError(e.strerror)  # pragma: no cover
         return self._loaded_key
 
     @property
