@@ -36,7 +36,15 @@ implemented by a GPG backend (signing, encrypting, ...). Simply run::
 
    fab test
 
-The testsuite tests key handling, encryption and signing.
+The testsuite tests key handling, encryption and signing. You can also test just
+one backend by giving the ``backend`` parameter::
+
+   fab test:backend=gpgliblib.gpgme.GpgMeBackend
+
+To run an individual test (for debugging a particular failed test), you can give
+the ``name`` parameter::
+
+   fab test:name=tests.tests.ListKeysTests.test_empty_keyring
 
 Test GPG/MIME
 =============
