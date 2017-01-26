@@ -49,7 +49,8 @@ def test(name=None, backends=None):
 
     if backends is None:
         backends = ['gpgliblib.gpgme.GpgMeBackend',
-                    'gpgliblib.python_gnupg.PythonGnupgBackend', ]
+                    'gpgliblib.python_gnupg.PythonGnupgBackend',
+                    'gpgliblib.pyme.PymeBackend', ]
     else:
         backends = backends.split('|')
 
