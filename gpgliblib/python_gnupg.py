@@ -85,7 +85,7 @@ class PythonGnupgBackend(GpgBackendBase):
         return self._local.gpg
 
     @property
-    def gnupg_version(self):
+    def gnupg_version(self):  # pragma: no cover - we don't need this in this backend
         if self._gnupg_version is None:
             return self.gpg.version
         self._gnupg_version
@@ -116,7 +116,7 @@ class PythonGnupgBackend(GpgBackendBase):
             elif result.status == '':
                 raise GpgUntrustedKeyError('Key not trusted.')
 
-            raise UnknownGpgliblibError("Unknown error: %s" % result.status)
+            raise UnknownGpgliblibError("Unknown error: %s" % result.status)  # pragma: no cover
         return result.data
 
     def sign_encrypt(self, data, recipients, signer, **kwargs):
@@ -130,7 +130,8 @@ class PythonGnupgBackend(GpgBackendBase):
             # passphrase' is just the default
             if result.status in ['invalid recipient', '', 'incorrect passphrase']:
                 raise GpgKeyNotFoundError()
-            raise UnknownGpgliblibError(result.status)
+
+            raise UnknownGpgliblibError(result.status)  # pragma: no cover
         return result.data
 
     def verify(self, data, signature):
