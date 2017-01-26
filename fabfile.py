@@ -96,12 +96,19 @@ def coverage():
     elif version < (2, ):
         cov.exclude('pragma: gpg2')
 
+    # omit pyme backend if pyme lib can't be imported
+    omit = []
+    try:
+        import pyme  # NOQA
+    except ImportError:
+        omit.append('gpgliblib/pyme.py')
+
     test()
 
     cov.stop()
     cov.save()
 
-    cov.html_report(directory=coverage_dir)
+    cov.html_report(directory=coverage_dir, omit=omit)
 
 
 @task
