@@ -77,7 +77,8 @@ You can install ``python-gnupg`` simply by doing::
 .. NOTE::
 
    If you use GnuPG >= 2.1, you need at least version 0.4.0 of ``python-gnupg``. At the time of
-   writing (2017-01-20) 0.4.0 is not yet released, but the hg-checkout works.
+   writing (2017-01-20) 0.4.0 is not yet released, but the hg-checkout works. Even then, removing
+   secret keys currently fails.
 
 .. autoclass:: gpgliblib.python_gnupg.PythonGnupgBackend
    :members:

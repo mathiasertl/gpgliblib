@@ -281,9 +281,6 @@ class GnuPGKey(GpgKey):
             output.write(data)
 
     def delete(self, secret_key=False):
-        """
-        .. NOTE:: Removing secret keys does not work with gpg2.
-        """
         if self.has_secret_key and not secret_key:
             raise GpgSecretKeyPresent('Secret key is present.')
 
