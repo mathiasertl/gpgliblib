@@ -18,11 +18,9 @@ import sys
 import tempfile
 import unittest
 
+import six
 from fabric.api import local
 from fabric.api import task
-
-from gpgliblib import gpgme
-from gpgliblib import python_gnupg
 
 coverage_dir = os.path.join(os.path.dirname(__file__), 'build', 'coverage')
 testdata_dir = os.path.join(os.path.dirname(__file__), 'testdata')
@@ -62,12 +60,13 @@ def test(name=None, backend=None):
         backends = [backend]
 
     suites = []
+    sys.path.insert(0, os.path.dirname(__file__))
+
     for backend in backends:
         if name is None:
             suite = TestLoader(backend).discover('tests')
         else:
             # fabric does not have the current directory in the path for some reason
-            sys.path.insert(0, os.path.dirname(__file__))
             suite = TestLoader(backend).loadTestsFromName(name)
 
         suites.append(suite)
@@ -81,6 +80,12 @@ def coverage():
     import coverage
 
     cov = coverage.Coverage(source=['gpgliblib', ])
+
+    if six.PY2:
+        cov.exclude('pragma: py3')
+    else:
+        cov.exclude('pragma: py2')
+
     cov.start()
 
     test()
@@ -145,6 +150,11 @@ def test_mime_messages(fp=None, dest=None):
         msg = backend.encrypt_message('foobar', recipients=[fp], signers=[fp])
         with open(os.path.join(dest_dir, 'signed-encrypted.eml'), 'wb') as stream:
             stream.write(msg.as_bytes())
+
+    # NOTE: we import here because coverage requires that files aren't imported before starting
+    #       coverage.
+    from gpgliblib import gpgme
+    from gpgliblib import python_gnupg
 
     with tempfile.TemporaryDirectory() as home:
         backend = gpgme.GpgMeBackend(home=home, default_trust=True)
