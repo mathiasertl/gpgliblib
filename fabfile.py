@@ -44,15 +44,15 @@ class TestLoader(unittest.TestLoader):
 
 
 @task
-def test(name=None, backends=None):
+def test(name=None, backend=None):
     """Run the testsuite."""
 
-    if backends is None:
+    if backend is None:
         backends = ['gpgliblib.gpgme.GpgMeBackend',
                     'gpgliblib.python_gnupg.PythonGnupgBackend',
                     'gpgliblib.pyme.PymeBackend', ]
     else:
-        backends = backends.split('|')
+        backends = [backend]
 
     suites = []
     for backend in backends:
