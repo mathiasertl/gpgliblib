@@ -74,11 +74,21 @@ You can install ``python-gnupg`` simply by doing::
    * `Bitbucket repository <https://bitbucket.org/vinay.sajip/python-gnupg/overview>`_
    * `GitHub mirror <https://github.com/vsajip/python-gnupg>`_
 
-.. NOTE::
+The latest release of python-gnupg at the time of writing (2017-01-27), 0.3.9, does not work well
+with GnuPG 2.x. The situation improves a lot with the current development version, that you can
+install directly from the repository::
 
-   If you use GnuPG >= 2.1, you need at least version 0.4.0 of ``python-gnupg``. At the time of
-   writing (2017-01-20) 0.4.0 is not yet released, but the hg-checkout works. Even then, removing
-   secret keys currently fails.
+   pip install hg+https://bitbucket.org/vinay.sajip/python-gnupg
+
+Even then, removing secret keys currently fails unless you pass the ``--yes`` option to
+python-gnupg. You can either do this via constructor, or temporarily using 
+:py:func:`~gpgliblib.base.GpgliblibBase.settings`::
+
+   >>> backend = PythonGnupgBackend(options=['--yes'])
+
+   # or:
+   >>> backend.settings(options=['--yes']) as temp_backend:
+   ...    pass
 
 .. autoclass:: gpgliblib.python_gnupg.PythonGnupgBackend
    :members:
