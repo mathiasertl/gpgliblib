@@ -282,6 +282,11 @@ class BasicTests(GpgTestMixin, unittest.TestCase):
             with self.assertRaises(GpgUntrustedKeyError):
                 self.backend.encrypt(data, priv_keys, always_trust=False)
 
+    def test_version(self):
+        # returned value is system dependent, so we just see if it returns something
+        self.backend.gnupg_version
+        self.backend.gnupg_version
+
 
 class ListKeysTests(GpgTestMixin, unittest.TestCase):
     def test_empty_keyring(self):
