@@ -43,6 +43,7 @@ from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
 
 if six.PY3:  # pragma: py3
+    from pyme.errors import CONFLICT
     from pyme.errors import DECRYPT_FAILED
     from pyme.errors import EOF as END_OF_FILE
     from pyme.errors import SOURCE_GPGME
@@ -50,10 +51,11 @@ if six.PY3:  # pragma: py3
     from pyme.errors import UNUSABLE_PUBKEY
 else:  # pragma: py2
     # The python2 version does not define these constants.
-    SOURCE_UNKNOWN = 0
-    SOURCE_GPGME = 7
-    END_OF_FILE = 16383
+    CONFLICT = 70
     DECRYPT_FAILED = 152
+    END_OF_FILE = 16383
+    SOURCE_GPGME = 7
+    SOURCE_UNKNOWN = 0
 
 
 class PymeBackend(GpgBackendBase):
@@ -355,8 +357,8 @@ class PymeKey(GpgKey):
         except GPGMEError as e:
             code = e.getcode()
             source = e.getsource()
-            if code == 70 and source == SOURCE_GPGME:  # pragma: gpg1
+            if code == CONFLICT and source == SOURCE_GPGME:  # pragma: gpg1
                 raise GpgSecretKeyPresent('Secret key is present.')
-            elif code == END_OF_FILE and source == SOURCE_GPGME:  # pragma: gpg2
+            elif code == END_OF_FILE and source == SOURCE_GPGME:
                 raise GpgKeyNotFoundError(self.fingerprint)
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
