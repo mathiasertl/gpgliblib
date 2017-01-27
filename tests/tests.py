@@ -376,14 +376,13 @@ class KeyPropertiesTests(GpgKeyTestMixin, unittest.TestCase):
 
 
 class TrustTests(GpgKeyTestMixin, unittest.TestCase):
-    def setUp(self):
-        if self.backend_name == 'gpgliblib.pyme.PymeBackend':
-            self.skipTest('pyme does not support setting trust.')
-        super(TrustTests, self).setUp()
-
-    def test_basic(self):
+    def test_get_trust(self):
         self.assertEqual(self.user1.trust, VALIDITY_UNKNOWN)
         self.assertEqual(self.user2.trust, VALIDITY_UNKNOWN)
+
+    def test_set_trust(self):
+        if self.backend_name == 'gpgliblib.pyme.PymeBackend':
+            self.skipTest('pyme does not support setting trust.')
 
         # NOTE: We cannot set VALIDITY_UNKNOWN again
         for trust in [VALIDITY_FULL, VALIDITY_MARGINAL, VALIDITY_NEVER, VALIDITY_ULTIMATE]:
@@ -391,6 +390,9 @@ class TrustTests(GpgKeyTestMixin, unittest.TestCase):
             self.assertEqual(self.user1.trust, trust)
 
     def test_set_unknown_trust(self):
+        if self.backend_name == 'gpgliblib.pyme.PymeBackend':
+            self.skipTest('pyme does not support setting trust.')
+
         keys = self.backend.import_key(user4_pub)
         self.assertKeys(keys, [user4_fp])
         self.assertEqual(keys[0].trust, VALIDITY_UNKNOWN)
@@ -402,6 +404,9 @@ class TrustTests(GpgKeyTestMixin, unittest.TestCase):
         self.assertEqual(keys[0].trust, VALIDITY_FULL)
 
     def test_set_random_trust(self):
+        if self.backend_name == 'gpgliblib.pyme.PymeBackend':
+            self.skipTest('pyme does not support setting trust.')
+
         keys = self.backend.import_key(user4_pub)
         self.assertKeys(keys, [user4_fp])
         self.assertEqual(keys[0].trust, VALIDITY_UNKNOWN)
