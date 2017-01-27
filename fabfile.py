@@ -69,7 +69,6 @@ def test(name=None, backend=None):
         if name is None:
             suite = TestLoader(backend).discover('tests')
         else:
-            # fabric does not have the current directory in the path for some reason
             suite = TestLoader(backend).loadTestsFromName(name)
 
         suites.append(suite)
