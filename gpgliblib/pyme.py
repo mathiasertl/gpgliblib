@@ -355,8 +355,8 @@ class PymeKey(GpgKey):
         except GPGMEError as e:
             code = e.getcode()
             source = e.getsource()
-            if code == 70 and source == SOURCE_GPGME:
+            if code == 70 and source == SOURCE_GPGME:  # pragma: gpg1
                 raise GpgSecretKeyPresent('Secret key is present.')
-            elif code == END_OF_FILE and source == SOURCE_GPGME:
+            elif code == END_OF_FILE and source == SOURCE_GPGME:  # pragma: gpg2
                 raise GpgKeyNotFoundError(self.fingerprint)
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
