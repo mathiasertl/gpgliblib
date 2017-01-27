@@ -65,9 +65,7 @@ class PymeBackend(GpgBackendBase):
     """
 
     def __init__(self, home=None, path=None, default_trust=False):
-        self._home = home
-        self._path = path
-        self._default_trust = default_trust
+        super(PymeBackend, self).__init__(home=home, path=path, default_trust=default_trust)
         self._local = local()
 
     @property
