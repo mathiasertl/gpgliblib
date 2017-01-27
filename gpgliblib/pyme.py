@@ -42,13 +42,13 @@ from .base import VALIDITY_NEVER
 from .base import VALIDITY_ULTIMATE
 from .base import VALIDITY_UNKNOWN
 
-if six.PY3:
+if six.PY3:  # pragma: py3
     from pyme.errors import DECRYPT_FAILED
     from pyme.errors import EOF as END_OF_FILE
     from pyme.errors import SOURCE_GPGME
     from pyme.errors import SOURCE_UNKNOWN
     from pyme.errors import UNUSABLE_PUBKEY
-else:
+else:  # pragma: py2
     # The python2 version does not define these constants.
     SOURCE_UNKNOWN = 0
     SOURCE_GPGME = 7
@@ -170,12 +170,10 @@ class PymeBackend(GpgBackendBase):
             code = e.getcode()
             source = e.getsource()
 
-            # Raised in gpg 1.x
-            if code == 1 and source == SOURCE_UNKNOWN:
+            if code == 1 and source == SOURCE_UNKNOWN:  # pragma: gpg1
                 raise GpgUntrustedKeyError('Key not trusted.')
 
-            # Raised in gpg 2.x
-            elif code == UNUSABLE_PUBKEY and source == SOURCE_GPGME:  # pragma: py2
+            elif code == UNUSABLE_PUBKEY and source == SOURCE_GPGME:  # pragma: gpg2
                 raise GpgUntrustedKeyError('Key not trusted.')
 
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
@@ -258,7 +256,7 @@ class PymeKey(GpgKey):
                 self._loaded_key = self.backend.context.get_key(fingerprint, False)
             except GPGMEError as e:
                 # pyme3 has convenient bindings for that
-                if six.PY3 and isinstance(e, errors.KeyNotFound):
+                if six.PY3 and isinstance(e, errors.KeyNotFound):  # pragma: py3
                     raise GpgKeyNotFoundError(e.keystr)
 
                 code = e.getcode()
