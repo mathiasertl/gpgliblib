@@ -371,6 +371,11 @@ class KeyPropertiesTests(GpgKeyTestMixin, unittest.TestCase):
 
 
 class TrustTests(GpgKeyTestMixin, unittest.TestCase):
+    def setUp(self):
+        if self.backend_name == 'gpgliblib.pyme.PymeBackend':
+            self.skipTest('pyme does not support setting trust.')
+        super(TrustTests, self).setUp()
+
     def test_basic(self):
         self.assertEqual(self.user1.trust, VALIDITY_UNKNOWN)
         self.assertEqual(self.user2.trust, VALIDITY_UNKNOWN)
