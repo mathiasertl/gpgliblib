@@ -32,20 +32,23 @@ class TestLoader(unittest.TestLoader):
     constructor.
     """
 
-    def __init__(self, name):
+    def __init__(self, name, **kwargs):
         self.name = name
+        self.backend_kwargs = kwargs
 
     def loadTestsFromName(self, name):
         tests = super(TestLoader, self).loadTestsFromName(name)
         test = tests._tests[0]
         for test in tests:
             test.backend_name = self.name
+            test.backend_kwargs = self.backend_kwargs
         return tests
 
     def loadTestsFromTestCase(self, cls):
         tests = super(TestLoader, self).loadTestsFromTestCase(cls)
         for test in tests:
             test.backend_name = self.name
+            test.backend_kwargs = self.backend_kwargs
         return tests
 
 
