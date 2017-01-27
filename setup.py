@@ -21,7 +21,7 @@ from setuptools import setup
 
 setup(
     name='gpgliblib',
-    version='0.1',
+    version='0.2.0',
     description='Library for creating PGP/MIME mails with various library backends.',
     long_description='''**gpgliblib** is a Python library providing a common, well documented and
 pythonic interface over various GPG libraries that exist for Python.
