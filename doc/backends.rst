@@ -6,9 +6,9 @@ Backends
 pyme3/pyme
 **********
 
-`pyme3 <https://pypi.python.org/pypi/pyme3>`_ and `pyme
-<https://pypi.python.org/pypi/pyme>`_ are the official Python bindings for
-`gpgme <https://www.gnupg.org/(es)/related_software/gpgme/>`_.
+`pyme3 <https://pypi.python.org/pypi/pyme3>`_ (since removed from PyPI, thanks!) and `pyme
+<https://pypi.python.org/pypi/pyme>`_ are the official Python bindings for `gpgme
+<https://www.gnupg.org/(es)/related_software/gpgme/>`_.
 :py:class:`gpgliblib.pyme.PymeBackend` provides an almost complete implementation of the
 :doc:`gpgliblib API <api>`. It works with GnuPG 1.x and 2.x.
 
