@@ -360,18 +360,3 @@ class PymeKey(GpgKey):
             elif code == END_OF_FILE and source == SOURCE_GPGME:
                 raise GpgKeyNotFoundError(self.fingerprint)
             raise UnknownGpgliblibError(e.getstring())  # pragma: no cover
-
-    def __str__(self):
-        return '<%s: %s>' % (self.__class__.__name__, self.fingerprint)
-
-    def __repr__(self):
-        return self.__str__()
-
-    def __eq__(self, other):
-        return self.backend == other.backend and self.fingerprint == other.fingerprint
-
-    def __ne__(self, other):
-        return self.backend != other.backend or self.fingerprint != other.fingerprint
-
-    def __hash__(self):
-        return hash((self.backend, self.fingerprint))
