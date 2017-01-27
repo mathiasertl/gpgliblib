@@ -65,11 +65,20 @@ def test(name=None, backend=None):
 
     suites = []
 
+    from gpgliblib.utils import get_version
+    version = get_version()
+
     for backend in backends:
+        backend_kwargs = {}
+
+        # Add --yes for PythoGnupgBackend when using GPG 2.x
+        if version > (2, ) and backend == 'gpgliblib.python_gnupg.PythonGnupgBackend':
+            backend_kwargs['options'] = ['--yes']
+
         if name is None:
-            suite = TestLoader(backend).discover('tests')
+            suite = TestLoader(backend, **backend_kwargs).discover('tests')
         else:
-            suite = TestLoader(backend).loadTestsFromName(name)
+            suite = TestLoader(backend, **backend_kwargs).loadTestsFromName(name)
 
         suites.append(suite)
 
